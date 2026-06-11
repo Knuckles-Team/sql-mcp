@@ -1,0 +1,5 @@
+include README.md
+include requirements.txt
+recursive-include sql_mcp *.py
+recursive-include sql_mcp *.json
+recursive-include sql_mcp/agent_data *

@@ -1,0 +1,61 @@
+[build-system]
+requires = [ "setuptools>=80.9.0", "wheel",]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sql-mcp"
+version = "0.1.0"
+description = "Generic SQL database (Postgres, MySQL/MariaDB, MSSQL, Oracle, SQLite) API + MCP Server + A2A Server for Agentic AI!"
+readme = "README.md"
+classifiers = [ "Development Status :: 4 - Beta", "License :: OSI Approved :: MIT License", "Environment :: Console", "Operating System :: POSIX :: Linux", "Programming Language :: Python :: 3",]
+requires-python = ">=3.11, <3.15"
+dependencies = [ "agent-utilities>=0.47.0", "sqlalchemy>=2.0.0",]
+[[project.authors]]
+name = "Audel Rouhi"
+email = "knucklessg1@gmail.com"
+
+[project.license]
+text = "MIT"
+
+[project.optional-dependencies]
+mcp = [ "agent-utilities[mcp]>=0.47.0",]
+agent = [ "agent-utilities[agent,logfire]>=0.47.0",]
+postgres = [ "psycopg[binary]>=3.1.0",]
+mysql = [ "pymysql>=1.1.0",]
+mssql = [ "pyodbc>=5.0.0",]
+oracle = [ "oracledb>=2.0.0",]
+all = [ "sql-mcp[mcp,agent,postgres,mysql,mssql,oracle]>=0.1.0",]
+test = [ "pytest-xdist>=3.6.0", "pytest", "pytest-asyncio", "pytest-cov",]
+
+[project.scripts]
+sql-mcp = "sql_mcp.mcp_server:mcp_server"
+sql-agent = "sql_mcp.agent_server:agent_server"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+
+[tool.mypy]
+python_version = "3.10"
+ignore_missing_imports = true
+check_untyped_defs = true
+
+[dependency-groups]
+dev = [ "pytest-timeout>=2.4.0",]
+
+[tool.setuptools.package-data]
+sql_mcp = [ "mcp_config.json", "agent_data/**",]
+
+[tool.ruff.lint]
+select = [ "E", "F", "I", "UP", "B",]
+ignore = [ "E402", "E501", "B008",]
+
+[tool.vulture]
+ignore_names = ["request", "config"]
+
+[tool.setuptools.packages.find]
+where = [ ".",]
+include = [ "sql_mcp*",]
