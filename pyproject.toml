@@ -9,7 +9,7 @@ description = "Generic SQL database (Postgres, MySQL/MariaDB, MSSQL, Oracle, SQL
 readme = "README.md"
 classifiers = [ "Development Status :: 4 - Beta", "License :: OSI Approved :: MIT License", "Environment :: Console", "Operating System :: POSIX :: Linux", "Programming Language :: Python :: 3",]
 requires-python = ">=3.11, <3.15"
-dependencies = [ "agent-utilities>=0.47.0", "sqlalchemy>=2.0.0",]
+dependencies = [ "agent-utilities>=0.47.0", "python-dotenv>=1.0.0", "sqlalchemy>=2.0.0",]
 [[project.authors]]
 name = "Audel Rouhi"
 email = "knucklessg1@gmail.com"
@@ -24,7 +24,7 @@ postgres = [ "psycopg[binary]>=3.1.0",]
 mysql = [ "pymysql>=1.1.0",]
 mssql = [ "pyodbc>=5.0.0",]
 oracle = [ "oracledb>=2.0.0",]
-all = [ "sql-mcp[mcp,agent,postgres,mysql,mssql,oracle]>=0.1.0",]
+all = [ "sql-mcp[mcp,agent,postgres,mysql,mssql,oracle,logfire]>=0.1.0",]
 test = [ "pytest-xdist>=3.6.0", "pytest", "pytest-asyncio", "pytest-cov",]
 
 [project.scripts]

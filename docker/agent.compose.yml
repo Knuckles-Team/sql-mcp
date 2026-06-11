@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  sql-mcp-mcp:
+    image: knucklessg1/sql-mcp:latest
+    container_name: sql-mcp-mcp
+    hostname: sql-mcp-mcp
+    restart: always
+    env_file:
+      - ../.env
+    environment:
+      - PYTHONUNBUFFERED=1
+      - HOST=0.0.0.0
+      - PORT=8000
+      - TRANSPORT=streamable-http
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  sql-mcp-agent:
+    image: knucklessg1/sql-mcp:latest
+    container_name: sql-mcp-agent
+    hostname: sql-mcp-agent
+    restart: always
+    depends_on:
+      - sql-mcp-mcp
+    env_file:
+      - ../.env
+    command: [ "sql-agent" ]
+    environment:
+      - PYTHONUNBUFFERED=1
+      - HOST=0.0.0.0
+      - PORT=9000
+      - MCP_URL=http://sql-mcp-mcp:8000/mcp
+      - PROVIDER=${PROVIDER:-openai}
+      - MODEL_ID=${MODEL_ID:-gpt-4o}
+      - ENABLE_WEB_UI=True
+      - ENABLE_OTEL=True
+    ports:
+      - "9000:9000"
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:9000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

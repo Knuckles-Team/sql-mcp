@@ -128,10 +128,10 @@ def assert_single_statement(sql: str) -> str:
 def first_keyword(stripped_sql: str) -> str:
     """Return the first significant keyword of a stripped statement."""
     for match in _TOKEN_RE.finditer(stripped_sql):
-        token = match.group(0)
-        if token in ("(", ")", ";"):
+        tok = match.group(0)
+        if tok in ("(", ")", ";"):
             continue
-        return token.lower()
+        return tok.lower()
     return ""
 
 
@@ -154,13 +154,13 @@ def assert_read_only(sql: str) -> None:
 
     depth = 0
     for match in _TOKEN_RE.finditer(stripped):
-        token = match.group(0)
-        if token == "(":
+        tok = match.group(0)
+        if tok == "(":
             depth += 1
-        elif token == ")":
+        elif tok == ")":
             depth = max(0, depth - 1)
         elif depth == 0:
-            lowered = token.lower()
+            lowered = tok.lower()
             if lowered in MUTATING_KEYWORDS:
                 raise StatementNotAllowedError(
                     f"Top-level {lowered.upper()!r} is not allowed in sql_query "

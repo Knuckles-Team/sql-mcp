@@ -216,7 +216,12 @@ class SqlApi:
             with eng.connect() as conn:
                 result = conn.execute(text(plan_sql), dict(params or {}))
                 if not result.returns_rows:
-                    return {"columns": [], "rows": [], "row_count": 0, "truncated": False}
+                    return {
+                        "columns": [],
+                        "rows": [],
+                        "row_count": 0,
+                        "truncated": False,
+                    }
                 return self._result_envelope(result, self.max_rows)
 
         return self._run_with_timeout(run, timeout)

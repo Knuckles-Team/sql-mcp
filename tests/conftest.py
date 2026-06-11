@@ -41,7 +41,7 @@ def seed(engine) -> None:
 
 def build_api(**overrides) -> Api:
     """A read-only Api with two independent in-memory SQLite connections."""
-    kwargs = {
+    kwargs: dict = {
         "connections": {
             "primary": make_url(MEMORY_URL),
             "analytics": make_url(MEMORY_URL),

@@ -74,7 +74,11 @@ def test_query_timeout_enforced(api):
 
     raw = api.engine("primary").raw_connection()
     try:
-        raw.driver_connection.create_function("slow", 0, lambda: time.sleep(2) or 1)
+        def slow() -> int:
+            time.sleep(2)
+            return 1
+
+        raw.driver_connection.create_function("slow", 0, slow)
         with pytest.raises(SqlTimeoutError):
             api.query("SELECT slow()", timeout=0.2)
     finally:

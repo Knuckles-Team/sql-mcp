@@ -92,9 +92,14 @@ def test_build_url_quotes_special_characters():
 
 
 def test_dialect_for_url_matches_backend():
-    assert dialect_for_url(make_url("postgresql://h/db")).name == "postgres"
-    assert dialect_for_url(make_url("mysql+pymysql://h/db")).name == "mysql"
-    assert dialect_for_url(make_url("sqlite:///:memory:")).name == "sqlite"
+    for url, expected in [
+        ("postgresql://h/db", "postgres"),
+        ("mysql+pymysql://h/db", "mysql"),
+        ("sqlite:///:memory:", "sqlite"),
+    ]:
+        spec = dialect_for_url(make_url(url))
+        assert spec is not None
+        assert spec.name == expected
     assert dialect_for_url(make_url("firebird://h/db")) is None
 
 
