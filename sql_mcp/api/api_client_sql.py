@@ -47,7 +47,7 @@ class SqlApi:
 
     def __init__(
         self,
-        connections: dict[str, URL] | None = None,
+        connections: Mapping[str, URL | str] | None = None,
         allow_writes: bool | None = None,
         max_rows: int | None = None,
         timeout: float | None = None,
@@ -442,10 +442,11 @@ class SqlApi:
                 "detail": f"Dialect {dialect!r} has no active-session view.",
             }
         eng = self.engine(name)
+        active_sql = spec.active_connections_sql
 
         def run() -> dict[str, Any]:
             with eng.connect() as conn:
-                result = conn.execute(text(spec.active_connections_sql))
+                result = conn.execute(text(active_sql))
                 envelope = self._result_envelope(result, self.max_rows)
             envelope.update({"connection": name, "supported": True})
             return envelope

@@ -28,6 +28,22 @@ Oracle, and SQLite** over SQLAlchemy 2.x Core.
 > **Documentation** — Installation, deployment, and usage across the API, CLI, and
 > MCP interfaces are maintained in [`docs/`](docs/index.md).
 
+## Table of Contents
+
+- [Overview](#overview)
+- [What it provides](#what-it-provides)
+- [MCP tools](#mcp-tools)
+- [Dialects & extras](#dialects--extras)
+- [Configuration (environment)](#configuration-environment)
+- [Installation](#installation)
+- [Usage](#usage)
+- [MCP config](#mcp-config)
+- [Docker deployment](#docker-deployment)
+- [Safety model](#safety-model)
+- [Tests](#tests)
+
+## Overview
+
 `sql-mcp` exposes read-only queries, gated DML/DDL, schema reflection, and
 connection administration as typed, deterministic MCP tools, and ships an optional
 Pydantic-AI agent server. It is **read-only by default**: every query passes a
@@ -50,6 +66,18 @@ all values travel as bound parameters — never interpolated into SQL strings.
   install via extras.
 - **An A2A agent server** (`sql-agent` console script) — a Pydantic-AI graph agent
   wired to the MCP server via `MCP_URL`.
+
+## MCP tools
+
+| Tool | Actions | Description |
+|---|---|---|
+| `sql_query` | `execute`, `explain` | Run a read-only SELECT/CTE with bound parameters, or return the dialect's query plan |
+| `sql_execute` | `execute`, `script` | One DML/DDL statement (or an all-or-nothing statement list) in a transaction — requires `SQL_ALLOW_WRITES=True` |
+| `sql_schema` | `schemas`, `tables`, `views`, `columns`, `indexes`, `foreign_keys`, `ddl`, `sample` | Reflect schemas, tables, columns, indexes, FKs, CREATE DDL, and preview rows |
+| `sql_admin` | `ping`, `version`, `active_connections`, `connections`, `dialects` | Connection health, server version, server sessions, registry info, driver availability |
+
+Every tool takes `action`, `params_json`, and an optional `connection` naming one
+of the configured connections. The whole set is toggled with `SQLTOOL`.
 
 ## Dialects & extras
 
@@ -82,10 +110,23 @@ the sole/first one. Passwords are parsed into `sqlalchemy.URL` objects and only
 ever rendered redacted. Copy [`.env.example`](.env.example) to `.env` and
 populate only what you use.
 
-## Install & run
+## Installation
 
 ```bash
-pip install -e .
+pip install sql-mcp            # core (SQLite, MCP server, API)
+pip install sql-mcp[all]       # every driver + MCP + agent extras
+pip install -e .               # from source
+```
+
+Or pull the container image:
+
+```bash
+docker pull knucklessg1/sql-mcp:latest
+```
+
+## Usage
+
+```bash
 sql-mcp                        # stdio MCP server (default transport)
 sql-mcp --transport streamable-http --host 0.0.0.0 --port 8000
 ```
@@ -130,6 +171,17 @@ sql-agent --mcp-url http://localhost:8000/mcp --host 0.0.0.0 --port 8080
   }
 }
 ```
+
+## Docker deployment
+
+```bash
+docker compose -f docker/mcp.compose.yml up -d      # MCP server only
+docker compose -f docker/agent.compose.yml up -d    # MCP + A2A agent
+curl -s http://localhost:8000/health                 # {"status":"OK"}
+```
+
+Both services read configuration from `../.env` (copy
+[`.env.example`](.env.example)); see [`docs/deployment.md`](docs/deployment.md).
 
 ## Safety model
 

@@ -1,6 +1,11 @@
 # Concept Registry — sql-mcp
 
-> **Prefix**: `CONCEPT:SQL-1.x`
+> **Prefix**: `CONCEPT:SQL-1.x` | **Version**: 0.1.0
+
+This connector inherits the ecosystem bridge concept `ECO-4.0`
+(connector parity standard) from
+[`agent-utilities`](https://github.com/Knuckles-Team/agent-utilities/blob/main/docs/overview.md),
+alongside `ECO-4.1` (MCP & Universal Skills) and `ECO-4.2` (A2A Network).
 
 Stable concept IDs trace the connector's core ideas across the documentation,
 code docstrings, and tests.
