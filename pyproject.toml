@@ -24,7 +24,7 @@ postgres = [ "psycopg[binary]>=3.1.0",]
 mysql = [ "pymysql>=1.1.0",]
 mssql = [ "pyodbc>=5.0.0",]
 oracle = [ "oracledb>=2.0.0",]
-all = [ "sql-mcp[mcp,agent,postgres,mysql,mssql,oracle,logfire]>=0.2.0",]
+all = [ "sql-mcp[mcp,agent,postgres,mysql,mssql,oracle,logfire]>=0.3.0",]
 test = [ "pytest-xdist>=3.6.0", "pytest", "pytest-asyncio", "pytest-cov",]
 
 [project.scripts]
