@@ -23,7 +23,7 @@ Generic SQL database **API + MCP Server + A2A Agent** for the agent-utilities
 ecosystem — one connector for **PostgreSQL, MySQL/MariaDB, Microsoft SQL Server,
 Oracle, and SQLite** over SQLAlchemy 2.x Core.
 
-*Version: 0.2.0*
+*Version: 0.3.0*
 
 > **Documentation** — Installation, deployment, and usage across the API, CLI, and
 > MCP interfaces are maintained in [`docs/`](docs/index.md).

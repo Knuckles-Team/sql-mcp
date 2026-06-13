@@ -13,7 +13,7 @@ from starlette.responses import JSONResponse
 
 from sql_mcp.mcp.mcp_sql import register_sql_tools
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 logger = get_logger(name="sql_mcp")
 
 
