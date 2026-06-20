@@ -17,9 +17,9 @@ objects and only ever rendered with ``hide_password=True``.
 """
 
 import json
-import os
 
-from agent_utilities.base_utilities import get_logger, to_boolean
+from agent_utilities.base_utilities import get_logger
+from agent_utilities.core.config import setting
 from sqlalchemy.engine import URL, make_url
 
 from sql_mcp.dialects import build_url
@@ -55,7 +55,7 @@ def _connection_from_spec(name: str, spec: object) -> URL:
 
 def load_connections() -> dict[str, URL]:
     """Load the named-connection registry from the environment."""
-    raw = os.getenv("SQL_CONNECTIONS", "")
+    raw = setting("SQL_CONNECTIONS", "")
     if raw.strip():
         try:
             mapping = json.loads(raw)
@@ -70,22 +70,22 @@ def load_connections() -> dict[str, URL]:
             name: _connection_from_spec(name, spec) for name, spec in mapping.items()
         }
 
-    url = os.getenv("SQL_URL", "")
+    url = setting("SQL_URL", "")
     if url.strip():
         return {"default": make_url(url)}
 
-    if os.getenv("SQL_DIALECT") or os.getenv("SQL_HOST"):
-        options_raw = os.getenv("SQL_OPTIONS", "")
+    if setting("SQL_DIALECT", "") or setting("SQL_HOST", ""):
+        options_raw = setting("SQL_OPTIONS", "")
         options = json.loads(options_raw) if options_raw.strip() else None
-        port_raw = os.getenv("SQL_PORT", "")
+        port_raw = setting("SQL_PORT", "")
         return {
             "default": build_url(
-                os.getenv("SQL_DIALECT", "postgres"),
-                host=os.getenv("SQL_HOST"),
+                setting("SQL_DIALECT", "postgres"),
+                host=setting("SQL_HOST", "") or None,
                 port=int(port_raw) if port_raw.strip() else None,
-                username=os.getenv("SQL_USERNAME"),
-                password=os.getenv("SQL_PASSWORD"),
-                database=os.getenv("SQL_DATABASE"),
+                username=setting("SQL_USERNAME", "") or None,
+                password=setting("SQL_PASSWORD", "") or None,
+                database=setting("SQL_DATABASE", "") or None,
                 options=options,
             )
         }
@@ -99,17 +99,17 @@ def load_connections() -> dict[str, URL]:
 
 def allow_writes() -> bool:
     """Whether DML/DDL via ``sql_execute`` is enabled (default: read-only)."""
-    return to_boolean(os.getenv("SQL_ALLOW_WRITES", "False"))
+    return bool(setting("SQL_ALLOW_WRITES", False))
 
 
 def default_max_rows() -> int:
     """Per-call row cap (``SQL_MAX_ROWS``, default 500); requests are clamped."""
-    return int(os.getenv("SQL_MAX_ROWS", str(DEFAULT_MAX_ROWS)))
+    return int(setting("SQL_MAX_ROWS", DEFAULT_MAX_ROWS))
 
 
 def default_timeout() -> float:
     """Per-call statement timeout in seconds (``SQL_TIMEOUT_SECONDS``)."""
-    return float(os.getenv("SQL_TIMEOUT_SECONDS", str(DEFAULT_TIMEOUT_SECONDS)))
+    return float(setting("SQL_TIMEOUT_SECONDS", DEFAULT_TIMEOUT_SECONDS))
 
 
 _api = None
