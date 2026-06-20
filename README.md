@@ -75,10 +75,10 @@ The table below is auto-generated from the MCP server — do not edit by hand.
 
 | MCP Tool | Toggle Env Var | Description |
 |----------|----------------|-------------|
-| `sql_admin` | `ADMINTOOL` | Connection health, server version, sessions, and registry info. |
-| `sql_execute` | `EXECUTETOOL` | Run DML/DDL in transactions (gated by SQL_ALLOW_WRITES). |
-| `sql_query` | `QUERYTOOL` | Run read-only SQL with row cap, timeout, and column metadata. |
-| `sql_schema` | `SCHEMATOOL` | Inspect schemas, tables, views, columns, indexes, FKs, and DDL. |
+| `sql_admin` | `SQLTOOL` | Connection health, server version, sessions, and registry info. |
+| `sql_execute` | `SQLTOOL` | Run DML/DDL in transactions (gated by SQL_ALLOW_WRITES). |
+| `sql_query` | `SQLTOOL` | Run read-only SQL with row cap, timeout, and column metadata. |
+| `sql_schema` | `SQLTOOL` | Inspect schemas, tables, views, columns, indexes, FKs, and DDL. |
 
 _4 action-routed tools (default `MCP_TOOL_MODE=condensed`). Each is enabled unless its toggle is set false; set `MCP_TOOL_MODE=verbose` (or `both`) for the 1:1 per-operation surface. Auto-generated — do not edit._
 <!-- MCP-TOOLS-TABLE:END -->
