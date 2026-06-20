@@ -69,12 +69,19 @@ all values travel as bound parameters — never interpolated into SQL strings.
 
 ## MCP tools
 
-| Tool | Actions | Description |
-|---|---|---|
-| `sql_query` | `execute`, `explain` | Run a read-only SELECT/CTE with bound parameters, or return the dialect's query plan |
-| `sql_execute` | `execute`, `script` | One DML/DDL statement (or an all-or-nothing statement list) in a transaction — requires `SQL_ALLOW_WRITES=True` |
-| `sql_schema` | `schemas`, `tables`, `views`, `columns`, `indexes`, `foreign_keys`, `ddl`, `sample` | Reflect schemas, tables, columns, indexes, FKs, CREATE DDL, and preview rows |
-| `sql_admin` | `ping`, `version`, `active_connections`, `connections`, `dialects` | Connection health, server version, server sessions, registry info, driver availability |
+The table below is auto-generated from the MCP server — do not edit by hand.
+
+<!-- MCP-TOOLS-TABLE:START -->
+
+| MCP Tool | Toggle Env Var | Description |
+|----------|----------------|-------------|
+| `sql_admin` | `ADMINTOOL` | Connection health, server version, sessions, and registry info. |
+| `sql_execute` | `EXECUTETOOL` | Run DML/DDL in transactions (gated by SQL_ALLOW_WRITES). |
+| `sql_query` | `QUERYTOOL` | Run read-only SQL with row cap, timeout, and column metadata. |
+| `sql_schema` | `SCHEMATOOL` | Inspect schemas, tables, views, columns, indexes, FKs, and DDL. |
+
+_4 action-routed tools (default `MCP_TOOL_MODE=condensed`). Each is enabled unless its toggle is set false; set `MCP_TOOL_MODE=verbose` (or `both`) for the 1:1 per-operation surface. Auto-generated — do not edit._
+<!-- MCP-TOOLS-TABLE:END -->
 
 Every tool takes `action`, `params_json`, and an optional `connection` naming one
 of the configured connections. The whole set is toggled with `SQLTOOL`.
@@ -239,3 +246,4 @@ to just this package. Ask your agent to **"deploy `sql-mcp` with agent-os-genesi
 Secrets are read-existing + seeded via `vault_sync` — you are only prompted for what's missing.
 
 <!-- END agent-os-genesis-deploy -->
+
