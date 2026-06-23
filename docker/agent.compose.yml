@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   sql-mcp-mcp:
-    image: knucklessg1/sql-mcp:latest
+    image: knucklessg1/sql-mcp:mcp
     container_name: sql-mcp-mcp
     hostname: sql-mcp-mcp
     restart: always
