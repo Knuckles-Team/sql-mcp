@@ -119,17 +119,51 @@ populate only what you use.
 
 ## Installation
 
+Pick the extra that matches what you want to run. DB-driver extras
+(`postgres` / `mysql` / `mssql` / `oracle`) are **additive** — combine them with
+`[mcp]` or `[agent]`, e.g. `sql-mcp[mcp,postgres]` (see [Dialects & extras](#dialects--extras)).
+
+| Extra | Installs | Use when |
+|-------|----------|----------|
+| `sql-mcp[mcp]` | Slim MCP server only (`agent-utilities[mcp]` — FastMCP/FastAPI) | You only run the **MCP server** (smallest install / image) |
+| `sql-mcp[agent]` | Full agent runtime (`agent-utilities[agent,logfire]` — Pydantic AI + the epistemic-graph engine) | You run the **integrated agent** |
+| `sql-mcp[all]` | Everything (`mcp` + `agent` + **every** DB driver + `logfire`) | Development / both surfaces |
+
 ```bash
-pip install sql-mcp            # core (SQLite, MCP server, API)
-pip install sql-mcp[all]       # every driver + MCP + agent extras
-pip install -e .               # from source
+pip install sql-mcp                  # core (SQLite only, MCP server, API)
+pip install "sql-mcp[mcp]"           # slim MCP server (add drivers: [mcp,postgres])
+pip install "sql-mcp[agent]"         # full agent runtime (Pydantic AI + engine)
+pip install "sql-mcp[all]"           # every driver + MCP + agent extras
+pip install -e .                     # from source
 ```
 
-Or pull the container image:
+### Container images (`:mcp` vs `:agent`)
+
+One multi-stage `docker/Dockerfile` builds two right-sized images, selected by `--target`:
+
+| Image tag | Build target | Contents | Entrypoint |
+|-----------|--------------|----------|------------|
+| `knucklessg1/sql-mcp:mcp` | `--target mcp` | `sql-mcp[mcp]` — **slim**, no engine/`pydantic-ai`/`dspy`/`llama-index`/`tree-sitter` | `sql-mcp` |
+| `knucklessg1/sql-mcp:latest` | `--target agent` (default) | `sql-mcp[agent]` — **full** agent runtime + epistemic-graph engine | `sql-agent` |
 
 ```bash
-docker pull knucklessg1/sql-mcp:latest
+docker pull knucklessg1/sql-mcp:mcp                                   # slim MCP server
+docker build --target mcp   -t knucklessg1/sql-mcp:mcp    docker/     # build slim MCP server
+docker build --target agent -t knucklessg1/sql-mcp:latest docker/     # build full agent
 ```
+
+`docker/mcp.compose.yml` runs the slim `:mcp` server; `docker/agent.compose.yml` runs the
+agent (`:latest`) with a co-located `:mcp` sidecar.
+
+### Knowledge-graph database (`epistemic-graph`)
+
+The **full agent** (`[agent]` / `:latest`) embeds the **epistemic-graph** engine (pulled in
+transitively via `agent-utilities[agent]`). For production — or to share one knowledge graph
+across multiple agents — run **epistemic-graph as its own database container** and point the
+agent at it instead of embedding it. Deployment recipes (single-node + Raft HA), connection
+config, and the full database architecture (with diagrams) are documented in the
+[epistemic-graph deployment guide](https://knuckles-team.github.io/epistemic-graph/deployment/).
+The slim `[mcp]` server does **not** require the database.
 
 ## Usage
 
@@ -163,6 +197,15 @@ sql-agent --mcp-url http://localhost:8000/mcp --host 0.0.0.0 --port 8080
 ```
 
 ## MCP config
+
+> **Install the slim `[mcp]` extra.** For MCP-server hosting install
+> `sql-mcp[mcp]` (add DB-driver extras as needed, e.g. `sql-mcp[mcp,postgres]`) —
+> the MCP-server extra pulls only the FastMCP / FastAPI tooling
+> (`agent-utilities[mcp]`). It deliberately **excludes** the heavy agent runtime
+> (the epistemic-graph engine, `pydantic-ai`, `dspy`, `llama-index`, `tree-sitter`),
+> so `uvx`/container installs are dramatically smaller and faster. Use the full
+> `[agent]` extra only when you need the integrated Pydantic AI agent (see
+> [Installation](#installation)).
 
 ```json
 {
@@ -246,4 +289,3 @@ to just this package. Ask your agent to **"deploy `sql-mcp` with agent-os-genesi
 Secrets are read-existing + seeded via `vault_sync` — you are only prompted for what's missing.
 
 <!-- END agent-os-genesis-deploy -->
-
