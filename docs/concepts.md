@@ -19,3 +19,4 @@ code docstrings, and tests.
 | `CONCEPT:SQL-1.4` | Bounded Result Envelope | Every result is `{columns, rows, row_count, truncated}` with a clamped row cap and a per-call timeout on a worker thread |
 | `CONCEPT:SQL-1.5` | Action-Dispatch Tools | `sql_query`, `sql_execute`, `sql_schema`, `sql_admin` — thin `action` + `params_json` shims over `SqlApi` |
 | `CONCEPT:SQL-1.6` | A2A Agent Server | The Pydantic-AI agent server (`sql-agent`) wired to the MCP server via `MCP_URL` |
+| `CONCEPT:SQL-1.7` | epistemic-graph KG Backend | `sql_mcp.kg_pgwire` — derives the SCRAM pg-wire password (`hex(HMAC-SHA256(secret,"pgwire:"+user))`) so the epistemic-graph KG is a first-class named connection (cross-repo `CONCEPT:KG-2.205` over the engine pg-wire listener `CONCEPT:KG-2.189`) |

@@ -91,4 +91,5 @@ nav:
   - Deployment: deployment.md
   - Usage (API / CLI / MCP): usage.md
   - Backing Platform (SQL Databases): platform.md
+  - 'Recipe: epistemic-graph KG backend': recipes/kg-pgwire-backend.md
   - Concepts: concepts.md
