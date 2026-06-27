@@ -73,14 +73,46 @@ The table below is auto-generated from the MCP server — do not edit by hand.
 
 <!-- MCP-TOOLS-TABLE:START -->
 
+#### Condensed action-routed tools (default — `MCP_TOOL_MODE=condensed`)
+
 | MCP Tool | Toggle Env Var | Description |
 |----------|----------------|-------------|
 | `sql_admin` | `SQLTOOL` | Connection health, server version, sessions, and registry info. |
-| `sql_execute` | `SQLTOOL` | Run DML/DDL in transactions (gated by SQL_ALLOW_WRITES). |
-| `sql_query` | `SQLTOOL` | Run read-only SQL with row cap, timeout, and column metadata. |
 | `sql_schema` | `SQLTOOL` | Inspect schemas, tables, views, columns, indexes, FKs, and DDL. |
 
-_4 action-routed tools (default `MCP_TOOL_MODE=condensed`). Each is enabled unless its toggle is set false; set `MCP_TOOL_MODE=verbose` (or `both`) for the 1:1 per-operation surface. Auto-generated — do not edit._
+#### Verbose 1:1 API-mapped tools (`MCP_TOOL_MODE=verbose` or `both`)
+
+<details>
+<summary>22 per-operation tools — one per public API method (click to expand)</summary>
+
+| MCP Tool | Toggle Env Var | Description |
+|----------|----------------|-------------|
+| `sql_active_connections` | `SQL_APITOOL` | List active server sessions where the dialect supports it. |
+| `sql_connection_names` | `SQL_APITOOL` | Names of all configured connections. |
+| `sql_default_connection` | `SQL_APITOOL` | The sole/first configured connection — used when none is named. |
+| `sql_describe_connections` | `SQL_APITOOL` | Describe configured connections with passwords redacted. |
+| `sql_dialect_spec` | `SQL_APITOOL` | The registered :class:`DialectSpec` for a connection, if any. |
+| `sql_dispose` | `SQL_APITOOL` | Dispose all pooled engines. |
+| `sql_engine` | `SQL_APITOOL` | Lazily create (and cache) the Engine for a named connection. |
+| `sql_execute` | `SQLTOOL` | Execute one DML/DDL statement in a transaction (writes gate applies). |
+| `sql_execute_script` | `SQL_APITOOL` | Run several statements in ONE transaction (all-or-nothing). |
+| `sql_explain` | `SQL_APITOOL` | Return the dialect's query plan for a read-only statement. |
+| `sql_list_columns` | `SQL_APITOOL` | Describe a table's columns: name, type, nullable, default. |
+| `sql_list_foreign_keys` | `SQL_APITOOL` | List a table's foreign keys (columns -> referred table/columns). |
+| `sql_list_indexes` | `SQL_APITOOL` | List a table's indexes (name, columns, uniqueness). |
+| `sql_list_schemas` | `SQL_APITOOL` | List schema names. |
+| `sql_list_tables` | `SQL_APITOOL` | List table names (optionally within a schema). |
+| `sql_list_views` | `SQL_APITOOL` | List view names (optionally within a schema). |
+| `sql_ping` | `SQL_APITOOL` | Connection test: ``SELECT 1`` round-trip with latency. |
+| `sql_query` | `SQLTOOL` | Execute a read-only SELECT/CTE with bound parameters. |
+| `sql_resolve_connection` | `SQL_APITOOL` | Map an optional connection name to a configured one (or raise). |
+| `sql_sample_rows` | `SQL_APITOOL` | Return up to ``limit`` rows from a table (cap still applies). |
+| `sql_server_version` | `SQL_APITOOL` | Report the server version (dialect SQL, else SQLAlchemy's probe). |
+| `sql_table_ddl` | `SQL_APITOOL` | Reflect a table and render its CREATE TABLE DDL for this dialect. |
+
+</details>
+
+_2 action-routed tool(s) (default) · 22 verbose 1:1 tool(s). Each is enabled unless its `<DOMAIN>TOOL` toggle is set false; `MCP_TOOL_MODE` selects the surface (`condensed` default · `verbose` 1:1 · `both`). Auto-generated — do not edit._
 <!-- MCP-TOOLS-TABLE:END -->
 
 Every tool takes `action`, `params_json`, and an optional `connection` naming one
