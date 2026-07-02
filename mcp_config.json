@@ -8,26 +8,19 @@
       ],
       "env": {
         "MCP_TOOL_MODE": "condensed",
-        "FASTMCP_LOG_LEVEL": "<YOUR_FASTMCP_LOG_LEVEL>",
-        "NO_COLOR": "<YOUR_NO_COLOR>",
-        "TERM": "<YOUR_TERM>",
-        "AGENT_DESCRIPTION": "<YOUR_AGENT_DESCRIPTION>",
-        "AGENT_SYSTEM_PROMPT": "<YOUR_AGENT_SYSTEM_PROMPT>",
-        "DEFAULT_AGENT_NAME": "<YOUR_DEFAULT_AGENT_NAME>",
-        "MCP_URL": "<YOUR_MCP_URL>",
-        "SQL_CONNECTIONS": "<YOUR_SQL_CONNECTIONS>",
-        "SQL_URL": "<YOUR_SQL_URL>",
-        "SQL_DIALECT": "<YOUR_SQL_DIALECT>",
-        "SQL_HOST": "<YOUR_SQL_HOST>",
-        "SQL_PORT": "<YOUR_SQL_PORT>",
-        "SQL_USERNAME": "<YOUR_SQL_USERNAME>",
-        "SQL_PASSWORD": "<YOUR_SQL_PASSWORD>",
-        "SQL_DATABASE": "<YOUR_SQL_DATABASE>",
-        "SQL_OPTIONS": "<YOUR_SQL_OPTIONS>",
+        "SQLTOOL": "True",
         "SQL_ALLOW_WRITES": "False",
+        "SQL_CONNECTIONS": "{\"warehouse\": \"postgresql+psycopg://svc:password@db:5432/dw\"}",
+        "SQL_DATABASE": "app",
+        "SQL_DIALECT": "postgres",
+        "SQL_HOST": "db.example.com",
         "SQL_MAX_ROWS": "500",
+        "SQL_OPTIONS": "{\"sslmode\": \"require\"}",
+        "SQL_PASSWORD": "",
+        "SQL_PORT": "5432",
         "SQL_TIMEOUT_SECONDS": "30",
-        "SQLTOOL": "True"
+        "SQL_URL": "postgresql+psycopg://svc:password@db.example.com:5432/app",
+        "SQL_USERNAME": "svc"
       }
     }
   }
