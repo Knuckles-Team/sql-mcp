@@ -1,7 +1,7 @@
 {
   "name": "sql-mcp-agent",
   "type": "agent",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Generic SQL database agent: read-only queries, gated DML/DDL, schema reflection, and connection admin across Postgres, MySQL/MariaDB, MSSQL, Oracle, and SQLite.",
   "url": "https://github.com/Knuckles-Team/sql-mcp/tree/main",
   "license": "MIT",
