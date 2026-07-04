@@ -1,4 +1,4 @@
-"""Graph-based Pydantic AI agent server entry point for sql-mcp (CONCEPT:SQL-1.6)."""
+"""Graph-based Pydantic AI agent server entry point for sql-mcp (CONCEPT:SQ-OS.governance.sql-4)."""
 
 import logging
 import os

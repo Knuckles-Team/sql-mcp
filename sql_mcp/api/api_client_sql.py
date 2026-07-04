@@ -1,4 +1,4 @@
-"""SQLAlchemy 2.x Core facade for sql-mcp (CONCEPT:SQL-1.4).
+"""SQLAlchemy 2.x Core facade for sql-mcp (CONCEPT:SQ-OS.governance.sql-3).
 
 ``SqlApi`` is the single API surface the MCP tools call. It owns the named
 connection registry (lazy ``Engine`` per connection), enforces the read-only
@@ -144,7 +144,7 @@ class SqlApi:
 
     @staticmethod
     def _result_envelope(result: Any, cap: int) -> dict[str, Any]:
-        """Fetch up to ``cap`` rows and describe columns (CONCEPT:SQL-1.4)."""
+        """Fetch up to ``cap`` rows and describe columns (CONCEPT:SQ-OS.governance.sql-3)."""
         columns = list(result.keys())
         fetched = result.fetchmany(cap + 1)
         truncated = len(fetched) > cap

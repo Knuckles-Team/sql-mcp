@@ -1,5 +1,5 @@
 #!/usr/bin/python
-"""Pydantic response models for sql-mcp result envelopes (CONCEPT:SQL-1.4).
+"""Pydantic response models for sql-mcp result envelopes (CONCEPT:SQ-OS.governance.sql-3).
 
 Typed contracts for the bounded envelopes returned by the
 :class:`~sql_mcp.api_client.Api` facade and surfaced through the MCP tools.

@@ -7,11 +7,11 @@
 - `sql_mcp/`: Main server code
   - `api/api_client_sql.py`: `SqlApi` — the SQLAlchemy 2.x Core facade (all business logic)
   - `mcp/mcp_sql.py`: the four action-dispatch MCP tools (thin shims)
-  - `dialects.py`: the dialect registry (`CONCEPT:SQL-1.1`)
-  - `safety.py`: the read-only statement gate (`CONCEPT:SQL-1.3`)
-  - `auth.py`: named-connection + policy config from env (`CONCEPT:SQL-1.2`)
+  - `dialects.py`: the dialect registry (`CONCEPT:SQ-OS.governance.url-building-drivers-dialect`)
+  - `safety.py`: the read-only statement gate (`CONCEPT:SQ-OS.safety.allow-deny-classification`)
+  - `auth.py`: named-connection + policy config from env (`CONCEPT:SQ-OS.identity.env-parsing-secret-redaction`)
 - `tests/`: Test suite (in-memory SQLite + mocks; no live databases)
-- `docs/`: Architecture documentation and the `CONCEPT:SQL-1.x` registry
+- `docs/`: Architecture documentation and the `CONCEPT:SQ-OS.governance.sql-x` registry
 
 ## Tech Stack
 - Python 3.11+
@@ -142,7 +142,7 @@ alone).
 Working in parallel with other sessions/worktrees? **Reserve a concept id before you write its `CONCEPT:` marker** so two sessions never collide:
 
 ```bash
-agent-utilities --json concept reserve --ns KG-2   # or a package prefix, e.g. KEY
+agent-utilities --json concept reserve --ns EG-KG.compute.backend   # or a package prefix, e.g. KEY
 ```
 
 Full protocol (ledger, merge=union, reconcile, MCP/REST): <https://knuckles-team.github.io/agent-utilities/concept_coordination/>

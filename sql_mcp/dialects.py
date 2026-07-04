@@ -1,4 +1,4 @@
-"""Dialect registry for sql-mcp (CONCEPT:SQL-1.1).
+"""Dialect registry for sql-mcp (CONCEPT:SQ-OS.governance.url-building-drivers-dialect).
 
 Mirrors the vector-mcp backend-registry pattern: every supported SQL engine is
 described by a :class:`DialectSpec` entry in :data:`DIALECTS`. The spec carries

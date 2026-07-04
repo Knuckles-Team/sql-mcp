@@ -37,7 +37,7 @@ travel as bound parameters.
 
 - :material-rocket-launch: **[Installation](installation.md)** — pip, source, the per-dialect extras matrix, and Docker.
 - :material-console: **[Usage](usage.md)** — the MCP tools and their actions, the `SqlApi` client, and the CLI.
-- :material-tag-multiple: **[Concepts](concepts.md)** — the `CONCEPT:SQL-1.x` registry.
+- :material-tag-multiple: **[Concepts](concepts.md)** — the `CONCEPT:SQ-OS.governance.sql-x` registry.
 
 </div>
 

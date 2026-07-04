@@ -1,4 +1,4 @@
-"""Dialect registry (CONCEPT:SQL-1.1): URL building, drivers, dialect SQL."""
+"""Dialect registry (CONCEPT:SQ-OS.governance.url-building-drivers-dialect): URL building, drivers, dialect SQL."""
 
 from unittest import mock
 

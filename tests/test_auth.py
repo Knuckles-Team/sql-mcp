@@ -1,4 +1,4 @@
-"""Connection config loading (CONCEPT:SQL-1.2): env parsing + secret redaction."""
+"""Connection config loading (CONCEPT:SQ-OS.identity.env-parsing-secret-redaction): env parsing + secret redaction."""
 
 import json
 

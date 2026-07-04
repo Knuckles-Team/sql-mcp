@@ -1,5 +1,5 @@
 #!/usr/bin/python
-"""Pydantic input models for sql-mcp tool parameters (CONCEPT:SQL-1.5).
+"""Pydantic input models for sql-mcp tool parameters (CONCEPT:SQ-OS.governance.action-routing-through-fastmcp).
 
 Typed contracts for the ``params_json`` payloads accepted by the four
 action-dispatch MCP tools (``sql_query``, ``sql_execute``, ``sql_schema``,

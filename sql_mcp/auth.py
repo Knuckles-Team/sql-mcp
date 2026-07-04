@@ -1,4 +1,4 @@
-"""Connection and server-policy configuration for sql-mcp (CONCEPT:SQL-1.2).
+"""Connection and server-policy configuration for sql-mcp (CONCEPT:SQ-OS.identity.env-parsing-secret-redaction).
 
 Named connections come from the environment, in priority order:
 

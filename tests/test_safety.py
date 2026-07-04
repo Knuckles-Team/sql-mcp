@@ -1,4 +1,4 @@
-"""Read-only statement gate (CONCEPT:SQL-1.3) — allow/deny classification."""
+"""Read-only statement gate (CONCEPT:SQ-OS.safety.allow-deny-classification) — allow/deny classification."""
 
 import pytest
 

@@ -1,4 +1,4 @@
-"""Read-only statement gate for sql-mcp (CONCEPT:SQL-1.3).
+"""Read-only statement gate for sql-mcp (CONCEPT:SQ-OS.safety.allow-deny-classification).
 
 ``sql_query`` accepts only read statements. The gate strips string literals,
 quoted identifiers, and comments, then classifies the statement by its first

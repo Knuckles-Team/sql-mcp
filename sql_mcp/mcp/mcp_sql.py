@@ -1,4 +1,4 @@
-"""Action-dispatch MCP tools for sql-mcp (CONCEPT:SQL-1.0, CONCEPT:SQL-1.5).
+"""Action-dispatch MCP tools for sql-mcp (CONCEPT:SQ-OS.governance.sql-2, CONCEPT:SQ-OS.governance.action-routing-through-fastmcp).
 
 Four consolidated tools — ``sql_query``, ``sql_execute``, ``sql_schema``, and
 ``sql_admin`` — each routing an ``action`` + ``params_json`` pair to the

@@ -1,4 +1,4 @@
-"""MCP tool layer (CONCEPT:SQL-1.5): action routing through a FastMCP client."""
+"""MCP tool layer (CONCEPT:SQ-OS.governance.action-routing-through-fastmcp): action routing through a FastMCP client."""
 
 import json
 
