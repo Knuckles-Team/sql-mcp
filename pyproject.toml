@@ -37,6 +37,9 @@ sql-mcp = "sql_mcp.skills"
 [project.entry-points."agent_utilities.prompt_providers"]
 sql-mcp = "sql_mcp.prompts"
 
+[project.entry-points."agent_utilities.ontology_providers"]
+sql-mcp = "sql_mcp.ontology"
+
 [tool.setuptools]
 include-package-data = true
 
@@ -53,7 +56,7 @@ check_untyped_defs = true
 dev = [ "pytest-timeout>=2.4.0",]
 
 [tool.setuptools.package-data]
-sql_mcp = [ "mcp_config.json", "agent_data/**", "prompts/**", "skills/**",]
+sql_mcp = [ "mcp_config.json", "agent_data/**", "prompts/**", "skills/**", "ontology/**",]
 
 [tool.ruff.lint]
 select = [ "E", "F", "I", "UP", "B",]
