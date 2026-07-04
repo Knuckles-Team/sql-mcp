@@ -92,3 +92,32 @@ planners to dynamically reason about data layouts.""" ;
     rdfs:comment "An individual column within a database table." ;
     rdfs:subClassOf :ApplicationLayer .
 
+:DatabaseIndex a owl:Class ;
+    rdfs:label "Database Index" ;
+    rdfs:comment "A named index over one or more columns of a table (unique or non-unique), reflected from the live schema (CONCEPT:AU-KG.ingest.enterprise-source-extractor)." ;
+    rdfs:subClassOf :ApplicationLayer .
+
+:hasIndex a owl:ObjectProperty ;
+    rdfs:label "has index" ;
+    rdfs:comment "Links a database table to an index defined over its columns." ;
+    rdfs:domain :DatabaseTable ;
+    rdfs:range :DatabaseIndex .
+
+:hasView a owl:ObjectProperty ;
+    rdfs:label "has view" ;
+    rdfs:comment "Links a database schema to a view it contains." ;
+    rdfs:domain :DatabaseSchema ;
+    rdfs:range :DatabaseView .
+
+:isUnique a owl:DatatypeProperty ;
+    rdfs:label "is unique" ;
+    rdfs:comment "Boolean flag indicating whether an index enforces uniqueness." ;
+    rdfs:domain :DatabaseIndex ;
+    rdfs:range xsd:boolean .
+
+:sqlDialect a owl:DatatypeProperty ;
+    rdfs:label "sql dialect" ;
+    rdfs:comment "The SQL dialect of the connection the artifact was reflected from (e.g., postgres, mysql, sqlite)." ;
+    rdfs:domain :DatabaseSchema ;
+    rdfs:range xsd:string .
+

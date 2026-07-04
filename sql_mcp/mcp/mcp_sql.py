@@ -222,3 +222,47 @@ def register_sql_tools(mcp: FastMCP) -> None:
                 for spec in DIALECTS.values()
             ]
         raise ValueError(f"Unknown admin action: {action!r}.")
+
+    @mcp.tool(tags={"ingest"})
+    async def sql_ingest_schema(
+        params_json: str = Field(
+            default="{}",
+            description=(
+                "JSON of arguments. All optional: "
+                '{"schema": "public", "include_views": true, '
+                '"include_indexes": true}. Omit "schema" to reflect the '
+                "connection's default schema."
+            ),
+        ),
+        connection: str = Field(
+            default="",
+            description=(
+                "Named connection from the server config. Empty = the default "
+                "(sole/first) connection."
+            ),
+        ),
+    ) -> Any:
+        """Reflect a connection's schema and ingest it into the knowledge graph.
+
+        Walks tables, columns, foreign keys, indexes, and views via the SQL
+        client and pushes them into epistemic-graph as typed :DatabaseSchema /
+        :DatabaseTable / :DatabaseColumn / :DatabaseView / :DatabaseIndex nodes
+        (with :hasTable / :hasColumn / :hasView / :hasIndex / :referencesTable
+        links). Best-effort: returns ``{"ingested": None}`` when no engine is
+        reachable. CONCEPT:AU-KG.ingest.enterprise-source-extractor.
+        """
+        from sql_mcp.kg_ingest import ingest_schema
+
+        api = get_api()
+        p = json.loads(params_json) if params_json else {}
+        result = ingest_schema(
+            api,
+            connection=connection or None,
+            schema=p.get("schema"),
+            include_views=p.get("include_views", True),
+            include_indexes=p.get("include_indexes", True),
+        )
+        return {
+            "connection": api.resolve_connection(connection or None),
+            "ingested": result,
+        }
