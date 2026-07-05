@@ -653,12 +653,12 @@
 
 <h1 id="concept-registry-sql-mcp">Concept Registry — sql-mcp<a class="headerlink" href="#concept-registry-sql-mcp" title="Permanent link">&para;</a></h1>
 <blockquote>
-<p><strong>Prefix</strong>: <code>CONCEPT:SQL-1.x</code> | <strong>Version</strong>: 0.1.0</p>
+<p><strong>Prefix</strong>: <code>CONCEPT:SQ-OS.governance.sql-x</code> | <strong>Version</strong>: 0.1.0</p>
 </blockquote>
 <p>This connector inherits the ecosystem bridge concept <code>ECO-4.0</code>
 (connector parity standard) from
 <a href="https://github.com/Knuckles-Team/agent-utilities/blob/main/docs/overview.md"><code>agent-utilities</code></a>,
-alongside <code>ECO-4.1</code> (MCP &amp; Universal Skills) and <code>ECO-4.2</code> (A2A Network).</p>
+alongside <code>ECO-4.1</code> (MCP &amp; Universal Skills) and <code>AU-ECO.toolkit.journey-map-narrative</code> (A2A Network).</p>
 <p>Stable concept IDs trace the connector's core ideas across the documentation,
 code docstrings, and tests.</p>
 <table>
@@ -671,37 +671,37 @@ code docstrings, and tests.</p>
 </thead>
 <tbody>
 <tr>
-<td><code>CONCEPT:SQL-1.0</code></td>
+<td><code>CONCEPT:SQ-OS.governance.sql-2</code></td>
 <td>SQL MCP Domain</td>
 <td>The SQL tool domain registered by <code>register_sql_tools()</code> — four consolidated, action-routed tools</td>
 </tr>
 <tr>
-<td><code>CONCEPT:SQL-1.1</code></td>
+<td><code>CONCEPT:SQ-OS.governance.url-building-drivers-dialect</code></td>
 <td>Dialect Registry</td>
 <td><code>DIALECTS</code> — per-engine <code>DialectSpec</code> (URL scheme, optional driver + pip extra, EXPLAIN prefix, admin SQL); the vector-mcp backend-registry pattern</td>
 </tr>
 <tr>
-<td><code>CONCEPT:SQL-1.2</code></td>
+<td><code>CONCEPT:SQ-OS.identity.env-parsing-secret-redaction</code></td>
 <td>Named Connection Config</td>
 <td><code>SQL_CONNECTIONS</code> JSON / <code>SQL_URL</code> / discrete env fields -&gt; named <code>sqlalchemy.URL</code> registry; passwords only ever rendered redacted</td>
 </tr>
 <tr>
-<td><code>CONCEPT:SQL-1.3</code></td>
+<td><code>CONCEPT:SQ-OS.safety.allow-deny-classification</code></td>
 <td>Read-Only Statement Gate</td>
 <td>Literal/comment-stripping classifier: allowlisted starters, depth-zero CTE inspection, single-statement enforcement; writes only via <code>sql_execute</code> + <code>SQL_ALLOW_WRITES</code></td>
 </tr>
 <tr>
-<td><code>CONCEPT:SQL-1.4</code></td>
+<td><code>CONCEPT:SQ-OS.governance.sql-3</code></td>
 <td>Bounded Result Envelope</td>
 <td>Every result is <code>{columns, rows, row_count, truncated}</code> with a clamped row cap and a per-call timeout on a worker thread</td>
 </tr>
 <tr>
-<td><code>CONCEPT:SQL-1.5</code></td>
+<td><code>CONCEPT:SQ-OS.governance.action-routing-through-fastmcp</code></td>
 <td>Action-Dispatch Tools</td>
 <td><code>sql_query</code>, <code>sql_execute</code>, <code>sql_schema</code>, <code>sql_admin</code> — thin <code>action</code> + <code>params_json</code> shims over <code>SqlApi</code></td>
 </tr>
 <tr>
-<td><code>CONCEPT:SQL-1.6</code></td>
+<td><code>CONCEPT:SQ-OS.governance.sql-4</code></td>
 <td>A2A Agent Server</td>
 <td>The Pydantic-AI agent server (<code>sql-agent</code>) wired to the MCP server via <code>MCP_URL</code></td>
 </tr>
