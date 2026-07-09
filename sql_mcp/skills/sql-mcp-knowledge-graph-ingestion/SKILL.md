@@ -1,5 +1,6 @@
 ---
 name: sql-mcp-knowledge-graph-ingestion
+skill_type: skill
 description: >-
   Mirror a relational database's reflected structure into the epistemic-graph
   knowledge graph as typed OWL nodes via the sql-mcp MCP server. Use when the

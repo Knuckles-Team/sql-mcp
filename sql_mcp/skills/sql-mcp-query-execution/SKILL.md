@@ -1,5 +1,6 @@
 ---
 name: sql-mcp-query-execution
+skill_type: skill
 description: >-
   Run parameterized SQL over the sql-mcp MCP server — read-only SELECT/CTE
   queries and query plans, plus gated DML/DDL writes and multi-statement

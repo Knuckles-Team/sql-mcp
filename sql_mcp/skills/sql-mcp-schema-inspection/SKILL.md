@@ -1,5 +1,6 @@
 ---
 name: sql-mcp-schema-inspection
+skill_type: skill
 description: >-
   Reflect relational database structure over the sql-mcp MCP server — list
   schemas, tables, and views; describe a table's columns, indexes, and foreign
