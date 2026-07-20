@@ -1,0 +1,8 @@
+{
+  "algorithm": "agent-utilities:mcp-tool-schema-compat:v1",
+  "connector": "sql-mcp",
+  "schema_version": "1",
+  "tools": {
+    "sql_schema": "081c70207e94b742b2f062a048b0c6b504271b404c6e24ac85e39134ce049897"
+  }
+}

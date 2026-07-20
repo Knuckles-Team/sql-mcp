@@ -66,7 +66,10 @@ def api():
 @pytest.fixture
 def writable_api():
     """Same registry with writes enabled."""
-    client = build_api(allow_writes=True)
+    client = build_api(
+        allow_writes=True,
+        writable_connections={"primary", "analytics"},
+    )
     seed(client.engine("primary"))
     yield client
     client.dispose()

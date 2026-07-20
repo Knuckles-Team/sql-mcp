@@ -122,6 +122,7 @@ sync:
   updated_field: null
   pagination: null
   doc_type: database_table
+  tool_schema_sha256: 081c70207e94b742b2f062a048b0c6b504271b404c6e24ac85e39134ce049897
   raw:
     server: sql-mcp
     tool: sql_schema
@@ -133,17 +134,20 @@ sync:
     doc_type: database_table
 provenance:
   generated_by: scripts/generate_connector_manifests.py
-  generated_at: '2026-07-09T00:00:00Z'
+  generated_at: '2026-07-18T00:00:00Z'
   source_artifacts:
   - a2a.json
   - sql_mcp/connectors/mcp_source_presets.json
+  - sql_mcp/connectors/tool_schema_fingerprints.json
   - sql_mcp/ontology/database.ttl
   integrity:
     algorithm: urdna2015-sha256
     hash: 1a27842b0a88bb5583eb7016d40e5d2e90a5ef0ac7083c92aff8e6ee24cfcaa0
     triple_count: 70
   signer: ontology-manifest-generator
-  signature: a43b145a9aefc9ecd975ca3d86f01f8074207c2bbd30bfdfe15329db814af6b8
+  signature_algorithm: ed25519
+  signing_public_key: q0Cp7bmQMqJhbofGKKw8xXC6KbFzukBDDke0UYVi8y4
+  signature: c2IuiBNb7uDbod9hpWp3HdqzkfBzLrNiM7h314Ro6d4fe2mPeNK9GYMJOMqrLVzrutfIzo0y3zyf-XYcnDROBw
 policy:
   pii_fields: {}
   tenant_boundary: null

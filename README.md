@@ -157,14 +157,14 @@ Pick the extra that matches what you want to run. DB-driver extras
 
 | Extra | Installs | Use when |
 |-------|----------|----------|
-| `sql-mcp[mcp]` | Slim MCP server only (`agent-utilities[mcp]` — FastMCP/FastAPI) | You only run the **MCP server** (smallest install / image) |
-| `sql-mcp[agent]` | Full agent runtime (`agent-utilities[agent,logfire]` — Pydantic AI + the epistemic-graph engine) | You run the **integrated agent** |
+| `sql-mcp[mcp]` | Connector-focused MCP server (`agent-utilities[mcp]` — FastMCP/FastAPI + `epistemic-graph[full]`) | You only run the **MCP server** (smallest install / image) |
+| `sql-mcp[agent]` | Agent runtime (`agent-utilities[agent-runtime,logfire]` — model orchestration + `epistemic-graph[full]`) | You run the **integrated agent** |
 | `sql-mcp[all]` | Everything (`mcp` + `agent` + **every** DB driver + `logfire`) | Development / both surfaces |
 
 ```bash
 pip install sql-mcp                  # core (SQLite only, MCP server, API)
-pip install "sql-mcp[mcp]"           # slim MCP server (add drivers: [mcp,postgres])
-pip install "sql-mcp[agent]"         # full agent runtime (Pydantic AI + engine)
+pip install "sql-mcp[mcp]"           # connector-focused MCP server (add drivers: [mcp,postgres])
+pip install "sql-mcp[agent]"         # agent runtime runtime (Pydantic AI + engine)
 pip install "sql-mcp[all]"           # every driver + MCP + agent extras
 pip install -e .                     # from source
 ```
@@ -175,27 +175,28 @@ One multi-stage `docker/Dockerfile` builds two right-sized images, selected by `
 
 | Image tag | Build target | Contents | Entrypoint |
 |-----------|--------------|----------|------------|
-| `knucklessg1/sql-mcp:mcp` | `--target mcp` | `sql-mcp[mcp]` — **slim**, no engine/`pydantic-ai`/`dspy`/`llama-index`/`tree-sitter` | `sql-mcp` |
-| `knucklessg1/sql-mcp:latest` | `--target agent` (default) | `sql-mcp[agent]` — **full** agent runtime + epistemic-graph engine | `sql-agent` |
+| `example/sql-mcp:mcp` | `--target mcp` | `sql-mcp[mcp]` — **connector-focused**, includes `epistemic-graph[full]`; no model-orchestration stack | `sql-mcp` |
+| `example/sql-mcp@sha256:<digest>` | `--target agent` (default) | `sql-mcp[agent]` — **agent runtime**, model orchestration + `epistemic-graph[full]` | `sql-agent` |
 
 ```bash
-docker pull knucklessg1/sql-mcp:mcp                                   # slim MCP server
-docker build --target mcp   -t knucklessg1/sql-mcp:mcp    docker/     # build slim MCP server
-docker build --target agent -t knucklessg1/sql-mcp:latest docker/     # build full agent
+docker pull example/sql-mcp:mcp                                   # connector-focused MCP server
+docker build --target mcp   -t example/sql-mcp:mcp    docker/     # build MCP server
+docker build --target agent -t example/sql-mcp:agent-local docker/     # build full agent
 ```
 
-`docker/mcp.compose.yml` runs the slim `:mcp` server; `docker/agent.compose.yml` runs the
-agent (`:latest`) with a co-located `:mcp` sidecar.
+`docker/mcp.compose.yml` runs the connector-focused `:mcp` server; `docker/agent.compose.yml` runs the
+agent (`immutable agent digest`) with a co-located `:mcp` sidecar.
 
 ### Knowledge-graph database (`epistemic-graph`)
 
-The **full agent** (`[agent]` / `:latest`) embeds the **epistemic-graph** engine (pulled in
-transitively via `agent-utilities[agent]`). For production — or to share one knowledge graph
-across multiple agents — run **epistemic-graph as its own database container** and point the
-agent at it instead of embedding it. Deployment recipes (single-node + Raft HA), connection
-config, and the full database architecture (with diagrams) are documented in the
+Both `[mcp]` and `[agent]` carry the **epistemic-graph** engine through the required
+Agent Utilities core dependency (`epistemic-graph[full]`). The `[mcp]` extra keeps
+the server connector-focused; `[agent]` additionally enables model orchestration. Local
+deployments can use the bundled engine. For production or shared state, run
+**epistemic-graph as a dedicated database service** and configure the runtime to use it.
+Deployment recipes (single-node + Raft HA), connection configuration, and architecture
+diagrams are documented in the
 [epistemic-graph deployment guide](https://knuckles-team.github.io/epistemic-graph/deployment/).
-The slim `[mcp]` server does **not** require the database.
 
 ## Usage
 
@@ -230,14 +231,11 @@ sql-agent --mcp-url http://localhost:8000/mcp --host 0.0.0.0 --port 8080
 
 ## MCP config
 
-> **Install the slim `[mcp]` extra.** For MCP-server hosting install
-> `sql-mcp[mcp]` (add DB-driver extras as needed, e.g. `sql-mcp[mcp,postgres]`) —
-> the MCP-server extra pulls only the FastMCP / FastAPI tooling
-> (`agent-utilities[mcp]`). It deliberately **excludes** the heavy agent runtime
-> (the epistemic-graph engine, `pydantic-ai`, `dspy`, `llama-index`, `tree-sitter`),
-> so `uvx`/container installs are dramatically smaller and faster. Use the full
-> `[agent]` extra only when you need the integrated Pydantic AI agent (see
-> [Installation](#installation)).
+> **Install the connector-focused `[mcp]` extra.** Examples use `sql-mcp[mcp]` to add
+> FastMCP / FastAPI through `agent-utilities[mcp]`; the required Agent Utilities core
+> still carries `epistemic-graph[full]`. The `[agent]` extra additionally
+> enables model orchestration.
+> Combine it with the database-driver extras needed by the deployment.
 
 ```json
 {
@@ -257,16 +255,16 @@ sql-agent --mcp-url http://localhost:8000/mcp --host 0.0.0.0 --port 8080
 <!-- BEGIN GENERATED: additional-deployment-options -->
 ### Additional Deployment Options
 
-`sql-mcp` can also run as a **local container** (Docker / Podman / `uv`) or be
-consumed from a **remote deployment**. The
-[Deployment guide](https://knuckles-team.github.io/sql-mcp/deployment/) has full, copy-paste
-`mcp_config.json` for all four transports — **stdio**, **streamable-http**,
-**local container / uv**, and **remote URL**:
+`sql-mcp` can run as a local stdio process or container, or behind a remote
+network boundary. The
+[Deployment guide](https://knuckles-team.github.io/sql-mcp/deployment/) carries
+the detailed transport contract.
 
-- **Local container / uv** — launch the server from `mcp_config.json` via `uvx`,
-  `docker run`, or `podman run`, or point at a local streamable-http container by `url`.
-- **Remote URL** — connect to a server deployed behind Caddy at
-  `http://sql-mcp.arpa/mcp` using the `"url"` key.
+- **Local container** — launch a reviewed immutable image as a least-privilege
+  stdio child with no listener or published port.
+- **Remote URL** — connect through an operator-supplied authenticated HTTPS
+  ingress. Keep its URL, outbound identity references, trust profile, and exact
+  `MCP_ALLOWED_HOSTS` in `AgentConfig`.
 <!-- END GENERATED: additional-deployment-options -->
 
 ## Docker deployment
@@ -301,26 +299,27 @@ pre-commit run --all-files
 ```
 
 
-<!-- BEGIN agent-os-genesis-deploy (generated; do not edit between markers) -->
+<!-- BEGIN agent-utilities-deployment (generated; do not edit between markers) -->
 
-## Deploy with `agent-os-genesis`
+## Deploy with `agent-utilities-deployment`
 
-This package can be provisioned for you — skill-guided — by the **`agent-os-genesis`**
-universal skill (its *single-package deploy mode*): it picks your install method, seeds
-secrets to OpenBao/Vault (or `.env`), trusts your enterprise CA, registers the MCP
-server, and verifies it — the same machinery that stands up the whole Agent OS, narrowed
-to just this package. Ask your agent to **"deploy `sql-mcp` with agent-os-genesis"**.
+Provision this package with the consolidated **`agent-utilities-deployment`**
+workflow. It selects an installed-package, editable-source, or immutable-container
+path; records only runtime secret and TLS-profile references in `AgentConfig`; and
+runs doctor, registration, policy, observability, and rollback gates. Ask your agent
+to **"deploy `sql-mcp` with agent-utilities-deployment"**.
 
 | Install mode | Command |
 |------|---------|
-| Bare-metal, prod (PyPI) | `uvx sql-mcp` · or `uv tool install sql-mcp` |
-| Bare-metal, dev (editable) | `uv pip install -e ".[all]"` · or `pip install -e ".[all]"` |
-| Container, prod | deploy `knucklessg1/sql-mcp:latest` via docker-compose / swarm / podman / podman-compose / kubernetes |
-| Container, dev (editable) | deploy `docker/compose.dev.yml` (source-mounted at `/src`; edits live on restart) |
+| Installed package | `uv tool install "sql-mcp[mcp]"`, then run `sql-mcp` |
+| Editable source | `uv pip install -e ".[agent]"`, then run `sql-mcp` |
+| Immutable container | deploy `registry.example.invalid/sql-mcp@sha256:<digest>` through the operator-selected orchestrator |
 
-Secrets are read-existing + seeded via `vault_sync` — you are only prompted for what's missing.
+The repository embeds no deployment profile, credential value, certificate path, or
+environment-specific endpoint. Supply those at runtime through `AgentConfig` and the
+configured secret provider.
 
-<!-- END agent-os-genesis-deploy -->
+<!-- END agent-utilities-deployment -->
 
 ## Environment Variables
 
@@ -376,3 +375,19 @@ Secrets are read-existing + seeded via `vault_sync` — you are only prompted fo
 
 _24 package + 14 inherited variable(s). Auto-generated from `.env.example` + the shared agent-utilities set — do not edit._
 <!-- ENV-VARS-TABLE:END -->
+
+<!-- GOVERNED-CAPABILITY:START -->
+## Governed capability contract
+
+This package ships a compact canonical skill surface with specialist procedures
+kept as referenced workflows. The current MCP tools, skill metadata,
+`connector_manifest.yml`, ontology, mappings, shapes, fixtures, migrations,
+tool-schema fingerprints, and certification metadata form one versioned
+capability contract. Validate them together; do not rely on stale tool names or
+historical per-task skill wrappers.
+
+Runtime endpoints, credentials, certificate trust, tenant identity, retention,
+and observability policy are deployment inputs and are never packaged values.
+See [Configuration, trust, and privacy](docs/configuration.md) before enabling a
+network transport, connector ingestion, GraphOS delegation, or trace export.
+<!-- GOVERNED-CAPABILITY:END -->

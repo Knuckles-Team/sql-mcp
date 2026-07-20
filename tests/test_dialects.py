@@ -137,7 +137,8 @@ def test_every_networked_dialect_declares_admin_sql():
         assert spec.active_connections_sql
 
 
-def test_mssql_has_no_portable_explain():
+def test_mssql_and_oracle_have_no_portable_read_only_explain():
     assert DIALECTS["mssql"].explain_prefix is None
-    for name in ("sqlite", "postgres", "mysql", "oracle"):
+    assert DIALECTS["oracle"].explain_prefix is None
+    for name in ("sqlite", "postgres", "mysql"):
         assert DIALECTS[name].explain_prefix

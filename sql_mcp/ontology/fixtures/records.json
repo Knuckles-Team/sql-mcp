@@ -1,0 +1,17 @@
+{
+  "connector": "sql-mcp",
+  "fixtures": [
+    {
+      "expected": {
+        "acl_state": "quarantine",
+        "id": "fixture-record",
+        "title": "Synthetic certification record"
+      },
+      "preset": "sql-tables",
+      "record": {
+        "acl_public": false
+      }
+    }
+  ],
+  "schema_version": "1"
+}
