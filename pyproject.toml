@@ -9,7 +9,7 @@ description = "Generic SQL database (Postgres, MySQL/MariaDB, MSSQL, Oracle, SQL
 readme = "README.md"
 classifiers = [ "Development Status :: 4 - Beta", "License :: OSI Approved :: MIT License", "Environment :: Console", "Operating System :: POSIX :: Linux", "Programming Language :: Python :: 3",]
 requires-python = ">=3.11, <3.15"
-dependencies = [ "agent-utilities>=1.27.1,<2.0.0", "python-dotenv>=1.0.0", "sqlalchemy>=2.0.0",]
+dependencies = [ "agent-utilities>=1.27.1,<2.0.0", "python-dotenv>=1.2.2", "sqlalchemy>=2.0.51",]
 [[project.authors]]
 name = "Project Maintainers"
 email = "maintainers@users.noreply.github.com"
@@ -20,12 +20,12 @@ text = "MIT"
 [project.optional-dependencies]
 mcp = [ "agent-utilities[mcp]>=1.27.1,<2.0.0",]
 agent = [ "agent-utilities[agent-runtime,logfire]>=1.27.1,<2.0.0",]
-postgres = [ "psycopg[binary]>=3.1.0",]
-mysql = [ "pymysql>=1.1.0",]
-mssql = [ "pyodbc>=5.0.0",]
-oracle = [ "oracledb>=2.0.0",]
+postgres = [ "psycopg[binary]>=3.3.4",]
+mysql = [ "pymysql>=1.2.0",]
+mssql = [ "pyodbc>=5.3.0",]
+oracle = [ "oracledb>=4.0.2",]
 all = [ "sql-mcp[mcp,agent,postgres,mysql,mssql,oracle,logfire]>=1.0.0",]
-test = [ "pytest-xdist>=3.6.0", "pytest", "pytest-asyncio", "pytest-cov",]
+test = [ "pytest-xdist>=3.8.0", "pytest>=9.1.1", "pytest-asyncio>=1.4.0", "pytest-cov>=7.1.0",]
 
 [project.scripts]
 sql-mcp = "sql_mcp.mcp_server:mcp_server"
