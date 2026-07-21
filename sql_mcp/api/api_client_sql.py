@@ -253,22 +253,71 @@ class SqlApi:
     # Connection registry
     # ------------------------------------------------------------------ #
 
+    def _entitled(self, namespace: str, names: list[str]) -> list[str]:
+        """Filter a connection-name list to what the calling identity may reach.
+
+        Routes the names through agent-utilities' shared identity-scoped
+        resolver (CONCEPT:AU-OS.identity.identity-scoped-resource-autoload): a
+        caller's Okta/Keycloak groups decide which named SQL connections
+        auto-load for them. The ambient ``SYSTEM_ACTOR``
+        (unauthenticated/local) holds ``admin`` → sees all, so behaviour is
+        unchanged until a real identity scopes it down. Degrades to the full
+        list if agent-utilities predates the resolver.
+        """
+        try:
+            from agent_utilities.security.brain_context import (
+                IdentityRequiredError,
+            )
+            from agent_utilities.security.entitlements import (
+                identity_scoped_resources,
+            )
+        except Exception:
+            return list(names)
+        try:
+            return list(identity_scoped_resources(namespace, names))
+        except IdentityRequiredError:
+            # No actor is bound at all (unauthenticated/local/stdio caller) —
+            # the ambient SYSTEM_ACTOR sees all, per this method's contract
+            # above. A bound-but-unauthenticated or expired-credential actor
+            # still raises (PermissionError / CredentialExpiredError) and is
+            # NOT swallowed here.
+            return list(names)
+
     def connection_names(self) -> list[str]:
-        """Names of all configured connections."""
-        return list(self._connections)
+        """Names of the connections the CALLER is entitled to."""
+        return self._entitled("sql", list(self._connections))
 
     def default_connection(self) -> str:
         """The sole/first configured connection — used when none is named."""
         return self._default_connection
 
     def resolve_connection(self, connection: str | None = None) -> str:
-        """Map an optional connection name to a configured one (or raise)."""
+        """Map an optional connection name to a configured one (or raise).
+
+        Resolved against the caller's identity entitlements: an omitted
+        ``connection`` auto-selects the caller's entitled default, and a named
+        connection they are not entitled to is denied.
+        """
+        entitled = self._entitled("sql", list(self._connections))
         if not connection:
-            return self.default_connection()
+            default = self.default_connection()
+            if default in entitled:
+                return default
+            if entitled:
+                return entitled[0]
+            raise ValueError(
+                "No SQL connections are available to your identity. Your "
+                "Okta/Keycloak groups grant none of the configured connections."
+            )
         if connection not in self._connections:
             raise ValueError(
                 "Unknown SQL connection. Use sql_admin 'connections' to inspect "
                 "the configured registry."
+            )
+        if connection not in entitled:
+            raise PermissionError(
+                f"Your identity is not entitled to the SQL connection "
+                f"{connection!r}. Entitled: {', '.join(entitled) or '(none)'}"
             )
         return connection
 
@@ -996,9 +1045,7 @@ class SqlApi:
         """List schema names."""
         return self._reflection(
             connection,
-            lambda inspector: self._page(
-                inspector.get_schema_names(), limit, offset
-            ),
+            lambda inspector: self._page(inspector.get_schema_names(), limit, offset),
         )
 
     def list_tables(
@@ -1442,9 +1489,11 @@ class SqlApi:
         }
 
     def describe_connections(self) -> list[dict[str, Any]]:
-        """Describe configured connections with passwords redacted."""
+        """Describe the CALLER-entitled connections, passwords redacted."""
+        entitled = self._entitled("sql", list(self._connections))
         described = []
-        for name, url in self._connections.items():
+        for name in entitled:
+            url = self._connections[name]
             spec = dialect_for_url(url)
             redacted_query = {
                 key: (
