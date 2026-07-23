@@ -4,7 +4,7 @@ import re
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
-MARKER = re.compile(r"CONCEPT:SQ-OS.governance.sql\.\d+")
+MARKER = re.compile(r"CONCEPT:SQ-OS\.governance\.sql-\d+")
 
 
 def collect_code_markers() -> set[str]:
