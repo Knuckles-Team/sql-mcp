@@ -14,7 +14,7 @@ from sql_mcp.api_client import Api
 from sql_mcp.auth import get_api
 from sql_mcp.mcp.mcp_sql import register_sql_tools
 
-__version__ = "1.0.1"
+__version__ = "2.0.0"
 logger = get_logger(name="sql_mcp")
 
 
