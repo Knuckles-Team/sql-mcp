@@ -13,7 +13,7 @@
         <link rel="canonical" href="https://knuckles-team.github.io/sql-mcp/concepts/">
       
       
-        <link rel="prev" href="../platform/">
+        <link rel="prev" href="../recipes/kg-pgwire-backend/">
       
       
       
@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="https://raw.githubusercontent.com/squidfunk/mkdocs-material/master/material/templates/assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -29,7 +29,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -291,6 +291,25 @@
   
   
     <li class="md-tabs__item">
+      <a href="../configuration/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Configuration, trust, and privacy
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
       <a href="../deployment/" class="md-tabs__link">
         
   
@@ -336,6 +355,25 @@
     
   
   Backing Platform (SQL Databases)
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../recipes/kg-pgwire-backend/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Recipe: epistemic-graph KG backend
 
       </a>
     </li>
@@ -502,6 +540,33 @@
   
   
     <li class="md-nav__item">
+      <a href="../configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration, trust, and privacy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../deployment/" class="md-nav__link">
         
   
@@ -564,6 +629,33 @@
     
   
     Backing Platform (SQL Databases)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../recipes/kg-pgwire-backend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Recipe: epistemic-graph KG backend
   
 
     
@@ -671,6 +763,46 @@ code docstrings, and tests.</p>
 </thead>
 <tbody>
 <tr>
+<td><code>CONCEPT:SQL-1.0</code></td>
+<td>SQL MCP Domain</td>
+<td>The SQL tool domain registered by <code>register_sql_tools()</code> — four consolidated, action-routed tools</td>
+</tr>
+<tr>
+<td><code>CONCEPT:SQL-1.1</code></td>
+<td>Dialect Registry</td>
+<td><code>DIALECTS</code> — per-engine <code>DialectSpec</code> (URL scheme, optional driver + pip extra, EXPLAIN prefix, admin SQL); the vector-mcp backend-registry pattern</td>
+</tr>
+<tr>
+<td><code>CONCEPT:SQL-1.2</code></td>
+<td>Named Connection Config</td>
+<td><code>SQL_CONNECTIONS</code> JSON / <code>SQL_URL</code> / discrete env fields -&gt; named <code>sqlalchemy.URL</code> registry; passwords only ever rendered redacted</td>
+</tr>
+<tr>
+<td><code>CONCEPT:SQL-1.3</code></td>
+<td>Read-Only Statement Gate</td>
+<td>Literal/comment-stripping classifier: allowlisted starters, depth-zero CTE inspection, single-statement enforcement; writes only via <code>sql_execute</code> + <code>SQL_ALLOW_WRITES</code></td>
+</tr>
+<tr>
+<td><code>CONCEPT:SQL-1.4</code></td>
+<td>Bounded Result Envelope</td>
+<td>Every result is <code>{columns, rows, row_count, truncated}</code> with a clamped row cap and a per-call timeout on a worker thread</td>
+</tr>
+<tr>
+<td><code>CONCEPT:SQL-1.5</code></td>
+<td>Action-Dispatch Tools</td>
+<td><code>sql_query</code>, <code>sql_execute</code>, <code>sql_schema</code>, <code>sql_admin</code> — thin <code>action</code> + <code>params_json</code> shims over <code>SqlApi</code></td>
+</tr>
+<tr>
+<td><code>CONCEPT:SQL-1.6</code></td>
+<td>A2A Agent Server</td>
+<td>The Pydantic-AI agent server (<code>sql-agent</code>) wired to the MCP server via <code>MCP_URL</code></td>
+</tr>
+<tr>
+<td><code>CONCEPT:SQL-1.7</code></td>
+<td>epistemic-graph KG Backend</td>
+<td><code>sql_mcp.kg_pgwire</code> — derives the SCRAM pg-wire password (<code>hex(HMAC-SHA256(secret,"pgwire:"+user))</code>) so the epistemic-graph KG is a first-class named connection (cross-repo <code>CONCEPT:KG-2.205</code> over the engine pg-wire listener <code>CONCEPT:KG-2.189</code>)</td>
+</tr>
+<tr>
 <td><code>CONCEPT:SQ-OS.governance.sql-2</code></td>
 <td>SQL MCP Domain</td>
 <td>The SQL tool domain registered by <code>register_sql_tools()</code> — four consolidated, action-routed tools</td>
@@ -744,7 +876,7 @@ code docstrings, and tests.</p>
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../platform/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Backing Platform (SQL Databases)">
+          <a href="../recipes/kg-pgwire-backend/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Recipe: epistemic-graph KG backend">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -754,7 +886,7 @@ code docstrings, and tests.</p>
                 Previous
               </span>
               <div class="md-ellipsis">
-                Backing Platform (SQL Databases)
+                Recipe: epistemic-graph KG backend
               </div>
             </div>
           </a>
@@ -824,7 +956,7 @@ code docstrings, and tests.</p>
       <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "navigation.tracking", "navigation.instant", "navigation.instant.progress", "navigation.footer", "toc.follow", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.code.annotate", "content.tabs.link", "content.tooltips"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>

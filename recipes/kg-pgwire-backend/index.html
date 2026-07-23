@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://knuckles-team.github.io/sql-mcp/deployment/">
+        <link rel="canonical" href="https://knuckles-team.github.io/sql-mcp/recipes/kg-pgwire-backend/">
       
       
-        <link rel="prev" href="../configuration/">
+        <link rel="prev" href="../../platform/">
       
       
-        <link rel="next" href="../usage/">
+        <link rel="next" href="../../concepts/">
       
       
         
@@ -27,14 +27,14 @@
     
     
       
-        <title>Deployment - sql-mcp</title>
+        <title>Recipe: epistemic-graph KG backend - sql-mcp</title>
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -53,7 +53,7 @@
       
     
     
-    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -78,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#deployment" class="md-skip">
+        <a href="#recipe-the-epistemic-graph-kg-as-a-sql-mcp-connection" class="md-skip">
           Skip to content
         </a>
       
@@ -94,7 +94,7 @@
 
 <header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href=".." title="sql-mcp" class="md-header__button md-logo" aria-label="sql-mcp" data-md-component="logo">
+    <a href="../.." title="sql-mcp" class="md-header__button md-logo" aria-label="sql-mcp" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 3C7.58 3 4 4.79 4 7v10c0 2.21 3.59 4 8 4s8-1.79 8-4V7c0-2.21-3.58-4-8-4m6 14c0 .5-2.13 2-6 2s-6-1.5-6-2v-2.23c1.61.78 3.72 1.23 6 1.23s4.39-.45 6-1.23zm0-4.55c-1.3.95-3.58 1.55-6 1.55s-4.7-.6-6-1.55V9.64c1.47.83 3.61 1.36 6 1.36s4.53-.53 6-1.36zM12 9C8.13 9 6 7.5 6 7s2.13-2 6-2 6 1.5 6 2-2.13 2-6 2"/></svg>
@@ -114,7 +114,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Deployment
+              Recipe: epistemic-graph KG backend
             
           </span>
         </div>
@@ -236,7 +236,7 @@
   
   
     <li class="md-tabs__item">
-      <a href=".." class="md-tabs__link">
+      <a href="../.." class="md-tabs__link">
         
   
   
@@ -255,7 +255,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../overview/" class="md-tabs__link">
+      <a href="../../overview/" class="md-tabs__link">
         
   
   
@@ -274,7 +274,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../installation/" class="md-tabs__link">
+      <a href="../../installation/" class="md-tabs__link">
         
   
   
@@ -293,13 +293,70 @@
   
   
     <li class="md-tabs__item">
-      <a href="../configuration/" class="md-tabs__link">
+      <a href="../../configuration/" class="md-tabs__link">
         
   
   
     
   
   Configuration, trust, and privacy
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../deployment/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Deployment
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../usage/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Usage (API / CLI / MCP)
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../platform/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backing Platform (SQL Databases)
 
       </a>
     </li>
@@ -320,63 +377,6 @@
   
     
   
-  Deployment
-
-      </a>
-    </li>
-  
-
-      
-        
-  
-  
-  
-  
-    <li class="md-tabs__item">
-      <a href="../usage/" class="md-tabs__link">
-        
-  
-  
-    
-  
-  Usage (API / CLI / MCP)
-
-      </a>
-    </li>
-  
-
-      
-        
-  
-  
-  
-  
-    <li class="md-tabs__item">
-      <a href="../platform/" class="md-tabs__link">
-        
-  
-  
-    
-  
-  Backing Platform (SQL Databases)
-
-      </a>
-    </li>
-  
-
-      
-        
-  
-  
-  
-  
-    <li class="md-tabs__item">
-      <a href="../recipes/kg-pgwire-backend/" class="md-tabs__link">
-        
-  
-  
-    
-  
   Recipe: epistemic-graph KG backend
 
       </a>
@@ -390,7 +390,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../concepts/" class="md-tabs__link">
+      <a href="../../concepts/" class="md-tabs__link">
         
   
   
@@ -431,7 +431,7 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href=".." title="sql-mcp" class="md-nav__button md-logo" aria-label="sql-mcp" data-md-component="logo">
+    <a href="../.." title="sql-mcp" class="md-nav__button md-logo" aria-label="sql-mcp" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 3C7.58 3 4 4.79 4 7v10c0 2.21 3.59 4 8 4s8-1.79 8-4V7c0-2.21-3.58-4-8-4m6 14c0 .5-2.13 2-6 2s-6-1.5-6-2v-2.23c1.61.78 3.72 1.23 6 1.23s4.39-.45 6-1.23zm0-4.55c-1.3.95-3.58 1.55-6 1.55s-4.7-.6-6-1.55V9.64c1.47.83 3.61 1.36 6 1.36s4.53-.53 6-1.36zM12 9C8.13 9 6 7.5 6 7s2.13-2 6-2 6 1.5 6 2-2.13 2-6 2"/></svg>
@@ -461,7 +461,7 @@
   
   
     <li class="md-nav__item">
-      <a href=".." class="md-nav__link">
+      <a href="../.." class="md-nav__link">
         
   
   
@@ -488,7 +488,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../overview/" class="md-nav__link">
+      <a href="../../overview/" class="md-nav__link">
         
   
   
@@ -515,7 +515,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../installation/" class="md-nav__link">
+      <a href="../../installation/" class="md-nav__link">
         
   
   
@@ -542,7 +542,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../configuration/" class="md-nav__link">
+      <a href="../../configuration/" class="md-nav__link">
         
   
   
@@ -550,6 +550,87 @@
     
   
     Configuration, trust, and privacy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Usage (API / CLI / MCP)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../platform/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backing Platform (SQL Databases)
   
 
     
@@ -585,7 +666,7 @@
   <span class="md-ellipsis">
     
   
-    Deployment
+    Recipe: epistemic-graph KG backend
   
 
     
@@ -603,7 +684,7 @@
   <span class="md-ellipsis">
     
   
-    Deployment
+    Recipe: epistemic-graph KG backend
   
 
     
@@ -629,71 +710,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#deployment-options" class="md-nav__link">
+  <a href="#1-deploy-the-engine-with-pg-wire-scram" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Deployment Options
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Deployment Options">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#installed-stdio-process" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Installed stdio process
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#loopback-development-listener" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Loopback development listener
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#least-privilege-local-container" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Least-privilege local container
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#remote-authenticated-https-endpoint" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Remote authenticated HTTPS endpoint
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#run-the-mcp-server" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Run the MCP server
+        1. Deploy the engine with pg-wire + SCRAM
       
     </span>
   </a>
@@ -701,10 +721,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#docker-compose" class="md-nav__link">
+  <a href="#2-derive-the-scram-password" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Docker Compose
+        2. Derive the SCRAM password
       
     </span>
   </a>
@@ -712,10 +732,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#run-the-a2a-agent-server" class="md-nav__link">
+  <a href="#3-register-the-kg-connection" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Run the A2A agent server
+        3. Register the kg connection
       
     </span>
   </a>
@@ -723,10 +743,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#ingress-dns" class="md-nav__link">
+  <a href="#4-validate" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Ingress &amp; DNS
+        4. Validate
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Notes
       
     </span>
   </a>
@@ -748,88 +779,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../usage/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Usage (API / CLI / MCP)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../platform/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Backing Platform (SQL Databases)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../recipes/kg-pgwire-backend/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Recipe: epistemic-graph KG backend
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../concepts/" class="md-nav__link">
+      <a href="../../concepts/" class="md-nav__link">
         
   
   
@@ -876,71 +826,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#deployment-options" class="md-nav__link">
+  <a href="#1-deploy-the-engine-with-pg-wire-scram" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Deployment Options
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Deployment Options">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#installed-stdio-process" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Installed stdio process
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#loopback-development-listener" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Loopback development listener
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#least-privilege-local-container" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Least-privilege local container
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#remote-authenticated-https-endpoint" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Remote authenticated HTTPS endpoint
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#run-the-mcp-server" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Run the MCP server
+        1. Deploy the engine with pg-wire + SCRAM
       
     </span>
   </a>
@@ -948,10 +837,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#docker-compose" class="md-nav__link">
+  <a href="#2-derive-the-scram-password" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Docker Compose
+        2. Derive the SCRAM password
       
     </span>
   </a>
@@ -959,10 +848,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#run-the-a2a-agent-server" class="md-nav__link">
+  <a href="#3-register-the-kg-connection" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Run the A2A agent server
+        3. Register the kg connection
       
     </span>
   </a>
@@ -970,10 +859,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#ingress-dns" class="md-nav__link">
+  <a href="#4-validate" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Ingress &amp; DNS
+        4. Validate
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Notes
       
     </span>
   </a>
@@ -1000,91 +900,83 @@
   
 
 
-<h1 id="deployment">Deployment<a class="headerlink" href="#deployment" title="Permanent link">&para;</a></h1>
-<!-- BEGIN GENERATED: deployment-options -->
-<h2 id="deployment-options">Deployment Options<a class="headerlink" href="#deployment-options" title="Permanent link">&para;</a></h2>
-<p><code>sql-mcp</code> supports local stdio, a loopback-only development listener, a
-least-privilege stdio container, and a remote authenticated HTTPS boundary.
-Provider endpoint, credential, selector, identity, and trust material are supplied
-at runtime through <code>AgentConfig</code>; none is stored in this repository.</p>
-<h3 id="installed-stdio-process">Installed stdio process<a class="headerlink" href="#installed-stdio-process" title="Permanent link">&para;</a></h3>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">&quot;mcpServers&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="nt">&quot;sql&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">      </span><span class="nt">&quot;command&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sql-mcp&quot;</span><span class="p">,</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">      </span><span class="nt">&quot;args&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">      </span><span class="nt">&quot;env&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;MCP_TOOL_MODE&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;intent&quot;</span><span class="p">}</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">    </span><span class="p">}</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">  </span><span class="p">}</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="p">}</span>
-</span></code></pre></div>
-<h3 id="loopback-development-listener">Loopback development listener<a class="headerlink" href="#loopback-development-listener" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>sql-mcp<span class="w"> </span>--transport<span class="w"> </span>streamable-http<span class="w"> </span>--host<span class="w"> </span><span class="m">127</span>.0.0.1<span class="w"> </span>--port<span class="w"> </span><span class="m">8000</span>
-</span></code></pre></div>
-<p>Do not expose this listener beyond loopback. Network deployments require direct TLS
-or an explicitly trusted TLS-terminating ingress, configured authentication, exact
-<code>MCP_ALLOWED_HOSTS</code>, and an exact trusted-proxy CIDR policy.</p>
-<h3 id="least-privilege-local-container">Least-privilege local container<a class="headerlink" href="#least-privilege-local-container" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>docker<span class="w"> </span>run<span class="w"> </span>-i<span class="w"> </span>--rm<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span>--read-only<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span>--cap-drop<span class="o">=</span>ALL<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">  </span>--security-opt<span class="o">=</span>no-new-privileges<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">  </span>--pids-limit<span class="o">=</span><span class="m">256</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">  </span>--tmpfs<span class="w"> </span>/tmp:rw,noexec,nosuid,nodev,size<span class="o">=</span>64m<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">  </span>-e<span class="w"> </span><span class="nv">TRANSPORT</span><span class="o">=</span>stdio<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">  </span>registry.example.invalid/sql-mcp@sha256:&lt;digest&gt;<span class="w"> </span>sql-mcp
-</span></code></pre></div>
-<p>The operator projects the selected AgentConfig profile into the process at runtime;
-the image remains immutable and contains no environment connection profile.</p>
-<h3 id="remote-authenticated-https-endpoint">Remote authenticated HTTPS endpoint<a class="headerlink" href="#remote-authenticated-https-endpoint" title="Permanent link">&para;</a></h3>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="p">{</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="nt">&quot;mcpServers&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span><span class="nt">&quot;sql&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://service.example.invalid/mcp&quot;</span><span class="p">}</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">  </span><span class="p">}</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="p">}</span>
-</span></code></pre></div>
-<p>Store the real remote URL, outbound identity reference, and TLS-profile reference in
-<code>AgentConfig</code>, not in MCP client JSON or documentation.</p>
-<!-- END GENERATED: deployment-options -->
-
-<p>This page covers running <code>sql-mcp</code> as long-lived servers.</p>
+<h1 id="recipe-the-epistemic-graph-kg-as-a-sql-mcp-connection">Recipe — the epistemic-graph KG as a sql-mcp connection<a class="headerlink" href="#recipe-the-epistemic-graph-kg-as-a-sql-mcp-connection" title="Permanent link">&para;</a></h1>
 <blockquote>
-<p><code>sql-mcp</code> ships both an <strong>MCP server</strong> (console script <code>sql-mcp</code>) and an
-<strong>A2A agent server</strong> (console script <code>sql-agent</code>).</p>
+<p>Cross-repo concept: <code>CONCEPT:KG-2.205</code> (KG-SQL surface) over
+<code>CONCEPT:KG-2.189</code> (engine pg-wire listener) + <code>CONCEPT:KG-2.202</code> (SCRAM auth).</p>
 </blockquote>
-<h2 id="run-the-mcp-server">Run the MCP server<a class="headerlink" href="#run-the-mcp-server" title="Permanent link">&para;</a></h2>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:3"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">stdio (default)</label><label for="__tabbed_1_2">streamable-http</label><label for="__tabbed_1_3">sse</label></div>
-<div class="tabbed-content">
-<div class="tabbed-block">
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>sql-mcp
+<p>The <a href="../../../../epistemic-graph/">epistemic-graph</a> engine exposes its Knowledge
+Graph over the <strong>Postgres wire protocol</strong>. A server built with the <code>pgwire</code>
+feature and started with <code>EPISTEMIC_GRAPH_PGWIRE_ADDR</code> set accepts native
+SQLAlchemy/psycopg connections and runs read-only SQL over the <code>nodes</code>/<code>edges</code>
+tables (the same DataFusion path <code>Method::Sql</code> uses). So the KG needs <strong>no
+special connector</strong> in sql-mcp — it is just another named connection.</p>
+<p>This is the complement to the native KG-SQL MCP tool: agent-utilities' graph-os
+exposes <code>graph_query(scope="sql")</code> (+ REST <code>/graph/query</code>) for SQL-on-the-KG over
+MCP; this recipe reaches the <em>same</em> engine surface from a generic SQL client.</p>
+<h2 id="1-deploy-the-engine-with-pg-wire-scram">1. Deploy the engine with pg-wire + SCRAM<a class="headerlink" href="#1-deploy-the-engine-with-pg-wire-scram" title="Permanent link">&para;</a></h2>
+<p>Build/run the engine with the listener bound (loopback by convention) and an auth
+secret set so SCRAM is the default:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># engine side (epistemic-graph)</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>cargo<span class="w"> </span>build<span class="w"> </span>--release<span class="w"> </span>--features<span class="w"> </span><span class="s2">&quot;server,query,pgwire,redb&quot;</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="nv">GRAPH_SERVICE_AUTH_SECRET</span><span class="o">=</span>&lt;engine-secret&gt;<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="nv">EPISTEMIC_GRAPH_PGWIRE_ADDR</span><span class="o">=</span><span class="m">127</span>.0.0.1:5433<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="nv">EPISTEMIC_GRAPH_PGWIRE_AUTH</span><span class="o">=</span>scram<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">  </span>target/release/epistemic-graph-server<span class="w"> </span>--persist-dir<span class="w"> </span>/var/lib/epistemic-graph
 </span></code></pre></div>
-</div>
-<div class="tabbed-block">
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>sql-mcp<span class="w"> </span>--transport<span class="w"> </span>streamable-http<span class="w"> </span>--host<span class="w"> </span><span class="m">0</span>.0.0.0<span class="w"> </span>--port<span class="w"> </span><span class="m">8000</span>
+<p>When <code>GRAPH_SERVICE_AUTH_SECRET</code> is set, <code>scram</code> is the default auth mode; the pg
+<code>user</code> maps to an engine <code>agent_id</code>, and queries run under that identity against
+the engine ACL / row-level security (<code>IsolationLayer::check_access</code>).</p>
+<h2 id="2-derive-the-scram-password">2. Derive the SCRAM password<a class="headerlink" href="#2-derive-the-scram-password" title="Permanent link">&para;</a></h2>
+<p>Under SCRAM the per-user password is <strong>derived</strong> from the engine secret — it is
+never stored:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>derived_password(user) = hex(HMAC-SHA256(GRAPH_SERVICE_AUTH_SECRET, &quot;pgwire:&quot; + user))
 </span></code></pre></div>
-</div>
-<div class="tabbed-block">
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>sql-mcp<span class="w"> </span>--transport<span class="w"> </span>sse<span class="w"> </span>--host<span class="w"> </span><span class="m">0</span>.0.0.0<span class="w"> </span>--port<span class="w"> </span><span class="m">8000</span>
+<p><code>sql-mcp</code> ships a helper that reproduces that derivation exactly:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">GRAPH_SERVICE_AUTH_SECRET</span><span class="o">=</span>&lt;engine-secret&gt;
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>python<span class="w"> </span>-m<span class="w"> </span>sql_mcp.kg_pgwire<span class="w"> </span>derive-password<span class="w"> </span>--user<span class="w"> </span>sql-mcp
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="c1"># -&gt; &lt;hex password&gt;</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="c1"># or the whole DSN in one shot:</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>python<span class="w"> </span>-m<span class="w"> </span>sql_mcp.kg_pgwire<span class="w"> </span>dsn<span class="w"> </span>--user<span class="w"> </span>sql-mcp<span class="w"> </span>--host<span class="w"> </span><span class="m">127</span>.0.0.1<span class="w"> </span>--port<span class="w"> </span><span class="m">5433</span><span class="w"> </span>--graph<span class="w"> </span>__commons__
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="c1"># -&gt; postgresql+psycopg://sql-mcp:&lt;hex&gt;@127.0.0.1:5433/__commons__</span>
 </span></code></pre></div>
-</div>
-</div>
-</div>
-<p>Health check (HTTP transports):</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>curl<span class="w"> </span>-s<span class="w"> </span>http://localhost:8000/health<span class="w">        </span><span class="c1"># {&quot;status&quot;:&quot;OK&quot;}</span>
+<p>Store the derived password as a <strong>vault ref</strong> (OpenBao <code>apps/sql-mcp</code>, key
+<code>KG_PGWIRE_PASSWORD</code>); it is injected into the service env at deploy time. The
+engine secret itself stays in OpenBao and is never committed.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>bao<span class="w"> </span>kv<span class="w"> </span>put<span class="w"> </span>apps/sql-mcp<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="nv">KG_PGWIRE_USER</span><span class="o">=</span>sql-mcp<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span><span class="nv">KG_PGWIRE_PASSWORD</span><span class="o">=</span><span class="s2">&quot;</span><span class="k">$(</span>python<span class="w"> </span>-m<span class="w"> </span>sql_mcp.kg_pgwire<span class="w"> </span>derive-password<span class="w"> </span>--user<span class="w"> </span>sql-mcp<span class="k">)</span><span class="s2">&quot;</span>
 </span></code></pre></div>
-<h2 id="docker-compose">Docker Compose<a class="headerlink" href="#docker-compose" title="Permanent link">&para;</a></h2>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker/mcp.compose.yml<span class="w"> </span>up<span class="w"> </span>-d<span class="w">      </span><span class="c1"># MCP server only</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker/agent.compose.yml<span class="w"> </span>up<span class="w"> </span>-d<span class="w">    </span><span class="c1"># MCP + agent</span>
+<h2 id="3-register-the-kg-connection">3. Register the <code>kg</code> connection<a class="headerlink" href="#3-register-the-kg-connection" title="Permanent link">&para;</a></h2>
+<p>Point one of sql-mcp's named connections at the listener
+(<code>SQL_CONNECTIONS</code>, <code>CONCEPT:SQL-1.2</code>). The deployed stack
+(<code>services/sql-mcp/compose.dev.yml</code>) already wires this from the vault-injected
+vars:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nv">SQL_CONNECTIONS</span><span class="o">=</span><span class="s1">&#39;{&quot;kg&quot;:&quot;postgresql+psycopg://sql-mcp:&lt;KG_PGWIRE_PASSWORD&gt;@127.0.0.1:5433/__commons__&quot;}&#39;</span>
 </span></code></pre></div>
-<p>Connections, policy, and toggles come from <code>../.env</code> (see
-<a href="https://github.com/Knuckles-Team/sql-mcp/blob/main/.env.example"><code>.env.example</code></a>).</p>
-<h2 id="run-the-a2a-agent-server">Run the A2A agent server<a class="headerlink" href="#run-the-a2a-agent-server" title="Permanent link">&para;</a></h2>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>sql-agent<span class="w"> </span>--mcp-config<span class="w"> </span>mcp_config.json<span class="w"> </span>--web
+<p>The <code>database</code> segment (<code>__commons__</code>) selects the engine graph; use any
+registered graph name, e.g. <code>team:alpha</code>.</p>
+<h2 id="4-validate">4. Validate<a class="headerlink" href="#4-validate" title="Permanent link">&para;</a></h2>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># connection health</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>sql_admin<span class="w">  </span><span class="nv">action</span><span class="o">=</span>ping<span class="w">            </span><span class="nv">connection</span><span class="o">=</span>kg
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="c1"># read the graph as SQL</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>sql_query<span class="w">  </span><span class="nv">action</span><span class="o">=</span>execute<span class="w">  </span><span class="nv">connection</span><span class="o">=</span>kg<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">           </span><span class="nv">params_json</span><span class="o">=</span><span class="s1">&#39;{&quot;sql&quot;:&quot;SELECT id, label FROM nodes LIMIT 5&quot;}&#39;</span>
 </span></code></pre></div>
-<h2 id="ingress-dns">Ingress &amp; DNS<a class="headerlink" href="#ingress-dns" title="Permanent link">&para;</a></h2>
-<p>Behind the fleet's Caddy reverse proxy, publish the streamable-http MCP
-endpoint and register the hostname in Technitium DNS; point clients at
-<code>https://sql-mcp.&lt;zone&gt;/mcp</code>.</p>
+<p><code>sql_admin ping</code> confirms the SCRAM handshake + latency; the <code>sql_query</code> returns
+the bounded <code>{columns, rows, row_count, truncated}</code> envelope (<code>CONCEPT:SQL-1.4</code>)
+over real KG nodes.</p>
+<h2 id="notes">Notes<a class="headerlink" href="#notes" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Read-only by default.</strong> sql-mcp's <code>sql_query</code> only runs SELECT/CTE; the engine
+  pg-wire surface also classifies writes and routes them through the governed
+  write path. Leave <code>SQL_ALLOW_WRITES</code> off for the <code>kg</code> connection unless you
+  intend governed DML over <code>nodes</code>.</li>
+<li><strong>Driver.</strong> Requires the <code>postgres</code> extra (<code>sql-mcp[postgres]</code> → <code>psycopg</code>).</li>
+<li><strong>No new connector code.</strong> This is config + the derivation helper only — the KG
+  is reached through the standard SQLAlchemy Postgres dialect.</li>
+</ul>
 
 
 
@@ -1122,7 +1014,7 @@ endpoint and register the hostname in Technitium DNS; point clients at
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../configuration/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Configuration, trust, and privacy">
+          <a href="../../platform/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Backing Platform (SQL Databases)">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -1132,20 +1024,20 @@ endpoint and register the hostname in Technitium DNS; point clients at
                 Previous
               </span>
               <div class="md-ellipsis">
-                Configuration, trust, and privacy
+                Backing Platform (SQL Databases)
               </div>
             </div>
           </a>
         
         
           
-          <a href="../usage/" class="md-footer__link md-footer__link--next" aria-label="Next: Usage (API / CLI / MCP)">
+          <a href="../../concepts/" class="md-footer__link md-footer__link--next" aria-label="Next: Concepts">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Usage (API / CLI / MCP)
+                Concepts
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -1215,10 +1107,10 @@ endpoint and register the hostname in Technitium DNS; point clients at
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "navigation.tracking", "navigation.instant", "navigation.instant.progress", "navigation.footer", "toc.follow", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.code.annotate", "content.tabs.link", "content.tooltips"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "navigation.tracking", "navigation.instant", "navigation.instant.progress", "navigation.footer", "toc.follow", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.code.annotate", "content.tabs.link", "content.tooltips"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>
