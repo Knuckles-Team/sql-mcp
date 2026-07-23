@@ -9,7 +9,7 @@ description = "Generic SQL database (Postgres, MySQL/MariaDB, MSSQL, Oracle, SQL
 readme = "README.md"
 classifiers = [ "Development Status :: 4 - Beta", "License :: OSI Approved :: MIT License", "Environment :: Console", "Operating System :: POSIX :: Linux", "Programming Language :: Python :: 3",]
 requires-python = ">=3.12, <3.15"
-dependencies = [ "agent-utilities>=1.27.1,<2.0.0", "python-dotenv>=1.2.2", "sqlalchemy>=2.0.51",]
+dependencies = [ "agent-utilities>=2.0.0,<3.0.0", "python-dotenv>=1.2.2", "sqlalchemy>=2.0.51",]
 [[project.authors]]
 name = "Project Maintainers"
 email = "maintainers@users.noreply.github.com"
@@ -18,8 +18,8 @@ email = "maintainers@users.noreply.github.com"
 text = "MIT"
 
 [project.optional-dependencies]
-mcp = [ "agent-utilities[mcp]>=1.27.1,<2.0.0",]
-agent = [ "agent-utilities[agent-runtime,logfire]>=1.27.1,<2.0.0",]
+mcp = [ "agent-utilities[mcp]>=2.0.0,<3.0.0",]
+agent = [ "agent-utilities[agent-runtime,logfire]>=2.0.0,<3.0.0",]
 postgres = [ "psycopg[binary]>=3.3.4",]
 mysql = [ "pymysql>=1.2.0",]
 mssql = [ "pyodbc>=5.3.0",]
