@@ -1,4 +1,4 @@
-"""Connection config loading (CONCEPT:SQL-1.2): env parsing + secret redaction."""
+"""Connection config loading (CONCEPT:SQ-OS.identity.env-parsing-secret-redaction): env parsing + secret redaction."""
 
 import json
 
@@ -17,6 +17,9 @@ ENV_VARS = [
     "SQL_DATABASE",
     "SQL_OPTIONS",
     "SQL_ALLOW_WRITES",
+    "SQL_ALLOW_KG_INGEST",
+    "SQL_WRITE_CONNECTIONS",
+    "SQL_DEFAULT_CONNECTION",
     "SQL_MAX_ROWS",
     "SQL_TIMEOUT_SECONDS",
 ]
@@ -117,17 +120,69 @@ def test_zero_config_falls_back_to_memory_sqlite():
 
 def test_policy_defaults_are_read_only_and_bounded():
     assert auth.allow_writes() is False
+    assert auth.allow_kg_ingest() is False
+    assert auth.writable_connections() == set()
     assert auth.default_max_rows() == auth.DEFAULT_MAX_ROWS
     assert auth.default_timeout() == auth.DEFAULT_TIMEOUT_SECONDS
 
 
 def test_policy_env_overrides(monkeypatch):
     monkeypatch.setenv("SQL_ALLOW_WRITES", "True")
+    monkeypatch.setenv("SQL_ALLOW_KG_INGEST", "True")
     monkeypatch.setenv("SQL_MAX_ROWS", "25")
     monkeypatch.setenv("SQL_TIMEOUT_SECONDS", "2.5")
     assert auth.allow_writes() is True
+    assert auth.allow_kg_ingest() is True
     assert auth.default_max_rows() == 25
     assert auth.default_timeout() == 2.5
+
+
+@pytest.mark.parametrize(
+    ("name", "value", "loader"),
+    [
+        ("SQL_MAX_ROWS", "0", auth.default_max_rows),
+        ("SQL_MAX_ROWS", "-1", auth.default_max_rows),
+        ("SQL_TIMEOUT_SECONDS", "0", auth.default_timeout),
+        ("SQL_TIMEOUT_SECONDS", "nan", auth.default_timeout),
+    ],
+)
+def test_invalid_resource_policy_is_rejected(monkeypatch, name, value, loader):
+    monkeypatch.setenv(name, value)
+    with pytest.raises(ValueError, match="positive"):
+        loader()
+
+
+def test_write_connection_allowlist(monkeypatch):
+    monkeypatch.setenv("SQL_WRITE_CONNECTIONS", '["primary", "warehouse"]')
+    assert auth.writable_connections() == {"primary", "warehouse"}
+
+
+def test_write_connection_allowlist_is_required_when_writes_are_enabled(
+    monkeypatch,
+):
+    monkeypatch.setenv("SQL_ALLOW_WRITES", "True")
+    api = auth.get_api()
+    with pytest.raises(PermissionError, match="SQL_WRITE_CONNECTIONS"):
+        api.execute("CREATE TABLE denied (id INTEGER)")
+
+
+def test_write_connection_allowlist_accepts_comma_separated_names(monkeypatch):
+    monkeypatch.setenv("SQL_WRITE_CONNECTIONS", "primary, warehouse")
+    assert auth.writable_connections() == {"primary", "warehouse"}
+
+
+def test_explicit_default_connection(monkeypatch):
+    monkeypatch.setenv(
+        "SQL_CONNECTIONS",
+        json.dumps(
+            {
+                "primary": "sqlite+pysqlite:///:memory:",
+                "analytics": "sqlite+pysqlite:///:memory:",
+            }
+        ),
+    )
+    monkeypatch.setenv("SQL_DEFAULT_CONNECTION", "analytics")
+    assert auth.get_api().default_connection() == "analytics"
 
 
 def test_get_api_caches_until_reset(monkeypatch):
@@ -147,6 +202,41 @@ def test_passwords_redacted_in_connection_descriptions(monkeypatch):
     described = api.describe_connections()
     assert "supersecretpw" not in json.dumps(described)
     assert "***" in described[0]["url"]
+
+
+def test_url_query_secrets_are_redacted_in_connection_descriptions(monkeypatch):
+    monkeypatch.setenv(
+        "SQL_CONNECTIONS",
+        json.dumps(
+            {
+                "dw": (
+                    "postgresql+psycopg://bob:pw@db:5432/dw?"
+                    "sslmode=require&access_token=query-secret&sslpassword=tls-secret"
+                )
+            }
+        ),
+    )
+    described = json.dumps(auth.get_api().describe_connections())
+    assert "query-secret" not in described
+    assert "tls-secret" not in described
+    assert "sslmode=require" in described
+
+
+def test_odbc_connect_query_is_fully_redacted(monkeypatch):
+    monkeypatch.setenv(
+        "SQL_CONNECTIONS",
+        json.dumps(
+            {
+                "mart": (
+                    "mssql+pyodbc:///?odbc_connect="
+                    "DRIVER%3DODBC%2BDriver%3BSERVER%3Ddb%3BPWD%3Dodbc-secret"
+                )
+            }
+        ),
+    )
+    described = auth.get_api().describe_connections()[0]
+    assert "odbc-secret" not in json.dumps(described)
+    assert "odbc_connect=%2A%2A%2A" in described["url"]
 
 
 def test_passwords_never_in_logs(monkeypatch, caplog):

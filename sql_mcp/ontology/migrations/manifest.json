@@ -1,0 +1,6 @@
+{
+  "connector": "sql-mcp",
+  "current_ontology_source": "database",
+  "migrations": [],
+  "schema_version": "1"
+}

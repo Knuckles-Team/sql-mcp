@@ -32,8 +32,8 @@ This project implements or inherits the following ecosystem concepts:
 | Concept ID | Description | Source |
 |:-----------|:------------|:-------|
 | ECO-4.1 | MCP & Universal Skills | `agent-utilities` (inherited) |
-| ECO-4.2 | A2A Network & Consensus | `agent-utilities` (inherited) |
-| CONCEPT:SQL-1.0 | Action-dispatch MCP tool surface | [`concepts.md`](concepts.md) |
-| CONCEPT:SQL-1.3 | Read-only statement gate | [`concepts.md`](concepts.md) |
+| AU-ECO.toolkit.journey-map-narrative | A2A Network & Consensus | `agent-utilities` (inherited) |
+| CONCEPT:SQ-OS.governance.sql-2 | Action-dispatch MCP tool surface | [`concepts.md`](concepts.md) |
+| CONCEPT:SQ-OS.safety.allow-deny-classification | Read-only statement gate | [`concepts.md`](concepts.md) |
 
 > 📖 **Full Registry**: See [`agent-utilities/docs/overview.md`](https://github.com/Knuckles-Team/agent-utilities/blob/main/docs/overview.md) for the complete 5-Pillar concept index.

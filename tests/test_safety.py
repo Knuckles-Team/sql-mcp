@@ -1,9 +1,10 @@
-"""Read-only statement gate (CONCEPT:SQL-1.3) — allow/deny classification."""
+"""Read-only statement gate (CONCEPT:SQ-OS.safety.allow-deny-classification) — allow/deny classification."""
 
 import pytest
 
 from sql_mcp.safety import (
     StatementNotAllowedError,
+    assert_no_transaction_control,
     assert_read_only,
     assert_single_statement,
     first_keyword,
@@ -41,11 +42,18 @@ DENIED = [
     "EXEC sp_who",
     "WITH cte AS (SELECT 1) DELETE FROM users",
     "WITH cte AS (SELECT 1) INSERT INTO t SELECT * FROM cte",
+    "WITH changed AS (DELETE FROM users RETURNING id) SELECT * FROM changed",
+    "WITH outer_cte AS (WITH changed AS (UPDATE users SET name = 'x' RETURNING id) SELECT * FROM changed) SELECT * FROM outer_cte",
     "SELECT * INTO new_table FROM users",
+    "SELECT * FROM (DELETE FROM users RETURNING id) AS changed",
     "SELECT 1; DROP TABLE users",
     "SELECT 1; -- ok\nDELETE FROM users",
     "VACUUM",
     "ATTACH DATABASE 'x.db' AS x",
+    "PRAGMA writable_schema = ON",
+    "PRAGMA journal_mode(WAL)",
+    "PRAGMA optimize",
+    "PRAGMA wal_checkpoint",
     "",
     "   ",
     "-- just a comment",
@@ -96,3 +104,96 @@ def test_multi_statement_error_mentions_script():
 def test_rejection_error_names_allowed_types():
     with pytest.raises(StatementNotAllowedError, match="SELECT"):
         assert_read_only("DELETE FROM users")
+
+
+@pytest.mark.parametrize(
+    "sql",
+    [
+        "PRAGMA table_info(users)",
+        "PRAGMA main.index_info(ix_users_name)",
+        "PRAGMA database_list",
+        "PRAGMA compile_options",
+    ],
+)
+def test_read_only_sqlite_pragmas_pass(sql):
+    assert_read_only(sql)
+
+
+@pytest.mark.parametrize(
+    "sql",
+    [
+        "PRAGMA application_id = 7",
+        "PRAGMA foreign_keys = OFF",
+        "PRAGMA locking_mode(EXCLUSIVE)",
+        "PRAGMA synchronous = OFF",
+        "PRAGMA user_version = 42",
+        "PRAGMA user_version",
+    ],
+)
+def test_mutable_or_dual_purpose_pragmas_are_rejected(sql):
+    with pytest.raises(StatementNotAllowedError, match="PRAGMA"):
+        assert_read_only(sql)
+
+
+@pytest.mark.parametrize(
+    "sql",
+    [
+        "BEGIN",
+        "BEGIN TRANSACTION",
+        "START TRANSACTION",
+        "COMMIT",
+        "COMMIT WORK",
+        "ROLLBACK",
+        "ROLLBACK TO savepoint_name",
+        "SAVEPOINT savepoint_name",
+        "RELEASE SAVEPOINT savepoint_name",
+        "END TRANSACTION",
+        "ABORT",
+        "SET TRANSACTION READ ONLY",
+        "SET SESSION TRANSACTION ISOLATION LEVEL SERIALIZABLE",
+        "SET autocommit = 1",
+        "PREPARE TRANSACTION 'transaction_id'",
+        "SAVE TRANSACTION savepoint_name",
+        "LOCK TABLES users WRITE",
+        "UNLOCK TABLES",
+    ],
+)
+def test_transaction_control_is_rejected_inside_managed_transactions(sql):
+    with pytest.raises(StatementNotAllowedError, match="Transaction/session-control"):
+        assert_no_transaction_control(sql)
+
+
+@pytest.mark.parametrize(
+    "sql",
+    [
+        "INSERT INTO users (id) VALUES (1)",
+        "UPDATE users SET name = 'commit' WHERE id = 1",
+        "SELECT 'ROLLBACK' AS word",
+    ],
+)
+def test_non_transaction_control_is_allowed_inside_managed_transactions(sql):
+    assert_no_transaction_control(sql)
+
+
+@pytest.mark.parametrize(
+    "sql",
+    [
+        "SELECT load_extension('plugin')",
+        "SELECT pg_terminate_backend(42)",
+        "SELECT nextval('sequence_name')",
+        "SELECT xp_cmdshell('command')",
+    ],
+)
+def test_side_effecting_read_functions_are_rejected(sql):
+    with pytest.raises(StatementNotAllowedError, match="Side-effecting"):
+        assert_read_only(sql)
+
+
+def test_mysql_executable_comment_is_rejected():
+    with pytest.raises(StatementNotAllowedError, match="Executable SQL comments"):
+        assert_read_only("SELECT 1 /*!50000 SET @flag=1 */")
+
+
+def test_ambiguous_dash_comment_is_rejected():
+    with pytest.raises(StatementNotAllowedError, match="Ambiguous"):
+        assert_read_only("SELECT 1--not-a-portable-comment")

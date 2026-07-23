@@ -1,4 +1,4 @@
-"""Dialect registry for sql-mcp (CONCEPT:SQL-1.1).
+"""Dialect registry for sql-mcp (CONCEPT:SQ-OS.governance.url-building-drivers-dialect).
 
 Mirrors the vector-mcp backend-registry pattern: every supported SQL engine is
 described by a :class:`DialectSpec` entry in :data:`DIALECTS`. The spec carries
@@ -84,7 +84,8 @@ DIALECTS: dict[str, DialectSpec] = {
         driver_module="oracledb",
         extra="oracle",
         default_port=1521,
-        explain_prefix="EXPLAIN PLAN FOR",
+        # Oracle EXPLAIN writes PLAN_TABLE and requires a separate DBMS_XPLAN read.
+        explain_prefix=None,
         version_sql="SELECT banner FROM v$version",
         active_connections_sql=(
             "SELECT sid, username, status, machine, program "
@@ -172,12 +173,21 @@ def build_url(
     spec = get_dialect(dialect)
     if spec.name == "sqlite":
         return URL.create(spec.sqlalchemy_scheme, database=database or ":memory:")
+    if port is not None:
+        if isinstance(port, bool):
+            raise ValueError("port must be an integer between 1 and 65535.")
+        try:
+            port = int(port)
+        except (TypeError, ValueError, OverflowError):
+            raise ValueError("port must be an integer between 1 and 65535.") from None
+        if not 1 <= port <= 65_535:
+            raise ValueError("port must be an integer between 1 and 65535.")
     return URL.create(
         spec.sqlalchemy_scheme,
         username=username,
         password=password,
         host=host,
-        port=port or spec.default_port,
+        port=port if port is not None else spec.default_port,
         database=database,
         query=dict(options or {}),
     )

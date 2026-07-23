@@ -1,0 +1,20 @@
+schema_version: '1'
+connector: sql-mcp
+ontology_source: database
+sync:
+- preset: sql-tables
+  server: sql-mcp
+  tool: sql_schema
+  action: tables
+  records_path: ''
+  id_field: ''
+  title_field: ''
+  text_field: ''
+  updated_field: null
+  doc_type: database_table
+  tool_schema_sha256: 081c70207e94b742b2f062a048b0c6b504271b404c6e24ac85e39134ce049897
+governance:
+  default_acl: quarantine
+  identity: opaque-reference
+  tenant: required-at-materialization
+  provenance: required-at-materialization

@@ -1,0 +1,13 @@
+{
+  "_comment": "Tier-1 mcp_tool source presets for sql-mcp (AU-KG.ingest.mcp-tool-connector). Declarative doc-sync leg that syncs a connection's tables into the KG as lightweight 'database_table' documents via the sql-mcp MCP server. The primary, richer path is the native typed-node tool 'sql_ingest_schema' (see sql_mcp.kg_ingest), which emits :DatabaseTable/:DatabaseColumn/:DatabaseView/:DatabaseIndex nodes with structural links; this preset is the zero-code declarative complement. Contributed presets win over the central MCP_TOOL_PRESETS.",
+  "sql-tables": {
+    "server": "sql-mcp",
+    "tool": "sql_schema",
+    "action": "tables",
+    "records_path": "",
+    "id_field": "",
+    "title_field": "",
+    "text_field": "",
+    "doc_type": "database_table"
+  }
+}

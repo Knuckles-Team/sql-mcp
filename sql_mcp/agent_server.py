@@ -1,11 +1,11 @@
-"""Graph-based Pydantic AI agent server entry point for sql-mcp (CONCEPT:SQL-1.6)."""
+"""Graph-based Pydantic AI agent server entry point for sql-mcp (CONCEPT:SQ-OS.governance.sql-4)."""
 
 import logging
 import os
 import sys
 import warnings
 
-__version__ = "0.5.0"
+__version__ = "1.0.1"
 
 logging.basicConfig(
     level=logging.INFO,

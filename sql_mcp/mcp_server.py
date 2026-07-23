@@ -3,11 +3,9 @@
 import sys
 from typing import Any
 
-from agent_utilities.mcp_utilities import (
-    create_mcp_server,
-    load_config,
-    register_tool_surface,
-)
+from agent_utilities.core.config import load_config
+from agent_utilities.mcp.server_factory import create_mcp_server
+from agent_utilities.mcp.verbose_tools import register_tool_surface
 from fastmcp.utilities.logging import get_logger
 from starlette.requests import Request
 from starlette.responses import JSONResponse
@@ -16,7 +14,7 @@ from sql_mcp.api_client import Api
 from sql_mcp.auth import get_api
 from sql_mcp.mcp.mcp_sql import register_sql_tools
 
-__version__ = "0.5.0"
+__version__ = "1.0.1"
 logger = get_logger(name="sql_mcp")
 
 
@@ -33,9 +31,13 @@ def get_mcp_instance() -> tuple[Any, ...]:
         ),
     )
 
-    @mcp.custom_route("/health", methods=["GET"])
-    async def health_check(request: Request) -> JSONResponse:
-        return JSONResponse({"status": "OK"})
+    @mcp.custom_route("/ready", methods=["GET"])
+    async def readiness_check(request: Request) -> JSONResponse:
+        try:
+            get_api()
+        except Exception:
+            return JSONResponse({"status": "unavailable"}, status_code=503)
+        return JSONResponse({"status": "ready"})
 
     register_tool_surface(
         mcp,
