@@ -2,7 +2,7 @@
   "name": "sql-mcp-agent",
   "type": "agent",
   "version": "2.0.0",
-  "description": "Generic SQL database agent: read-only queries, gated DML/DDL, schema reflection, and connection admin across Postgres, MySQL/MariaDB, MSSQL, Oracle, and SQLite.",
+  "description": "Generic SQL database (Postgres, MySQL/MariaDB, MSSQL, Oracle, SQLite) API + MCP Server + A2A Server for Agentic AI!",
   "url": "https://github.com/Knuckles-Team/sql-mcp/tree/main",
   "license": "MIT",
   "capabilities": [
@@ -10,6 +10,17 @@
       "id": "run_graph_flow",
       "name": "Graph Flow Execution",
       "description": "Execute a workflow through the agent's graph orchestration engine"
+    },
+    {
+      "id": "epistemic-answer",
+      "name": "Epistemic Answer",
+      "description": "Answers epistemic_status/why/what_changed queries over the shared knowledge graph: calibrated confidence, evidence/source citations, belief justification trees, bitemporal valid/tx history, and policy-redaction-aware provenance.",
+      "tags": [
+        "epistemic",
+        "provenance",
+        "confidence",
+        "kg"
+      ]
     }
   ],
   "tools": [
