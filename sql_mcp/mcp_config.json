@@ -7,7 +7,7 @@
         "sql-mcp"
       ],
       "env": {
-        "MCP_TOOL_MODE": "condensed",
+        "MCP_TOOL_MODE": "intent",
         "SQLTOOL": "True",
         "SQL_ALLOW_WRITES": "False",
         "SQL_CONNECTIONS": "{\"warehouse\": \"postgresql+psycopg://svc:password@db:5432/dw\"}",
@@ -16,7 +16,6 @@
         "SQL_HOST": "db.example.com",
         "SQL_MAX_ROWS": "500",
         "SQL_OPTIONS": "{\"sslmode\": \"require\"}",
-        "SQL_PASSWORD": "",
         "SQL_PORT": "5432",
         "SQL_TIMEOUT_SECONDS": "30",
         "SQL_URL": "postgresql+psycopg://svc:password@db.example.com:5432/app",
