@@ -1,7 +1,7 @@
 {
   "name": "sql-mcp-agent",
   "type": "agent",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Generic SQL database (Postgres, MySQL/MariaDB, MSSQL, Oracle, SQLite) API + MCP Server + A2A Server for Agentic AI!",
   "url": "https://github.com/Knuckles-Team/sql-mcp/tree/main",
   "license": "MIT",
