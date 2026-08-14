@@ -31,7 +31,12 @@ def ingest_entities(
 ) -> dict[str, int]:
     """Write canonical typed nodes and relationships in one native transaction."""
     return _native_ingest_entities(
-        entities, relationships, source=source, domain=domain, client=client, graph=graph
+        entities,
+        relationships,
+        source=source,
+        domain=domain,
+        client=client,
+        graph=graph,
     )
 
 
@@ -139,9 +144,7 @@ def catalog_to_entities(
             column_name = column.get("name")
             if not isinstance(column_name, str) or not column_name:
                 continue
-            column_id = (
-                f"database:column:{connection}.{label}.{name}.{column_name}"
-            )
+            column_id = f"database:column:{connection}.{label}.{name}.{column_name}"
             entities.append(
                 {
                     "id": column_id,
@@ -154,9 +157,7 @@ def catalog_to_entities(
                     "isNullable": bool(column.get("nullable", True)),
                     "isPrimaryKey": bool(column.get("primary_key", False)),
                     "isForeignKey": column_name in foreign_key_columns,
-                    "externalToolId": (
-                        f"{connection}.{label}.{name}.{column_name}"
-                    ),
+                    "externalToolId": (f"{connection}.{label}.{name}.{column_name}"),
                 }
             )
             add_relationship(table_id, column_id, "hasColumn")
@@ -180,9 +181,7 @@ def catalog_to_entities(
                     "connection": connection,
                     "columns": ",".join(index.get("columns") or []),
                     "isUnique": bool(index.get("unique", False)),
-                    "externalToolId": (
-                        f"{connection}.{label}.{name}.{index_name}"
-                    ),
+                    "externalToolId": (f"{connection}.{label}.{name}.{index_name}"),
                 }
             )
             add_relationship(table_id, index_id, "hasIndex")

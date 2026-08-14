@@ -120,4 +120,3 @@ planners to dynamically reason about data layouts.""" ;
     rdfs:comment "The SQL dialect of the connection the artifact was reflected from (e.g., postgres, mysql, sqlite)." ;
     rdfs:domain :DatabaseSchema ;
     rdfs:range xsd:string .
-

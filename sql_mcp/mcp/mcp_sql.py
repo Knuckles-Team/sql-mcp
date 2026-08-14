@@ -487,13 +487,9 @@ def register_sql_tools(mcp: FastMCP) -> None:
                     )
             return results
         if action == "version":
-            return await _invoke(
-                partial(api.server_version, connection=conn)
-            )
+            return await _invoke(partial(api.server_version, connection=conn))
         if action == "active_connections":
-            return await _invoke(
-                partial(api.active_connections, connection=conn)
-            )
+            return await _invoke(partial(api.active_connections, connection=conn))
         if action == "connections":
             return await _invoke(api.describe_connections)
         if action == "pool_status":

@@ -67,9 +67,7 @@ def _connection_from_spec(name: str, spec: object) -> URL:
                 raise ValueError(f"Connection {name!r} has an invalid SQL dialect.")
             options = spec.get("options")
             if options is not None and not isinstance(options, dict):
-                raise ValueError(
-                    f"Connection {name!r} options must be a JSON object."
-                )
+                raise ValueError(f"Connection {name!r} options must be a JSON object.")
             return build_url(
                 spec["dialect"],
                 host=spec.get("host"),
@@ -136,7 +134,9 @@ def load_connections() -> dict[str, URL]:
         try:
             port = int(port_raw) if port_raw.strip() else None
         except (TypeError, ValueError, OverflowError):
-            raise ValueError("SQL_PORT must be an integer between 1 and 65535.") from None
+            raise ValueError(
+                "SQL_PORT must be an integer between 1 and 65535."
+            ) from None
         if port is not None and not 1 <= port <= 65_535:
             raise ValueError("SQL_PORT must be an integer between 1 and 65535.")
         return {
