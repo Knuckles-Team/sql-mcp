@@ -1,7 +1,7 @@
 {
   "api_version": "graphos.io/v1",
   "artifacts": {
-    "connector_manifest.yml": "df25c81856cd850ce68e7bb2bd30fd15b9fcfe3d8a021d7ea6e21ee6a1d687d6",
+    "connector_manifest.yml": "2e541c8dc7c6de0e6207f7daa2dfb9e0f56186629f8ce98d11c17296895c0764",
     "sql_mcp/connectors/mcp_source_presets.json": "ed6bbb14d4a0e706bbe2caa1a714f06093273cc288d49aa43ff887dd5e129c46",
     "sql_mcp/connectors/tool_schema_fingerprints.json": "349901c65b6f1fd273ebdca0df935fab3308c612e7e7d334e836b5eded7fa3e5",
     "sql_mcp/ontology/database.ttl": "0ee303c26d2e0bbf13c3dd4b8b94da656f540b3782c9c085531c984d7a6d5454",
@@ -18,9 +18,9 @@
     "synthetic_fixture_contract": "passed"
   },
   "compatibility": {
-    "agent_utilities": ">=2.4.0,<3",
+    "agent_utilities": ">=2.5.0,<3",
     "bundle_schema": "2",
-    "epistemic_graph": ">=2.26.0,<3"
+    "epistemic_graph": ">=2.27.0,<3"
   },
   "connector": "sql-mcp",
   "kind": "ConnectorSourceAttestation",
@@ -32,5 +32,5 @@
   "signer": "UNSIGNED-PREVIEW",
   "signing_public_key": "",
   "status": "source-validated",
-  "validated_at": "2026-08-21T04:30:39Z"
+  "validated_at": "2026-08-27T02:44:50Z"
 }
