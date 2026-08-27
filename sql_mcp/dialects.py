@@ -92,6 +92,31 @@ DIALECTS: dict[str, DialectSpec] = {
             "FROM v$session WHERE username IS NOT NULL"
         ),
     ),
+    "trino": DialectSpec(
+        name="trino",
+        sqlalchemy_scheme="trino",
+        driver_module="trino",
+        extra="trino",
+        default_port=8080,
+        explain_prefix="EXPLAIN",
+        version_sql="SELECT version()",
+        active_connections_sql=(
+            'SELECT query_id, "user", state, created FROM system.runtime.queries'
+        ),
+    ),
+    # DuckDB is in-process (embedded, file or :memory:) — no host/port, no
+    # server sessions to enumerate. ``build_url()`` special-cases it below
+    # alongside ``sqlite``'s existing no-network branch.
+    "duckdb": DialectSpec(
+        name="duckdb",
+        sqlalchemy_scheme="duckdb",
+        driver_module="duckdb_engine",
+        extra="duckdb",
+        default_port=None,
+        explain_prefix="EXPLAIN",
+        version_sql="PRAGMA version",
+        active_connections_sql=None,
+    ),
 }
 
 ALIASES: dict[str, str] = {
@@ -172,6 +197,11 @@ def build_url(
     """
     spec = get_dialect(dialect)
     if spec.name == "sqlite":
+        return URL.create(spec.sqlalchemy_scheme, database=database or ":memory:")
+    if spec.name == "duckdb":
+        # In-process, no network: duckdb-engine's SQLAlchemy dialect accepts
+        # ``duckdb:///<path>`` (or ``duckdb:///:memory:``) with no host/port,
+        # mirroring the sqlite branch above.
         return URL.create(spec.sqlalchemy_scheme, database=database or ":memory:")
     if port is not None:
         if isinstance(port, bool):

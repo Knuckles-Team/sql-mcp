@@ -156,6 +156,55 @@ def test_engine_creation_requires_driver(pg_api):
             pg_api.engine("pg")
 
 
+@pytest.fixture
+def trino_api():
+    client = Api(
+        connections={"trino1": "trino://svc@trino.apps.svc:8080/system"},
+        allow_writes=False,
+        max_rows=50,
+        timeout=5.0,
+    )
+    yield client
+    client.dispose()
+
+
+def test_explain_uses_trino_prefix(trino_api):
+    result = fake_result(["_col0"], [("EXPLAIN plan text",)])
+    engine, conn = fake_engine(result)
+    with mock.patch.object(trino_api, "engine", return_value=engine):
+        plan = trino_api.explain("SELECT 1")
+    statement = conn.execute.call_args[0][0]
+    assert str(statement).startswith("EXPLAIN SELECT")
+    assert plan["rows"] == [{"_col0": "EXPLAIN plan text"}]
+
+
+def test_active_connections_reads_runtime_queries(trino_api):
+    result = fake_result(
+        ["query_id", "user", "state", "created"],
+        [("q1", "svc", "RUNNING", "2026-08-26")],
+    )
+    engine, conn = fake_engine(result)
+    with mock.patch.object(trino_api, "engine", return_value=engine):
+        sessions = trino_api.active_connections()
+    statement = str(conn.execute.call_args[0][0])
+    assert "system.runtime.queries" in statement
+    assert sessions["supported"] is True
+    assert sessions["rows"] == [
+        {"query_id": "q1", "user": "svc", "state": "RUNNING", "created": "2026-08-26"}
+    ]
+
+
+def test_server_version_uses_trino_select_version(trino_api):
+    result = mock.MagicMock()
+    result.scalar.return_value = "476"
+    engine, conn = fake_engine(result)
+    conn.dialect.server_version_info = None
+    with mock.patch.object(trino_api, "engine", return_value=engine):
+        version = trino_api.server_version()
+    assert version["version"] == "476"
+    assert str(conn.execute.call_args[0][0]) == "SELECT version()"
+
+
 def test_unregistered_dialect_reports_no_session_view():
     client = Api(
         connections={"fb": "firebird://svc:pw@db/x"},

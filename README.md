@@ -73,24 +73,39 @@ The table below is auto-generated from the MCP server — do not edit by hand.
 
 <!-- MCP-TOOLS-TABLE:START -->
 
-#### Condensed action-routed tools (default — `MCP_TOOL_MODE=condensed`)
+#### Condensed action-routed tools (`MCP_TOOL_MODE=condensed`)
 
 | MCP Tool | Toggle Env Var | Description |
 |----------|----------------|-------------|
 | `sql_admin` | `SQLTOOL` | Connection health, server version, sessions, and registry info. |
+| `sql_duckdb_attach_iceberg` | `DUCKDBTOOL` | Attach a DuckDB session to a live Iceberg REST catalog (Lakekeeper-shaped). |
+| `sql_ingest_schema` | `SQLTOOL` | Reflect a connection's schema and ingest it into the knowledge graph. |
 | `sql_schema` | `SQLTOOL` | Inspect schemas, tables, views, columns, indexes, FKs, and DDL. |
+| `sql_trino_catalogs` | `SQL_TRINOTOOL` | List Trino catalogs visible to the connected principal (``SHOW CATALOGS``). |
+| `sql_trino_explain` | `SQL_TRINOTOOL` | Return Trino's query plan for a read-only statement (``EXPLAIN``). |
+| `sql_trino_queries` | `SQL_TRINOTOOL` | Read recent Trino queries from ``system.runtime.queries`` (200-row cap). |
+| `sql_trino_schemas` | `SQL_TRINOTOOL` | List schemas (namespaces) within one Trino catalog (``SHOW SCHEMAS FROM``). |
 
 #### Verbose 1:1 API-mapped tools (`MCP_TOOL_MODE=verbose` or `both`)
 
 <details>
-<summary>22 per-operation tools — one per public API method (click to expand)</summary>
+<summary>53 per-operation tools — one per public API method (click to expand)</summary>
 
 | MCP Tool | Toggle Env Var | Description |
 |----------|----------------|-------------|
 | `sql_active_connections` | `SQL_APITOOL` | List active server sessions where the dialect supports it. |
-| `sql_connection_names` | `SQL_APITOOL` | Names of all configured connections. |
+| `sql_admin__active_connections` | `ADMINTOOL` | Connection health, server version, sessions, and registry info. |
+| `sql_admin__capabilities` | `ADMINTOOL` | Connection health, server version, sessions, and registry info. |
+| `sql_admin__connections` | `ADMINTOOL` | Connection health, server version, sessions, and registry info. |
+| `sql_admin__dialects` | `ADMINTOOL` | Connection health, server version, sessions, and registry info. |
+| `sql_admin__ping` | `ADMINTOOL` | Connection health, server version, sessions, and registry info. |
+| `sql_admin__ping_all` | `ADMINTOOL` | Connection health, server version, sessions, and registry info. |
+| `sql_admin__pool_status` | `ADMINTOOL` | Connection health, server version, sessions, and registry info. |
+| `sql_admin__version` | `ADMINTOOL` | Connection health, server version, sessions, and registry info. |
+| `sql_capabilities` | `SQL_APITOOL` | Report portable and dialect-specific behavior for one connection. |
+| `sql_connection_names` | `SQL_APITOOL` | Names of the connections the CALLER is entitled to. |
 | `sql_default_connection` | `SQL_APITOOL` | The sole/first configured connection — used when none is named. |
-| `sql_describe_connections` | `SQL_APITOOL` | Describe configured connections with passwords redacted. |
+| `sql_describe_connections` | `SQL_APITOOL` | Describe the CALLER-entitled connections, passwords redacted. |
 | `sql_dialect_spec` | `SQL_APITOOL` | The registered :class:`DialectSpec` for a connection, if any. |
 | `sql_dispose` | `SQL_APITOOL` | Dispose all pooled engines. |
 | `sql_engine` | `SQL_APITOOL` | Lazily create (and cache) the Engine for a named connection. |
@@ -98,21 +113,43 @@ The table below is auto-generated from the MCP server — do not edit by hand.
 | `sql_execute_script` | `SQL_APITOOL` | Run several statements in ONE transaction (all-or-nothing). |
 | `sql_explain` | `SQL_APITOOL` | Return the dialect's query plan for a read-only statement. |
 | `sql_list_columns` | `SQL_APITOOL` | Describe a table's columns: name, type, nullable, default. |
+| `sql_list_constraints` | `SQL_APITOOL` | Return primary-key, unique, and check constraints for a table. |
 | `sql_list_foreign_keys` | `SQL_APITOOL` | List a table's foreign keys (columns -> referred table/columns). |
 | `sql_list_indexes` | `SQL_APITOOL` | List a table's indexes (name, columns, uniqueness). |
+| `sql_list_materialized_views` | `SQL_APITOOL` | List materialized views when the dialect exposes them. |
 | `sql_list_schemas` | `SQL_APITOOL` | List schema names. |
+| `sql_list_sequences` | `SQL_APITOOL` | List sequence names when the dialect supports sequences. |
 | `sql_list_tables` | `SQL_APITOOL` | List table names (optionally within a schema). |
 | `sql_list_views` | `SQL_APITOOL` | List view names (optionally within a schema). |
 | `sql_ping` | `SQL_APITOOL` | Connection test: ``SELECT 1`` round-trip with latency. |
+| `sql_ping_all` | `SQL_APITOOL` | Check every configured connection without exposing credentials. |
+| `sql_pool_status` | `SQL_APITOOL` | Return non-secret SQLAlchemy pool pressure metrics. |
 | `sql_query` | `SQLTOOL` | Execute a read-only SELECT/CTE with bound parameters. |
 | `sql_resolve_connection` | `SQL_APITOOL` | Map an optional connection name to a configured one (or raise). |
 | `sql_sample_rows` | `SQL_APITOOL` | Return up to ``limit`` rows from a table (cap still applies). |
+| `sql_schema__catalog` | `SCHEMATOOL` | Inspect schemas, tables, views, columns, indexes, FKs, and DDL. |
+| `sql_schema__columns` | `SCHEMATOOL` | Inspect schemas, tables, views, columns, indexes, FKs, and DDL. |
+| `sql_schema__constraints` | `SCHEMATOOL` | Inspect schemas, tables, views, columns, indexes, FKs, and DDL. |
+| `sql_schema__ddl` | `SCHEMATOOL` | Inspect schemas, tables, views, columns, indexes, FKs, and DDL. |
+| `sql_schema__foreign_keys` | `SCHEMATOOL` | Inspect schemas, tables, views, columns, indexes, FKs, and DDL. |
+| `sql_schema__indexes` | `SCHEMATOOL` | Inspect schemas, tables, views, columns, indexes, FKs, and DDL. |
+| `sql_schema__materialized_views` | `SCHEMATOOL` | Inspect schemas, tables, views, columns, indexes, FKs, and DDL. |
+| `sql_schema__sample` | `SCHEMATOOL` | Inspect schemas, tables, views, columns, indexes, FKs, and DDL. |
+| `sql_schema__schemas` | `SCHEMATOOL` | Inspect schemas, tables, views, columns, indexes, FKs, and DDL. |
+| `sql_schema__sequences` | `SCHEMATOOL` | Inspect schemas, tables, views, columns, indexes, FKs, and DDL. |
+| `sql_schema__table_comment` | `SCHEMATOOL` | Inspect schemas, tables, views, columns, indexes, FKs, and DDL. |
+| `sql_schema__tables` | `SCHEMATOOL` | Inspect schemas, tables, views, columns, indexes, FKs, and DDL. |
+| `sql_schema__view_definition` | `SCHEMATOOL` | Inspect schemas, tables, views, columns, indexes, FKs, and DDL. |
+| `sql_schema__views` | `SCHEMATOOL` | Inspect schemas, tables, views, columns, indexes, FKs, and DDL. |
+| `sql_schema_catalog` | `SQL_APITOOL` | Return a bounded schema snapshot using one cached Inspector. |
 | `sql_server_version` | `SQL_APITOOL` | Report the server version (dialect SQL, else SQLAlchemy's probe). |
+| `sql_table_comment` | `SQL_APITOOL` | Return a table comment and dialect options when supported. |
 | `sql_table_ddl` | `SQL_APITOOL` | Reflect a table and render its CREATE TABLE DDL for this dialect. |
+| `sql_view_definition` | `SQL_APITOOL` | Return a view's SQL definition when reflection supports it. |
 
 </details>
 
-_2 action-routed tool(s) (default) · 22 verbose 1:1 tool(s). Each is enabled unless its `<DOMAIN>TOOL` toggle is set false; `MCP_TOOL_MODE` selects the surface (`condensed` default · `verbose` 1:1 · `both`). Auto-generated — do not edit._
+_8 action-routed tool(s) · 53 verbose 1:1 tool(s). Each is enabled unless its `<DOMAIN>TOOL` toggle is set false; `MCP_TOOL_MODE` selects the surface (**`intent` default** — the six verb-tools, granular set loaded on demand · `condensed` action-routed · `verbose` 1:1 · `both`). Auto-generated — do not edit._
 <!-- MCP-TOOLS-TABLE:END -->
 
 Every tool takes `action`, `params_json`, and an optional `connection` naming one
@@ -127,8 +164,23 @@ of the configured connections. The whole set is toggled with `SQLTOOL`.
 | MySQL / MariaDB | `mysql+pymysql` | PyMySQL | `pip install sql-mcp[mysql]` |
 | SQL Server | `mssql+pyodbc` | pyodbc | `pip install sql-mcp[mssql]` |
 | Oracle | `oracle+oracledb` | python-oracledb | `pip install sql-mcp[oracle]` |
+| Trino | `trino` | `sqlalchemy-trino` + `trino` | `pip install sql-mcp[trino]` |
+| DuckDB | `duckdb` | `duckdb-engine` + `duckdb` (in-process, no host/port) | `pip install sql-mcp[duckdb]` |
 
 `pip install sql-mcp[all]` pulls every driver plus the MCP and agent extras.
+
+### Trino / DuckDB tools
+
+Beyond the generic four dispatch tools (which already work against a `trino`/
+`duckdb` named connection), `sql-mcp` adds:
+
+| Tool | Toggle | Purpose |
+|---|---|---|
+| `sql_trino_catalogs` | `SQL_TRINOTOOL` | `SHOW CATALOGS` |
+| `sql_trino_schemas` | `SQL_TRINOTOOL` | `SHOW SCHEMAS FROM <catalog>` |
+| `sql_trino_queries` | `SQL_TRINOTOOL` | Capped (200-row) read of `system.runtime.queries`, optional `state` filter |
+| `sql_trino_explain` | `SQL_TRINOTOOL` | Trino-scoped `EXPLAIN` (rejects non-`trino` connections) |
+| `sql_duckdb_attach_iceberg` | `DUCKDBTOOL` | Bootstraps `iceberg`/`httpfs` and `ATTACH`es an Iceberg REST catalog (e.g. Lakekeeper), carrying the caller's own bearer token |
 
 ## Configuration (environment)
 
@@ -137,10 +189,16 @@ of the configured connections. The whole set is toggled with `SQLTOOL`.
 | `SQL_CONNECTIONS` | _(empty)_ | JSON map of named connections: DSN strings or `{dialect, host, port, username, password, database, options}` objects |
 | `SQL_URL` | _(empty)_ | Single DSN registered as connection `default` |
 | `SQL_DIALECT` / `SQL_HOST` / `SQL_PORT` / `SQL_USERNAME` / `SQL_PASSWORD` / `SQL_DATABASE` / `SQL_OPTIONS` | _(empty)_ | Discrete fields for a single `default` connection |
+| `SQL_DEFAULT_CONNECTION` | _(empty)_ | Named default connection when more than one is configured; else sole/first |
 | `SQL_ALLOW_WRITES` | `False` | Enable `sql_execute` (DML/DDL). **Read-only by default** |
+| `SQL_WRITE_CONNECTIONS` | _(empty)_ | Explicit per-connection write allowlist (JSON list or comma-separated), required alongside `SQL_ALLOW_WRITES=True` |
 | `SQL_MAX_ROWS` | `500` | Per-call row cap; tool requests are clamped to it |
 | `SQL_TIMEOUT_SECONDS` | `30` | Per-statement timeout |
-| `SQLTOOL` | `True` | Register the SQL tool set |
+| `SQL_ALLOW_KG_INGEST` | `False` | Enable `sql_ingest_schema`'s Epistemic Graph external write path |
+| `GRAPH_SERVICE_AUTH_SECRET` | _(empty)_ | epistemic-graph pg-wire shared secret, read only by the `sql_mcp.kg_pgwire` CLI helper (derives the per-agent SCRAM password) |
+| `SQLTOOL` | `True` | Register the generic SQL tool set (`sql_query`/`sql_execute`/`sql_schema`/`sql_admin`/`sql_ingest_schema`) |
+| `SQL_TRINOTOOL` | `True` | Register the Trino discovery/explain tools |
+| `DUCKDBTOOL` | `True` | Register `sql_duckdb_attach_iceberg` |
 
 With nothing configured the server registers a zero-infra in-memory SQLite
 connection named `memory`, so it works out of the box. Tools take an optional
@@ -334,8 +392,8 @@ configured secret provider.
 | `TRANSPORT` | `stdio` | options: stdio, streamable-http, sse |
 | `ENABLE_OTEL` | `True` |  |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | `http://localhost:8080/api/public/otel` |  |
-| `OTEL_EXPORTER_OTLP_PUBLIC_KEY` | secret-injected |  |
-| `OTEL_EXPORTER_OTLP_SECRET_KEY` | secret-injected |  |
+| `OTEL_EXPORTER_OTLP_PUBLIC_KEY_REF` | `secret://telemetry/otlp-public-key` |  |
+| `OTEL_EXPORTER_OTLP_SECRET_KEY_REF` | `secret://telemetry/otlp-secret-key` |  |
 | `OTEL_EXPORTER_OTLP_PROTOCOL` | `http/protobuf` |  |
 | `EUNOMIA_TYPE` | `none` | options: none, embedded, remote |
 | `EUNOMIA_POLICY_FILE` | `mcp_policies.json` |  |
@@ -349,10 +407,18 @@ configured secret provider.
 | `SQL_PASSWORD` | secret-injected |  |
 | `SQL_DATABASE` | `app` |  |
 | `SQL_OPTIONS` | `{"sslmode": "require"}` |  |
+| `SQL_DEFAULT_CONNECTION` | `warehouse` | Named default connection when more than one is configured (else sole/first). |
 | `SQL_ALLOW_WRITES` | `False` | Policy (read-only by default) |
 | `SQL_MAX_ROWS` | `500` |  |
 | `SQL_TIMEOUT_SECONDS` | `30` |  |
+| `SQL_WRITE_CONNECTIONS` | `["warehouse"]` | Explicit per-connection write allowlist, required alongside SQL_ALLOW_WRITES=True (JSON list or comma-separated names) — an omitted allowlist stays read-only. |
+| `SQL_ALLOW_KG_INGEST` | `False` | Enable the sql_ingest_schema -> Epistemic Graph external write path. |
+| `GRAPH_SERVICE_AUTH_SECRET` | secret-injected | epistemic-graph pg-wire connection (sql_mcp.kg_pgwire) — the engine's shared HMAC secret used to derive the per-agent SCRAM password offline. Not read by the MCP server itself; only by the kg_pgwire CLI helper. |
 | `SQLTOOL` | `True` |  |
+| `SQL_TRINOTOOL` | `True` |  |
+| `DUCKDBTOOL` | `True` |  |
+| `SQL_MCP_MCP_IMAGE` | `registry.example.com/sql-mcp-mcp@sha256:...` |  |
+| `SQL_MCP_AGENT_IMAGE` | `registry.example.com/sql-mcp-agent@sha256:...` |  |
 
 #### Inherited agent-utilities variables (apply to every connector)
 
@@ -375,7 +441,7 @@ configured secret provider.
 | `MODEL_ID` | `gpt-4o` | Model id for the agent |
 | `ENABLE_WEB_UI` | `True` | Serve the AG-UI web interface |
 
-_24 package + 16 inherited variable(s). Auto-generated from `.env.example` + the shared agent-utilities set — do not edit._
+_32 package + 16 inherited variable(s). Auto-generated from `.env.example` + the shared agent-utilities set — do not edit._
 <!-- ENV-VARS-TABLE:END -->
 
 <!-- GOVERNED-CAPABILITY:START -->

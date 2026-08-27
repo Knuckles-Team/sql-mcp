@@ -8,18 +8,23 @@
       ],
       "env": {
         "MCP_TOOL_MODE": "intent",
+        "DUCKDBTOOL": "True",
         "SQLTOOL": "True",
+        "SQL_ALLOW_KG_INGEST": "False",
         "SQL_ALLOW_WRITES": "False",
         "SQL_CONNECTIONS": "{\"warehouse\": \"postgresql+psycopg://svc:password@db:5432/dw\"}",
         "SQL_DATABASE": "app",
+        "SQL_DEFAULT_CONNECTION": "warehouse",
         "SQL_DIALECT": "postgres",
         "SQL_HOST": "db.example.com",
         "SQL_MAX_ROWS": "500",
         "SQL_OPTIONS": "{\"sslmode\": \"require\"}",
         "SQL_PORT": "5432",
         "SQL_TIMEOUT_SECONDS": "30",
+        "SQL_TRINOTOOL": "True",
         "SQL_URL": "postgresql+psycopg://svc:password@db.example.com:5432/app",
-        "SQL_USERNAME": "svc"
+        "SQL_USERNAME": "svc",
+        "SQL_WRITE_CONNECTIONS": "[\"warehouse\"]"
       }
     }
   }

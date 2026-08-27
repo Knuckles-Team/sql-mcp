@@ -117,6 +117,39 @@ planners to dynamically reason about data layouts.""" ;
 
 :sqlDialect a owl:DatatypeProperty ;
     rdfs:label "sql dialect" ;
-    rdfs:comment "The SQL dialect of the connection the artifact was reflected from (e.g., postgres, mysql, sqlite)." ;
+    rdfs:comment "The SQL dialect of the connection the artifact was reflected from (e.g., postgres, mysql, sqlite, trino, duckdb)." ;
     rdfs:domain :DatabaseSchema ;
     rdfs:range xsd:string .
+
+:TrinoCatalog a owl:Class ;
+    rdfs:label "Trino Catalog" ;
+    rdfs:comment "A Trino catalog (a configured connector instance, e.g. an Iceberg lakehouse or a JDBC federation target), discovered via SHOW CATALOGS (CA-41)." ;
+    rdfs:subClassOf :TechnologyLayer .
+
+:TrinoQuery a owl:Class ;
+    rdfs:label "Trino Query" ;
+    rdfs:comment "One observed Trino query from system.runtime.queries — query id, submitting user, lifecycle state, and creation time (CA-41)." ;
+    rdfs:subClassOf :ApplicationLayer .
+
+:DuckDbAttachment a owl:Class ;
+    rdfs:label "DuckDB Iceberg Attachment" ;
+    rdfs:comment "One DuckDB session's ATTACH of an Iceberg REST catalog (Lakekeeper-shaped): the alias, warehouse, and REST endpoint it was attached with (CA-41)." ;
+    rdfs:subClassOf :TechnologyLayer .
+
+:hasSchema a owl:ObjectProperty ;
+    rdfs:label "has schema" ;
+    rdfs:comment "Links a Trino catalog to a schema (namespace) it exposes (CA-41)." ;
+    rdfs:domain :TrinoCatalog ;
+    rdfs:range :DatabaseSchema .
+
+:queriedTable a owl:ObjectProperty ;
+    rdfs:label "queried table" ;
+    rdfs:comment "Links an observed Trino query to a table it referenced, where resolvable (CA-41)." ;
+    rdfs:domain :TrinoQuery ;
+    rdfs:range :DatabaseTable .
+
+:attachesTable a owl:ObjectProperty ;
+    rdfs:label "attaches table" ;
+    rdfs:comment "Links a DuckDB Iceberg attachment to a table it exposes through the attached REST catalog (CA-41)." ;
+    rdfs:domain :DuckDbAttachment ;
+    rdfs:range :DatabaseTable .

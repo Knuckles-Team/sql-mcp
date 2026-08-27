@@ -15,7 +15,15 @@ from sql_mcp.dialects import (
     require_driver,
 )
 
-EXPECTED_DIALECTS = {"sqlite", "postgres", "mysql", "mssql", "oracle"}
+EXPECTED_DIALECTS = {
+    "sqlite",
+    "postgres",
+    "mysql",
+    "mssql",
+    "oracle",
+    "trino",
+    "duckdb",
+}
 
 
 def test_registry_covers_required_dialects():
@@ -30,6 +38,8 @@ def test_extras_matrix():
         "mysql": "mysql",
         "mssql": "mssql",
         "oracle": "oracle",
+        "trino": "trino",
+        "duckdb": "duckdb",
     }
 
 
@@ -84,6 +94,19 @@ def test_build_url_sqlite_paths():
     assert build_url("sqlite", database="/data/x.db").database == "/data/x.db"
 
 
+def test_build_url_trino_applies_scheme_and_default_port():
+    url = build_url("trino", host="trino.apps.svc", username="svc", database="system")
+    assert url.drivername == "trino"
+    assert url.port == 8080
+    assert url.database == "system"
+
+
+def test_build_url_duckdb_paths():
+    assert build_url("duckdb").database == ":memory:"
+    assert build_url("duckdb", database="/data/x.duckdb").database == "/data/x.duckdb"
+    assert build_url("duckdb").drivername == "duckdb"
+
+
 def test_build_url_quotes_special_characters():
     url = build_url("postgres", host="h", username="svc", password="p@:s/s")
     assert url.password == "p@:s/s"
@@ -96,6 +119,8 @@ def test_dialect_for_url_matches_backend():
         ("postgresql://h/db", "postgres"),
         ("mysql+pymysql://h/db", "mysql"),
         ("sqlite:///:memory:", "sqlite"),
+        ("trino://h:8080/system", "trino"),
+        ("duckdb:///:memory:", "duckdb"),
     ]:
         spec = dialect_for_url(make_url(url))
         assert spec is not None
@@ -130,11 +155,50 @@ def test_require_driver_with_mocked_import():
         imp.assert_called_once_with("oracledb")
 
 
+def test_require_driver_trino_names_extra():
+    spec = DialectSpec(
+        name="trino",
+        sqlalchemy_scheme="trino",
+        driver_module="trino_definitely_not_installed",
+        extra="trino",
+        default_port=8080,
+        explain_prefix="EXPLAIN",
+        version_sql=None,
+        active_connections_sql=None,
+    )
+    with pytest.raises(ImportError, match=r"sql-mcp\[trino\]"):
+        require_driver(spec)
+    assert driver_available(spec) is False
+
+
+def test_require_driver_duckdb_names_extra():
+    spec = DialectSpec(
+        name="duckdb",
+        sqlalchemy_scheme="duckdb",
+        driver_module="duckdb_engine_definitely_not_installed",
+        extra="duckdb",
+        default_port=None,
+        explain_prefix="EXPLAIN",
+        version_sql=None,
+        active_connections_sql=None,
+    )
+    with pytest.raises(ImportError, match=r"sql-mcp\[duckdb\]"):
+        require_driver(spec)
+    assert driver_available(spec) is False
+
+
 def test_every_networked_dialect_declares_admin_sql():
-    for name in ("postgres", "mysql", "mssql", "oracle"):
+    for name in ("postgres", "mysql", "mssql", "oracle", "trino"):
         spec = DIALECTS[name]
         assert spec.version_sql
         assert spec.active_connections_sql
+
+
+def test_duckdb_is_in_process_no_network_admin_sql():
+    spec = DIALECTS["duckdb"]
+    assert spec.default_port is None
+    assert spec.version_sql
+    assert spec.active_connections_sql is None
 
 
 def test_mssql_and_oracle_have_no_portable_read_only_explain():

@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "sql-mcp"
 version = "2.1.0"
-description = "Generic SQL database (Postgres, MySQL/MariaDB, MSSQL, Oracle, SQLite) API + MCP Server + A2A Server for Agentic AI!"
+description = "Generic SQL database (Postgres, MySQL/MariaDB, MSSQL, Oracle, SQLite, Trino, DuckDB) API + MCP Server + A2A Server for Agentic AI!"
 readme = "README.md"
 classifiers = [ "Development Status :: 4 - Beta", "License :: OSI Approved :: MIT License", "Environment :: Console", "Operating System :: POSIX :: Linux", "Programming Language :: Python :: 3",]
 requires-python = ">=3.12, <3.15"
@@ -24,7 +24,9 @@ postgres = [ "psycopg[binary]>=3.3.4",]
 mysql = [ "pymysql>=1.2.0",]
 mssql = [ "pyodbc>=5.3.0",]
 oracle = [ "oracledb>=4.0.2",]
-all = [ "sql-mcp[mcp,agent,postgres,mysql,mssql,oracle,logfire]>=1.0.0",]
+trino = [ "sqlalchemy-trino>=0.5.0", "trino>=0.335.0",]
+duckdb = [ "duckdb-engine>=0.13.0", "duckdb>=1.1.0",]
+all = [ "sql-mcp[mcp,agent,postgres,mysql,mssql,oracle,trino,duckdb,logfire]>=1.0.0",]
 test = [ "pytest-xdist>=3.8.0", "pytest>=9.1.1", "pytest-asyncio>=1.4.0", "pytest-cov>=7.1.0",]
 
 [project.scripts]

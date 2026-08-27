@@ -334,6 +334,8 @@ async def test_admin_actions(mcp):
         "mysql",
         "mssql",
         "oracle",
+        "trino",
+        "duckdb",
     }
     sqlite_entry = next(d for d in dialects if d["dialect"] == "sqlite")
     assert sqlite_entry["driver_installed"] is True

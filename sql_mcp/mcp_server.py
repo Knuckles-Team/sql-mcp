@@ -13,6 +13,7 @@ from starlette.responses import JSONResponse
 from sql_mcp.api_client import Api
 from sql_mcp.auth import get_api
 from sql_mcp.mcp.mcp_sql import register_sql_tools
+from sql_mcp.mcp.mcp_sql_trino import register_duckdb_tools, register_sql_trino_tools
 
 __version__ = "2.1.0"
 logger = get_logger(name="sql_mcp")
@@ -27,7 +28,9 @@ def get_mcp_instance() -> tuple[Any, ...]:
             "Generic SQL database MCP Server - read-only queries, gated "
             "DML/DDL, schema reflection, and connection admin over "
             "SQLAlchemy 2.x Core (SQLite, Postgres, MySQL/MariaDB, MSSQL, "
-            "Oracle) with named multi-connection support."
+            "Oracle, Trino, DuckDB) with named multi-connection support, "
+            "plus Trino catalog/schema/query-log/explain tools and a "
+            "DuckDB Iceberg REST-catalog attach tool."
         ),
     )
 
@@ -44,7 +47,11 @@ def get_mcp_instance() -> tuple[Any, ...]:
         client_cls=Api,
         get_client=get_api,
         service="sql-mcp",
-        registrars=[register_sql_tools],
+        registrars=[
+            register_sql_tools,
+            register_sql_trino_tools,
+            register_duckdb_tools,
+        ],
     )
 
     for mw in middlewares:

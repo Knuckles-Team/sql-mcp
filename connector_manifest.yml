@@ -50,6 +50,30 @@ resources:
     label: references
     target: DatabaseTable
     lpg_rel_type: ''
+- name: DuckDbAttachment
+  label: DuckDB Iceberg Attachment
+  id_prefix: duckdbattachment
+  relations:
+  - name: attachesTable
+    label: attaches table
+    target: DatabaseTable
+    lpg_rel_type: ''
+- name: TrinoCatalog
+  label: Trino Catalog
+  id_prefix: trinocatalog
+  relations:
+  - name: hasSchema
+    label: has schema
+    target: DatabaseSchema
+    lpg_rel_type: ''
+- name: TrinoQuery
+  label: Trino Query
+  id_prefix: trinoquery
+  relations:
+  - name: queriedTable
+    label: queried table
+    target: DatabaseTable
+    lpg_rel_type: ''
 actions:
 - id: epistemic-answer
   name: Epistemic Answer
@@ -115,6 +139,33 @@ schema_mappings:
       isPrimaryKey: xsd:boolean
       isUnique: xsd:boolean
       sqlDialect: xsd:string
+  DuckDbAttachment:
+    ontology_class: TechnologyLayer
+    fields:
+      dataType: xsd:string
+      isForeignKey: xsd:boolean
+      isNullable: xsd:boolean
+      isPrimaryKey: xsd:boolean
+      isUnique: xsd:boolean
+      sqlDialect: xsd:string
+  TrinoCatalog:
+    ontology_class: TechnologyLayer
+    fields:
+      dataType: xsd:string
+      isForeignKey: xsd:boolean
+      isNullable: xsd:boolean
+      isPrimaryKey: xsd:boolean
+      isUnique: xsd:boolean
+      sqlDialect: xsd:string
+  TrinoQuery:
+    ontology_class: ApplicationLayer
+    fields:
+      dataType: xsd:string
+      isForeignKey: xsd:boolean
+      isNullable: xsd:boolean
+      isPrimaryKey: xsd:boolean
+      isUnique: xsd:boolean
+      sqlDialect: xsd:string
 sync:
 - preset: sql-tables
   server: sql-mcp
@@ -139,20 +190,20 @@ sync:
     doc_type: database_table
 provenance:
   generated_by: scripts/generate_connector_manifests.py
-  generated_at: '2026-08-21T04:30:39Z'
+  generated_at: '2026-08-27T02:30:00Z'
   source_artifacts:
   - sql_mcp/connectors/mcp_source_presets.json
   - sql_mcp/connectors/tool_schema_fingerprints.json
   - sql_mcp/ontology/database.ttl
   integrity:
     algorithm: urdna2015-sha256
-    hash: 1a27842b0a88bb5583eb7016d40e5d2e90a5ef0ac7083c92aff8e6ee24cfcaa0
-    triple_count: 70
+    hash: acbfe1563358609faa77ed4c03a6dea6a9f97ce6a7537d841af569ea5bbec3eb
+    triple_count: 94
   signer: UNSIGNED-PREVIEW
   signature_algorithm: none
   signing_public_key: ''
   signature: null
-  dependency_lock_digest: d9a7a8eafa985d82a117af04bd873825c6ee2cae172ea813fdad13e2db9df1fd
+  source_commit: c0af35decac40fb475ed43512d90ae90a08b06de
 policy:
   pii_fields: {}
   tenant_boundary: null
@@ -170,3 +221,16 @@ review_todos:
   \ verify manually before relying on this crosswalk for reasoning/joins."
 - "schema_mappings.DatabaseView.ontology_class = 'ApplicationLayer' [source ttl rdfs:subClassOf] \u2014\
   \ verify manually before relying on this crosswalk for reasoning/joins."
+- "schema_mappings.DuckDbAttachment.ontology_class = 'TechnologyLayer' [source ttl rdfs:subClassOf] \u2014\
+  \ verify manually before relying on this crosswalk for reasoning/joins."
+- "schema_mappings.TrinoCatalog.ontology_class = 'TechnologyLayer' [source ttl rdfs:subClassOf] \u2014\
+  \ verify manually before relying on this crosswalk for reasoning/joins."
+- "schema_mappings.TrinoQuery.ontology_class = 'ApplicationLayer' [source ttl rdfs:subClassOf] \u2014\
+  \ verify manually before relying on this crosswalk for reasoning/joins."
+- "DEC-CA-07 typed Actions NOT added to the actions: block above (CA-41): agent_utilities.knowledge_graph.ontology.connector_manifest.ActionSpec\
+  \ is currently {id, name, description} with extra='forbid', so a DEC-CA-07-shaped entry (parameters/target_resource/conflict_policy/requires_approval)\
+  \ would fail validation \u2014 confirmed by direct read of connector_manifest.py, matching the blocker CA-44/CA-45/CA-46 also hit. Proposed Actions for\
+  \ when ActionSpec is extended: (1) sql_execute \u2014 target_resource: DatabaseTable, conflict_policy: reject (no source-of-truth write authority per\
+  \ this lane's Authority section), requires_approval: true, gated by SQL_ALLOW_WRITES + SQL_WRITE_CONNECTIONS; (2) sql_duckdb_attach_iceberg \u2014\
+  \ target_resource: DuckDbAttachment, conflict_policy: reject (read/query surface only, never a competing write authority), requires_approval: false\
+  \ (attach is local-session, non-mutating; the REST catalog itself gates read access via the caller's own token)."

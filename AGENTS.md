@@ -7,6 +7,8 @@
 - `sql_mcp/`: Main server code
   - `api/api_client_sql.py`: `SqlApi` — the SQLAlchemy 2.x Core facade (all business logic)
   - `mcp/mcp_sql.py`: the four action-dispatch MCP tools (thin shims)
+  - `mcp/mcp_sql_trino.py`: Trino discovery/explain tools + the DuckDB Iceberg
+    REST-catalog attach tool (CA-41; see "Trino / DuckDB" below)
   - `dialects.py`: the dialect registry (`CONCEPT:SQ-OS.governance.url-building-drivers-dialect`)
   - `safety.py`: the read-only statement gate (`CONCEPT:SQ-OS.safety.allow-deny-classification`)
   - `auth.py`: named-connection + policy config from env (`CONCEPT:SQ-OS.identity.env-parsing-secret-redaction`)
@@ -18,7 +20,9 @@
 - agent-utilities >= 0.47.0
 - Model Context Protocol (MCP)
 - SQLAlchemy 2.x **Core** (no ORM) over SQLite (core), PostgreSQL (`sql-mcp[postgres]`),
-  MySQL/MariaDB (`sql-mcp[mysql]`), MSSQL (`sql-mcp[mssql]`), Oracle (`sql-mcp[oracle]`)
+  MySQL/MariaDB (`sql-mcp[mysql]`), MSSQL (`sql-mcp[mssql]`), Oracle (`sql-mcp[oracle]`),
+  Trino (`sql-mcp[trino]`, `sqlalchemy-trino`+`trino`), DuckDB (`sql-mcp[duckdb]`,
+  `duckdb-engine`+`duckdb`, in-process/embedded — no host/port)
 
 ## Commands
 - `python -m pytest`: Run tests
@@ -35,6 +39,66 @@
 - Passwords live in `sqlalchemy.URL` objects and are only rendered with
   `hide_password=True`; never log a raw DSN.
 - Every result path returns the bounded envelope (row cap + timeout).
+- **Narrow, documented exception** (`mcp/mcp_sql_trino.py`): Trino's
+  `SHOW SCHEMAS FROM <catalog>` and DuckDB's `ATTACH`/`CREATE SECRET` cannot
+  bind identifiers/catalog names as SQLAlchemy parameters. Those values are
+  restricted to a strict allowlisted charset by a pydantic `Field(pattern=...)`
+  (`^[A-Za-z_][A-Za-z0-9_]*$` for identifiers, a JWT-charset pattern for the
+  DuckDB Iceberg bearer token) *before* any f-string interpolation — the same
+  validated-then-interpolate technique `safety.py` already uses for PRAGMA
+  names. Never widen those patterns without re-deriving the injection-safety
+  argument.
+
+## Trino / DuckDB (CA-41)
+
+- Generic reads/writes/schema/admin against a `trino`/`duckdb` named
+  connection already work through the existing four dispatch tools once
+  `SQL_CONNECTIONS` registers one — no dispatcher change was needed for that
+  surface. `mcp/mcp_sql_trino.py` adds the reads those don't cover:
+  `sql_trino_catalogs`, `sql_trino_schemas`, `sql_trino_queries` (200-row
+  cap), `sql_trino_explain`, and `sql_duckdb_attach_iceberg`.
+- **Auth path:** Keycloak JWT (client-credentials, `scope=lakekeeper`) was
+  attempted first and worked — `sql_duckdb_attach_iceberg`'s `token` field
+  carries the caller's own bearer token straight through to DuckDB's
+  `CREATE SECRET (TYPE ICEBERG, TOKEN ...)`, never an ambient/service-wide
+  credential. The live Trino deployment at pin `476` did **not** require any
+  credential at all to connect (`trino://<any-username>@host:8080/...`
+  succeeds unauthenticated) — CA-52 owns hardening that; until it lands,
+  treat the current absence of enforced Trino auth as an open item, not a
+  password-file fallback (no fallback was needed here).
+- **`trino.arpa` 406s** on every external request (Jetty rejects nginx's
+  `X-Forwarded-For` header — CA-52's territory, `services/trino`). Point
+  connections at the Trino `Service` ClusterIP instead
+  (`kubectl -n apps get svc trino`) until the ingress fix lands.
+- **DuckDB Iceberg REST attach, tested live against the deployed
+  Lakekeeper:** `ATTACH` against Lakekeeper's REST catalog (ClusterIP,
+  `http://`, not `https://` — DuckDB's httpfs doesn't trust the cluster's
+  private CA the way `curl -k` does) succeeded and enumerated a real table
+  (`analytics.trino_verify`). Reading the table's actual row data additionally
+  needs the Iceberg REST catalog's *vended* S3 credentials (or a manually
+  created DuckDB `S3` secret) to resolve against the backing SeaweedFS
+  bucket; in this environment that data-read leg 403'd (`Access Denied`,
+  vended credentials not flowing) — a Lakekeeper/SeaweedFS storage-credential
+  wiring gap, out of this lane's scope (`services/trino`/Lakekeeper
+  territory), not a sql-mcp defect. `sql_duckdb_attach_iceberg` therefore
+  proves the REST-catalog attach + table discovery live; it does not attempt
+  a same-lane S3-direct fallback, since the REST path itself works — adding a
+  static S3 key inside the tool would also violate this lane's own
+  "never a separate, un-scoped static key" invariant.
+- **Testing from off-cluster:** the Iceberg REST catalog vends S3 object URLs
+  using in-cluster DNS names (`*.apps.svc.cluster.local`), which a workstation
+  outside the cluster can't resolve without a temporary `/etc/hosts` entry
+  pointed at the relevant `ClusterIP`. Pods running the real `sql-mcp`
+  deployment resolve these natively via CoreDNS — this is a dev-host testing
+  artifact only, not a runtime requirement.
+- **W0x preflight (pgwire vs. `graph_compute.sql_exec()`):** the live
+  `graph-os` deployment does not expose pgwire at all today — no
+  `EPISTEMIC_GRAPH_PGWIRE_ADDR` env var on the pod, no port `5433` on the
+  container or the `graph-os` Service (only `http`/`webui` ports exist).
+  `sql_mcp/kg_pgwire.py`'s connection path is therefore not live in this
+  deployment, so the tenant-shared-vs-owner-scoped catalog split this lane's
+  brief flagged cannot be measured by direct comparison today. Recorded as an
+  open question for CA-34, not resolved here.
 
 ## ⛔ Keep the Repository Root Pristine — No Scratch / Temp / Debug Files
 
