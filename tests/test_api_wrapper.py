@@ -1,8 +1,11 @@
 """SqlApi core paths: query/execute/schema/admin against in-memory SQLite."""
 
+import enum
 import math
 import time
+import uuid
 from concurrent.futures import ThreadPoolExecutor
+from decimal import Decimal
 from threading import Event
 from unittest import mock
 
@@ -16,7 +19,7 @@ from sql_mcp.api.api_client_sql import (
 )
 from sql_mcp.api_client import Api
 from sql_mcp.safety import StatementNotAllowedError
-from tests.conftest import MEMORY_URL
+from tests.conftest import MEMORY_URL, build_api
 
 # --------------------------------------------------------------------- #
 # query
@@ -636,6 +639,105 @@ def test_result_byte_limit_applies_to_the_first_row():
         result = client.query("SELECT 'abcdefghij' AS a, 'klmnopqrst' AS b")
         assert result["rows"] == []
         assert result["bytes_returned"] == 0
+        assert result["truncated"] is True
+    finally:
+        client.dispose()
+
+
+# --------------------------------------------------------------------- #
+# _json_safe_value: branches not reachable through a plain SQL round trip
+# --------------------------------------------------------------------- #
+
+
+class _Color(enum.Enum):
+    RED = "red"
+
+
+def test_json_safe_value_passes_through_scalars(api):
+    assert api._json_safe_value(None) is None
+    assert api._json_safe_value(True) is True
+    assert api._json_safe_value(7) == 7
+
+
+def test_json_safe_value_stringifies_non_finite_floats(api):
+    assert api._json_safe_value(1.5) == 1.5
+    assert api._json_safe_value(float("nan")) == "nan"
+    assert api._json_safe_value(float("inf")) == "inf"
+
+
+def test_json_safe_value_isoformats_date_and_time_types(api):
+    import datetime as dt
+
+    assert api._json_safe_value(dt.date(2024, 1, 2)) == "2024-01-02"
+    assert api._json_safe_value(dt.datetime(2024, 1, 2, 3, 4, 5)) == (
+        "2024-01-02T03:04:05"
+    )
+
+
+def test_json_safe_value_stringifies_decimal_and_uuid(api):
+    value = Decimal("3.14")
+    assert api._json_safe_value(value) == "3.14"
+    fixed_uuid = uuid.UUID("12345678-1234-5678-1234-567812345678")
+    assert api._json_safe_value(fixed_uuid) == str(fixed_uuid)
+
+
+def test_json_safe_value_unwraps_enum_to_its_value(api):
+    assert api._json_safe_value(_Color.RED) == "red"
+
+
+def test_json_safe_value_truncates_large_mapping(api):
+    mapping = {str(i): i for i in range(1_050)}
+    normalized = api._json_safe_value(mapping)
+    assert normalized["__truncated__"] is True
+    assert len(normalized) == 1_001  # 1000 kept keys + the truncation marker
+
+
+def test_json_safe_value_truncates_large_sequence(api):
+    sequence = list(range(1_050))
+    normalized = api._json_safe_value(sequence)
+    assert normalized[-1] == {"__truncated__": True}
+    assert len(normalized) == 1_001  # 1000 kept items + the truncation marker
+
+
+def test_json_safe_value_falls_back_to_str_for_unknown_types(api):
+    class Opaque:
+        def __str__(self):
+            return "opaque-repr"
+
+    assert api._json_safe_value(Opaque()) == "opaque-repr"
+
+
+def test_json_safe_value_clips_at_recursion_depth_regardless_of_size(api):
+    # Depth-exceeded always truncates+ellipsizes, even when the value is
+    # short enough to fit -- unlike the ordinary string-length clip path.
+    result = api._json_safe_value("x", _depth=11)
+    assert result == "x…"
+
+
+def test_json_safe_value_clips_oversized_string(api):
+    client = build_api(max_cell_bytes=4)
+    try:
+        assert client._json_safe_value("abcdefgh") == "abcd…"
+        assert client._json_safe_value("ab") == "ab"
+    finally:
+        client.dispose()
+
+
+# --------------------------------------------------------------------- #
+# _result_envelope: branches not reachable through the seeded fixture data
+# --------------------------------------------------------------------- #
+
+
+def test_query_column_type_is_unknown_when_every_row_is_null(api):
+    result = api.query("SELECT NULL AS always_null FROM users")
+    assert result["columns"][0]["type"] == "unknown"
+
+
+def test_query_truncates_columns_beyond_max_columns():
+    client = build_api(max_columns=2)
+    try:
+        result = client.query("SELECT 1 AS a, 2 AS b, 3 AS c")
+        assert [c["name"] for c in result["columns"]] == ["a", "b"]
         assert result["truncated"] is True
     finally:
         client.dispose()
