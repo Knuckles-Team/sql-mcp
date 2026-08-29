@@ -212,6 +212,46 @@ def _resolve_default_connection(
     return default_connection or next(iter(connections))
 
 
+class _ConnectionRunContext:
+    """Per-call state for ``SqlApi._run_on_connection``.
+
+    Bundles the run's constant options (transactional, read_only,
+    effective_timeout) with the mutable cancel/cleanup bookkeeping shared
+    between the operation itself and a concurrent ``cancel()`` call.
+    """
+
+    def __init__(
+        self, transactional: bool, read_only: bool, effective_timeout: float
+    ) -> None:
+        self.transactional = transactional
+        self.read_only = read_only
+        self.effective_timeout = effective_timeout
+        self.timed_out = threading.Event()
+        self._lock = threading.Lock()
+        self._driver_connection: Any = None
+        self._cancel_supported = False
+
+    def set_driver_connection(self, driver_connection: Any) -> None:
+        with self._lock:
+            self._driver_connection = driver_connection
+
+    def clear_driver_connection(self) -> None:
+        with self._lock:
+            self._driver_connection = None
+
+    def driver_connection(self) -> Any:
+        with self._lock:
+            return self._driver_connection
+
+    def set_cancel_supported(self, supported: bool) -> None:
+        with self._lock:
+            self._cancel_supported = supported
+
+    def cancel_supported(self) -> bool:
+        with self._lock:
+            return self._cancel_supported
+
+
 class SqlApi:
     """Multi-connection SQL client over SQLAlchemy Core.
 
@@ -514,6 +554,80 @@ class SqlApi:
             conn.exec_driver_sql("SET TRANSACTION READ ONLY")
         return None
 
+    def _acquire_operation_lock(self, eng: Engine) -> threading.Lock:
+        with self._engine_lock:
+            operation_lock = self._operation_locks.get(eng)
+        return operation_lock or threading.Lock()
+
+    def _cancel_pending_operation(self, context: _ConnectionRunContext) -> None:
+        context.timed_out.set()
+        driver_connection = context.driver_connection()
+        if driver_connection is not None:
+            cancelled = self._cancel_driver_connection(driver_connection)
+            context.set_cancel_supported(cancelled)
+
+    def _finalize_connection_run(
+        self,
+        conn: Connection,
+        context: _ConnectionRunContext,
+        reset_timeout: Callable[[], None] | None,
+        reset_read_only: Callable[[], None] | None,
+    ) -> None:
+        if reset_timeout is not None:
+            try:
+                reset_timeout()
+            except Exception:
+                conn.invalidate()
+        if reset_read_only is not None:
+            try:
+                reset_read_only()
+            except Exception:
+                conn.invalidate()
+        if context.timed_out.is_set() and not context.cancel_supported():
+            conn.invalidate()
+        context.clear_driver_connection()
+
+    def _execute_on_connection(
+        self,
+        conn: Connection,
+        operation: Callable[[Connection], Any],
+        context: _ConnectionRunContext,
+    ) -> Any:
+        context.set_driver_connection(conn.connection.driver_connection)
+        transaction = conn.begin() if context.transactional else None
+        reset_read_only: Callable[[], None] | None = None
+        reset_timeout: Callable[[], None] | None = None
+        try:
+            if context.read_only:
+                reset_read_only = self._enable_read_only(conn)
+            reset_timeout = self._configure_statement_timeout(
+                conn, context.effective_timeout
+            )
+            result = operation(conn)
+            if context.timed_out.is_set():
+                raise SqlTimeoutError("Statement completed after its timeout.")
+            if transaction is not None:
+                transaction.commit()
+            return result
+        except BaseException:
+            if transaction is not None and transaction.is_active:
+                transaction.rollback()
+            raise
+        finally:
+            self._finalize_connection_run(conn, context, reset_timeout, reset_read_only)
+
+    def _run_locked_operation(
+        self,
+        eng: Engine,
+        operation: Callable[[Connection], Any],
+        context: _ConnectionRunContext,
+    ) -> Any:
+        with self._acquire_operation_lock(eng):
+            if context.timed_out.is_set():
+                raise SqlTimeoutError("Statement expired before execution began.")
+            with eng.connect() as conn:
+                return self._execute_on_connection(conn, operation, context)
+
     def _run_on_connection(
         self,
         eng: Engine,
@@ -524,70 +638,19 @@ class SqlApi:
         read_only: bool = False,
     ) -> Any:
         """Run one connection-scoped operation with cancel and rollback semantics."""
-        effective_timeout = self._effective_timeout(timeout)
-        timed_out = threading.Event()
-        state_lock = threading.Lock()
-        state: dict[str, Any] = {}
-
-        def cancel() -> None:
-            timed_out.set()
-            with state_lock:
-                driver_connection = state.get("driver_connection")
-            if driver_connection is not None:
-                cancelled = self._cancel_driver_connection(driver_connection)
-                with state_lock:
-                    state["cancel_supported"] = cancelled
+        context = _ConnectionRunContext(
+            transactional=transactional,
+            read_only=read_only,
+            effective_timeout=self._effective_timeout(timeout),
+        )
 
         def run() -> Any:
-            with self._engine_lock:
-                operation_lock = self._operation_locks.get(eng)
-            lock = operation_lock or threading.Lock()
-            with lock:
-                if timed_out.is_set():
-                    raise SqlTimeoutError("Statement expired before execution began.")
-                with eng.connect() as conn:
-                    with state_lock:
-                        state["driver_connection"] = conn.connection.driver_connection
-                    transaction = conn.begin() if transactional else None
-                    reset_read_only: Callable[[], None] | None = None
-                    reset_timeout: Callable[[], None] | None = None
-                    try:
-                        if read_only:
-                            reset_read_only = self._enable_read_only(conn)
-                        reset_timeout = self._configure_statement_timeout(
-                            conn, effective_timeout
-                        )
-                        result = operation(conn)
-                        if timed_out.is_set():
-                            raise SqlTimeoutError(
-                                "Statement completed after its timeout."
-                            )
-                        if transaction is not None:
-                            transaction.commit()
-                        return result
-                    except BaseException:
-                        if transaction is not None and transaction.is_active:
-                            transaction.rollback()
-                        raise
-                    finally:
-                        if reset_timeout is not None:
-                            try:
-                                reset_timeout()
-                            except Exception:
-                                conn.invalidate()
-                        if reset_read_only is not None:
-                            try:
-                                reset_read_only()
-                            except Exception:
-                                conn.invalidate()
-                        with state_lock:
-                            cancel_supported = state.get("cancel_supported", False)
-                        if timed_out.is_set() and not cancel_supported:
-                            conn.invalidate()
-                        with state_lock:
-                            state.pop("driver_connection", None)
+            return self._run_locked_operation(eng, operation, context)
 
-        return self._run_with_timeout(run, effective_timeout, on_timeout=cancel)
+        def cancel() -> None:
+            self._cancel_pending_operation(context)
+
+        return self._run_with_timeout(run, context.effective_timeout, on_timeout=cancel)
 
     def _effective_max_rows(self, max_rows: int | None) -> int:
         if max_rows is None:
