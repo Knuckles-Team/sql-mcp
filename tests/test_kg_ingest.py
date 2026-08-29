@@ -224,3 +224,122 @@ def test_retired_structural_alias_is_rejected():
 def test_empty_native_ingest_is_rejected():
     with pytest.raises(NativeIngestError, match="at least one entity"):
         ingest_entities([], client=_FakeClient())
+
+
+# --------------------------------------------------------------------- #
+# catalog_to_entities: branches the happy-path fixture above never visits
+# --------------------------------------------------------------------- #
+
+
+def test_catalog_to_entities_rejects_missing_objects_list():
+    with pytest.raises(ValueError, match="bounded SQL schema catalog"):
+        catalog_to_entities({"connection": "default"})
+
+
+def test_catalog_to_entities_rejects_non_dict_catalog():
+    with pytest.raises(ValueError, match="bounded SQL schema catalog"):
+        catalog_to_entities("not-a-catalog")
+
+
+def test_catalog_to_entities_defaults_unset_schema_to_default_label():
+    catalog = {"connection": "default", "objects": []}
+    entities, _ = catalog_to_entities(catalog)
+    assert entities[0]["id"] == "database:schema:default.default"
+    assert entities[0]["name"] == "default"
+
+
+def test_catalog_to_entities_skips_non_dict_and_unrecognized_objects():
+    catalog = {
+        "connection": "default",
+        "schema": "public",
+        "objects": [
+            "not-a-dict-object",
+            {"name": "some_sequence", "type": "sequence"},
+            {"type": "table"},  # missing name -> skipped
+            {"name": "", "type": "table"},  # empty name -> skipped
+        ],
+    }
+    entities, relationships = catalog_to_entities(catalog)
+    # Only the schema entity itself survives; every object was rejected.
+    assert [e["node_type"] for e in entities] == ["DatabaseSchema"]
+    assert relationships == []
+
+
+def test_catalog_to_entities_stops_at_first_non_dict_object():
+    catalog = {
+        "connection": "default",
+        "schema": "public",
+        "objects": [{"name": "a", "type": "view"}, None, {"name": "b", "type": "view"}],
+    }
+    entities, _ = catalog_to_entities(catalog)
+    view_names = {e["name"] for e in entities if e["node_type"] == "DatabaseView"}
+    assert view_names == {"a"}
+
+
+def test_catalog_to_entities_skips_non_dict_foreign_keys():
+    catalog = {
+        "connection": "default",
+        "schema": "public",
+        "objects": [
+            {
+                "name": "orders",
+                "type": "table",
+                "columns": [],
+                "foreign_keys": ["not-a-dict-fk", {"referred_table": "users"}],
+            }
+        ],
+    }
+    entities, relationships = catalog_to_entities(catalog)
+    table_id = "database:table:default.public.orders"
+    assert {
+        "source": table_id,
+        "target": "database:table:default.public.users",
+        "relationship": "referencesTable",
+    } in relationships
+    assert len([r for r in relationships if r["relationship"] == "referencesTable"]) == 1
+
+
+def test_catalog_to_entities_skips_invalid_columns_and_indexes():
+    catalog = {
+        "connection": "default",
+        "schema": "public",
+        "objects": [
+            {
+                "name": "widgets",
+                "type": "table",
+                "columns": ["not-a-dict-column", {"name": ""}, {"type": "INTEGER"}],
+                "indexes": ["not-a-dict-index", {"name": ""}],
+            }
+        ],
+    }
+    entities, _ = catalog_to_entities(catalog)
+    assert [e for e in entities if e["node_type"] == "DatabaseColumn"] == []
+    assert [e for e in entities if e["node_type"] == "DatabaseIndex"] == []
+
+
+def test_catalog_to_entities_caps_relationships_independently_of_entity_count():
+    # Each foreign key produces a relationship WITHOUT a new entity (the
+    # referenced table isn't itself a catalog object), so a table with many
+    # foreign keys can attempt far more relationships than max_relationships
+    # (max_objects * 4) while entities stays well under max_objects -- the
+    # only way to exercise add_relationship's own cap independently of
+    # entities_full().
+    foreign_keys = [
+        {"columns": [], "referred_table": f"ref_{i}"} for i in range(20)
+    ]
+    catalog = {
+        "connection": "default",
+        "schema": "public",
+        "objects": [
+            {
+                "name": "hub",
+                "type": "table",
+                "columns": [],
+                "foreign_keys": foreign_keys,
+            }
+        ],
+    }
+    entities, relationships = catalog_to_entities(catalog, max_objects=2)
+    # schema + hub table = 2 entities; max_relationships = 2 * 4 = 8.
+    assert len(entities) == 2
+    assert len(relationships) == 8
