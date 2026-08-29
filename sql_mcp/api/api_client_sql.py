@@ -666,53 +666,74 @@ class SqlApi:
             )
         return sql
 
-    def _json_safe_value(self, value: Any, _depth: int = 0) -> Any:
-        if _depth > 10:
-            raw = str(value).encode("utf-8")[: self.max_cell_bytes]
-            return raw.decode("utf-8", errors="ignore") + "…"
-        if isinstance(value, str):
-            encoded_value = value.encode("utf-8")
-            if len(encoded_value) <= self.max_cell_bytes:
-                return value
-            return (
-                encoded_value[: self.max_cell_bytes].decode("utf-8", errors="ignore")
-                + "…"
-            )
-        if value is None or isinstance(value, (bool, int)):
-            normalized = value
-        elif isinstance(value, float):
-            normalized = value if math.isfinite(value) else str(value)
-        elif isinstance(value, (dt.date, dt.time, dt.datetime)):
-            normalized = value.isoformat()
-        elif isinstance(value, (Decimal, uuid.UUID)):
-            normalized = str(value)
-        elif isinstance(value, enum.Enum):
-            normalized = self._json_safe_value(value.value, _depth + 1)
-        elif isinstance(value, (bytes, bytearray, memoryview)):
-            raw = bytes(value)
-            clipped = raw[: self.max_cell_bytes]
-            normalized = {
-                "encoding": "base64",
-                "data": base64.b64encode(clipped).decode("ascii"),
-                "truncated": len(raw) > len(clipped),
-            }
-        elif isinstance(value, Mapping):
-            normalized = {}
-            for index, (key, item) in enumerate(value.items()):
-                if index >= 1_000:
-                    normalized["__truncated__"] = True
-                    break
-                normalized[str(key)] = self._json_safe_value(item, _depth + 1)
-        elif isinstance(value, (list, tuple, set, frozenset)):
-            sequence = list(value)
-            normalized = [
-                self._json_safe_value(item, _depth + 1) for item in sequence[:1_000]
-            ]
-            if len(sequence) > 1_000:
-                normalized.append({"__truncated__": True})
-        else:
-            normalized = str(value)
+    def _clip_text(self, value: str) -> str:
+        """Truncate to max_cell_bytes on a UTF-8 boundary, if it doesn't already fit."""
+        encoded_value = value.encode("utf-8")
+        if len(encoded_value) <= self.max_cell_bytes:
+            return value
+        return (
+            encoded_value[: self.max_cell_bytes].decode("utf-8", errors="ignore") + "…"
+        )
 
+    def _clip_depth_exceeded(self, value: Any) -> str:
+        """Recursion-depth guard: always clip+ellipsize, regardless of size."""
+        raw = str(value).encode("utf-8")[: self.max_cell_bytes]
+        return raw.decode("utf-8", errors="ignore") + "…"
+
+    def _normalize_bytes_for_json(self, value: bytes | bytearray | memoryview) -> dict:
+        raw = bytes(value)
+        clipped = raw[: self.max_cell_bytes]
+        return {
+            "encoding": "base64",
+            "data": base64.b64encode(clipped).decode("ascii"),
+            "truncated": len(raw) > len(clipped),
+        }
+
+    def _normalize_mapping_for_json(self, value: Mapping, depth: int) -> dict:
+        normalized: dict[str, Any] = {}
+        for index, (key, item) in enumerate(value.items()):
+            if index >= 1_000:
+                normalized["__truncated__"] = True
+                break
+            normalized[str(key)] = self._json_safe_value(item, depth + 1)
+        return normalized
+
+    def _normalize_sequence_for_json(self, value: list | tuple | set | frozenset, depth: int) -> list:
+        sequence = list(value)
+        normalized = [
+            self._json_safe_value(item, depth + 1) for item in sequence[:1_000]
+        ]
+        if len(sequence) > 1_000:
+            normalized.append({"__truncated__": True})
+        return normalized
+
+    def _normalize_scalar_for_json(self, value: Any, depth: int) -> tuple[bool, Any]:
+        """Return (handled, normalized) for the non-container scalar branches."""
+        if value is None or isinstance(value, (bool, int)):
+            return True, value
+        if isinstance(value, float):
+            return True, value if math.isfinite(value) else str(value)
+        if isinstance(value, (dt.date, dt.time, dt.datetime)):
+            return True, value.isoformat()
+        if isinstance(value, (Decimal, uuid.UUID)):
+            return True, str(value)
+        if isinstance(value, enum.Enum):
+            return True, self._json_safe_value(value.value, depth + 1)
+        return False, None
+
+    def _normalize_for_json(self, value: Any, depth: int) -> Any:
+        handled, normalized = self._normalize_scalar_for_json(value, depth)
+        if handled:
+            return normalized
+        if isinstance(value, (bytes, bytearray, memoryview)):
+            return self._normalize_bytes_for_json(value)
+        if isinstance(value, Mapping):
+            return self._normalize_mapping_for_json(value, depth)
+        if isinstance(value, (list, tuple, set, frozenset)):
+            return self._normalize_sequence_for_json(value, depth)
+        return str(value)
+
+    def _clip_normalized_json(self, normalized: Any) -> Any:
         encoded = json.dumps(normalized, ensure_ascii=False, default=str).encode(
             "utf-8"
         )
@@ -720,6 +741,14 @@ class SqlApi:
             return normalized
         text_value = str(normalized).encode("utf-8")[: self.max_cell_bytes]
         return text_value.decode("utf-8", errors="ignore") + "…"
+
+    def _json_safe_value(self, value: Any, _depth: int = 0) -> Any:
+        if _depth > 10:
+            return self._clip_depth_exceeded(value)
+        if isinstance(value, str):
+            return self._clip_text(value)
+        normalized = self._normalize_for_json(value, _depth)
+        return self._clip_normalized_json(normalized)
 
     def _result_envelope(self, result: Any, cap: int) -> dict[str, Any]:
         """Fetch up to ``cap`` rows and describe columns (CONCEPT:SQ-OS.governance.sql-3)."""
