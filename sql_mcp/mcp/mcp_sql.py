@@ -132,6 +132,213 @@ async def _invoke_external(call: Callable[[], Any]) -> Any:
             asyncio.create_task(release_when_done())
 
 
+_SCHEMA_TABLE_ACTIONS = {
+    "columns",
+    "indexes",
+    "foreign_keys",
+    "constraints",
+    "ddl",
+    "sample",
+    "table_comment",
+}
+
+
+def _validate_sql_schema_action(action: str, p: dict[str, Any]) -> None:
+    if action in _SCHEMA_TABLE_ACTIONS and "table" not in p:
+        raise ValueError(f"Schema action {action!r} requires 'table'.")
+    if action == "view_definition" and "view" not in p:
+        raise ValueError("Schema action 'view_definition' requires 'view'.")
+
+
+def _schema_op_schemas(api, p, schema, conn):
+    return partial(
+        api.list_schemas, connection=conn, limit=p.get("limit"), offset=p.get("offset", 0)
+    )
+
+
+def _schema_op_tables(api, p, schema, conn):
+    return partial(
+        api.list_tables,
+        schema=schema,
+        connection=conn,
+        limit=p.get("limit"),
+        offset=p.get("offset", 0),
+    )
+
+
+def _schema_op_views(api, p, schema, conn):
+    return partial(
+        api.list_views,
+        schema=schema,
+        connection=conn,
+        limit=p.get("limit"),
+        offset=p.get("offset", 0),
+    )
+
+
+def _schema_op_materialized_views(api, p, schema, conn):
+    return partial(
+        api.list_materialized_views,
+        schema=schema,
+        connection=conn,
+        limit=p.get("limit"),
+        offset=p.get("offset", 0),
+    )
+
+
+def _schema_op_sequences(api, p, schema, conn):
+    return partial(
+        api.list_sequences,
+        schema=schema,
+        connection=conn,
+        limit=p.get("limit"),
+        offset=p.get("offset", 0),
+    )
+
+
+def _schema_op_columns(api, p, schema, conn):
+    return partial(api.list_columns, p["table"], schema=schema, connection=conn)
+
+
+def _schema_op_indexes(api, p, schema, conn):
+    return partial(api.list_indexes, p["table"], schema=schema, connection=conn)
+
+
+def _schema_op_foreign_keys(api, p, schema, conn):
+    return partial(api.list_foreign_keys, p["table"], schema=schema, connection=conn)
+
+
+def _schema_op_constraints(api, p, schema, conn):
+    return partial(api.list_constraints, p["table"], schema=schema, connection=conn)
+
+
+def _schema_op_ddl(api, p, schema, conn):
+    return partial(api.table_ddl, p["table"], schema=schema, connection=conn)
+
+
+def _schema_op_sample(api, p, schema, conn):
+    return partial(
+        api.sample_rows,
+        p["table"],
+        schema=schema,
+        limit=p.get("limit", 10),
+        connection=conn,
+    )
+
+
+def _schema_op_view_definition(api, p, schema, conn):
+    return partial(api.view_definition, p["view"], schema=schema, connection=conn)
+
+
+def _schema_op_table_comment(api, p, schema, conn):
+    return partial(api.table_comment, p["table"], schema=schema, connection=conn)
+
+
+def _schema_op_catalog(api, p, schema, conn):
+    return partial(
+        api.schema_catalog,
+        schema=schema,
+        connection=conn,
+        max_objects=p.get("max_objects"),
+        include_views=p.get("include_views", True),
+        timeout=p.get("timeout"),
+    )
+
+
+_SCHEMA_OPERATION_BUILDERS: dict[str, Callable] = {
+    "schemas": _schema_op_schemas,
+    "tables": _schema_op_tables,
+    "views": _schema_op_views,
+    "materialized_views": _schema_op_materialized_views,
+    "sequences": _schema_op_sequences,
+    "columns": _schema_op_columns,
+    "indexes": _schema_op_indexes,
+    "foreign_keys": _schema_op_foreign_keys,
+    "constraints": _schema_op_constraints,
+    "ddl": _schema_op_ddl,
+    "sample": _schema_op_sample,
+    "view_definition": _schema_op_view_definition,
+    "table_comment": _schema_op_table_comment,
+    "catalog": _schema_op_catalog,
+}
+
+
+def _build_sql_schema_operation(
+    action: str, api: Any, p: dict[str, Any], schema: str | None, conn: str | None
+) -> Callable[[], Any]:
+    builder = _SCHEMA_OPERATION_BUILDERS.get(action)
+    if builder is None:
+        raise ValueError(f"Unknown schema action: {action!r}.")
+    return builder(api, p, schema, conn)
+
+
+def _admin_describe_dialects() -> list[dict[str, Any]]:
+    from sql_mcp.dialects import DIALECTS, driver_available
+
+    return [
+        {
+            "dialect": spec.name,
+            "scheme": spec.sqlalchemy_scheme,
+            "extra": spec.extra,
+            "driver_installed": driver_available(spec),
+        }
+        for spec in DIALECTS.values()
+    ]
+
+
+def _admin_op_ping(api, conn):
+    return partial(api.ping, connection=conn)
+
+
+def _admin_op_version(api, conn):
+    return partial(api.server_version, connection=conn)
+
+
+def _admin_op_active_connections(api, conn):
+    return partial(api.active_connections, connection=conn)
+
+
+def _admin_op_connections(api, conn):
+    return api.describe_connections
+
+
+def _admin_op_pool_status(api, conn):
+    return partial(api.pool_status, connection=conn)
+
+
+def _admin_op_capabilities(api, conn):
+    return partial(api.capabilities, connection=conn)
+
+
+def _admin_op_dialects(api, conn):
+    return _admin_describe_dialects
+
+
+_ADMIN_OPERATION_BUILDERS: dict[str, Callable] = {
+    "ping": _admin_op_ping,
+    "version": _admin_op_version,
+    "active_connections": _admin_op_active_connections,
+    "connections": _admin_op_connections,
+    "pool_status": _admin_op_pool_status,
+    "capabilities": _admin_op_capabilities,
+    "dialects": _admin_op_dialects,
+}
+
+
+async def _admin_ping_one(api: Any, name: str) -> dict[str, Any]:
+    try:
+        return await _invoke(partial(api.ping, connection=name))
+    except Exception as exc:
+        return {"connection": name, "ok": False, "error": type(exc).__name__}
+
+
+async def _admin_ping_all(api: Any) -> list[dict[str, Any]]:
+    results: list[dict[str, Any]] = []
+    for name in api.connection_names():
+        results.append(await _admin_ping_one(api, name))
+    return results
+
+
 def register_sql_tools(mcp: FastMCP) -> None:
     """Register the query, execute, schema, admin, and ingestion tools."""
 
@@ -300,138 +507,9 @@ def register_sql_tools(mcp: FastMCP) -> None:
         api = get_api()
         conn = connection or None
         schema = p.get("schema")
-        table_actions = {
-            "columns",
-            "indexes",
-            "foreign_keys",
-            "constraints",
-            "ddl",
-            "sample",
-            "table_comment",
-        }
-        if action in table_actions and "table" not in p:
-            raise ValueError(f"Schema action {action!r} requires 'table'.")
-        if action == "view_definition" and "view" not in p:
-            raise ValueError("Schema action 'view_definition' requires 'view'.")
-        if action == "schemas":
-            return await _invoke(
-                partial(
-                    api.list_schemas,
-                    connection=conn,
-                    limit=p.get("limit"),
-                    offset=p.get("offset", 0),
-                )
-            )
-        if action == "tables":
-            return await _invoke(
-                partial(
-                    api.list_tables,
-                    schema=schema,
-                    connection=conn,
-                    limit=p.get("limit"),
-                    offset=p.get("offset", 0),
-                )
-            )
-        if action == "views":
-            return await _invoke(
-                partial(
-                    api.list_views,
-                    schema=schema,
-                    connection=conn,
-                    limit=p.get("limit"),
-                    offset=p.get("offset", 0),
-                )
-            )
-        if action == "materialized_views":
-            return await _invoke(
-                partial(
-                    api.list_materialized_views,
-                    schema=schema,
-                    connection=conn,
-                    limit=p.get("limit"),
-                    offset=p.get("offset", 0),
-                )
-            )
-        if action == "sequences":
-            return await _invoke(
-                partial(
-                    api.list_sequences,
-                    schema=schema,
-                    connection=conn,
-                    limit=p.get("limit"),
-                    offset=p.get("offset", 0),
-                )
-            )
-        if action == "columns":
-            return await _invoke(
-                partial(api.list_columns, p["table"], schema=schema, connection=conn)
-            )
-        if action == "indexes":
-            return await _invoke(
-                partial(api.list_indexes, p["table"], schema=schema, connection=conn)
-            )
-        if action == "foreign_keys":
-            return await _invoke(
-                partial(
-                    api.list_foreign_keys,
-                    p["table"],
-                    schema=schema,
-                    connection=conn,
-                )
-            )
-        if action == "constraints":
-            return await _invoke(
-                partial(
-                    api.list_constraints,
-                    p["table"],
-                    schema=schema,
-                    connection=conn,
-                )
-            )
-        if action == "ddl":
-            return await _invoke(
-                partial(api.table_ddl, p["table"], schema=schema, connection=conn)
-            )
-        if action == "sample":
-            return await _invoke(
-                partial(
-                    api.sample_rows,
-                    p["table"],
-                    schema=schema,
-                    limit=p.get("limit", 10),
-                    connection=conn,
-                )
-            )
-        if action == "view_definition":
-            return await _invoke(
-                partial(
-                    api.view_definition,
-                    p["view"],
-                    schema=schema,
-                    connection=conn,
-                )
-            )
-        if action == "table_comment":
-            return await _invoke(
-                partial(
-                    api.table_comment,
-                    p["table"],
-                    schema=schema,
-                    connection=conn,
-                )
-            )
-        if action == "catalog":
-            return await _invoke(
-                partial(
-                    api.schema_catalog,
-                    schema=schema,
-                    connection=conn,
-                    max_objects=p.get("max_objects"),
-                    include_views=p.get("include_views", True),
-                    timeout=p.get("timeout"),
-                )
-            )
-        raise ValueError(f"Unknown schema action: {action!r}.")
+        _validate_sql_schema_action(action, p)
+        operation = _build_sql_schema_operation(action, api, p, schema, conn)
+        return await _invoke(operation)
 
     @mcp.tool(tags={"admin"})
     async def sql_admin(
@@ -470,48 +548,12 @@ def register_sql_tools(mcp: FastMCP) -> None:
         _validate_params(AdminInput, params_json)
         conn = connection or None
         api = get_api()
-        if action == "ping":
-            return await _invoke(partial(api.ping, connection=conn))
         if action == "ping_all":
-            results: list[dict[str, Any]] = []
-            for name in api.connection_names():
-                try:
-                    results.append(await _invoke(partial(api.ping, connection=name)))
-                except Exception as exc:
-                    results.append(
-                        {
-                            "connection": name,
-                            "ok": False,
-                            "error": type(exc).__name__,
-                        }
-                    )
-            return results
-        if action == "version":
-            return await _invoke(partial(api.server_version, connection=conn))
-        if action == "active_connections":
-            return await _invoke(partial(api.active_connections, connection=conn))
-        if action == "connections":
-            return await _invoke(api.describe_connections)
-        if action == "pool_status":
-            return await _invoke(partial(api.pool_status, connection=conn))
-        if action == "capabilities":
-            return await _invoke(partial(api.capabilities, connection=conn))
-        if action == "dialects":
-            from sql_mcp.dialects import DIALECTS, driver_available
-
-            def describe_dialects() -> list[dict[str, Any]]:
-                return [
-                    {
-                        "dialect": spec.name,
-                        "scheme": spec.sqlalchemy_scheme,
-                        "extra": spec.extra,
-                        "driver_installed": driver_available(spec),
-                    }
-                    for spec in DIALECTS.values()
-                ]
-
-            return await _invoke(describe_dialects)
-        raise ValueError(f"Unknown admin action: {action!r}.")
+            return await _admin_ping_all(api)
+        builder = _ADMIN_OPERATION_BUILDERS.get(action)
+        if builder is None:
+            raise ValueError(f"Unknown admin action: {action!r}.")
+        return await _invoke(builder(api, conn))
 
     @mcp.tool(tags={"ingest"})
     async def sql_ingest_schema(
