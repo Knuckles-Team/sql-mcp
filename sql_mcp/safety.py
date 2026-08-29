@@ -143,6 +143,66 @@ class StatementNotAllowedError(ValueError):
     """Raised when a statement violates the read-only or single-statement gate."""
 
 
+def _consume_quoted_literal(sql: str, i: int, n: int, out: list[str]) -> int:
+    """Blank a `'`/`"`/`` ` `` literal (doubled-quote-escaped), i pointing at the opener."""
+    quote = sql[i]
+    out.append(" ")
+    i += 1
+    while i < n:
+        if sql[i] == quote:
+            # Doubled quote = escaped quote inside the literal.
+            if i + 1 < n and sql[i + 1] == quote:
+                out.append("  ")
+                i += 2
+                continue
+            out.append(" ")
+            i += 1
+            break
+        out.append(" " if sql[i] != "\n" else "\n")
+        i += 1
+    return i
+
+
+def _consume_bracketed_identifier(sql: str, i: int, n: int, out: list[str]) -> int:
+    """Blank a T-SQL ``[bracketed identifier]``, i pointing at the ``[``."""
+    out.append(" ")
+    i += 1
+    while i < n and sql[i] != "]":
+        out.append(" ")
+        i += 1
+    if i < n:
+        out.append(" ")
+        i += 1
+    return i
+
+
+def _consume_line_comment(sql: str, i: int, n: int, out: list[str]) -> int:
+    """Blank a ``--`` comment, i pointing at the first ``-``."""
+    if i + 2 < n and not sql[i + 2].isspace():
+        raise StatementNotAllowedError(
+            "Ambiguous '--' syntax is not allowed; add whitespace for a comment."
+        )
+    while i < n and sql[i] != "\n":
+        out.append(" ")
+        i += 1
+    return i
+
+
+def _consume_block_comment(sql: str, i: int, n: int, out: list[str]) -> int:
+    """Blank a ``/* ... */`` comment, i pointing at the ``/``."""
+    if sql[i : i + 3] == "/*!":
+        raise StatementNotAllowedError("Executable SQL comments are not allowed.")
+    out.append("  ")
+    i += 2
+    while i < n and sql[i : i + 2] != "*/":
+        out.append(" " if sql[i] != "\n" else "\n")
+        i += 1
+    if i < n:
+        out.append("  ")
+        i += 2
+    return i
+
+
 def strip_literals_and_comments(sql: str) -> str:
     """Replace string literals, quoted identifiers, and comments with spaces.
 
@@ -154,52 +214,13 @@ def strip_literals_and_comments(sql: str) -> str:
     while i < n:
         ch = sql[i]
         if ch in ("'", '"', "`"):
-            quote = ch
-            out.append(" ")
-            i += 1
-            while i < n:
-                if sql[i] == quote:
-                    # Doubled quote = escaped quote inside the literal.
-                    if i + 1 < n and sql[i + 1] == quote:
-                        out.append("  ")
-                        i += 2
-                        continue
-                    out.append(" ")
-                    i += 1
-                    break
-                out.append(" " if sql[i] != "\n" else "\n")
-                i += 1
+            i = _consume_quoted_literal(sql, i, n, out)
         elif ch == "[":
-            # T-SQL bracketed identifier.
-            out.append(" ")
-            i += 1
-            while i < n and sql[i] != "]":
-                out.append(" ")
-                i += 1
-            if i < n:
-                out.append(" ")
-                i += 1
+            i = _consume_bracketed_identifier(sql, i, n, out)
         elif ch == "-" and sql[i : i + 2] == "--":
-            if i + 2 < n and not sql[i + 2].isspace():
-                raise StatementNotAllowedError(
-                    "Ambiguous '--' syntax is not allowed; add whitespace for a comment."
-                )
-            while i < n and sql[i] != "\n":
-                out.append(" ")
-                i += 1
+            i = _consume_line_comment(sql, i, n, out)
         elif ch == "/" and sql[i : i + 2] == "/*":
-            if sql[i : i + 3] == "/*!":
-                raise StatementNotAllowedError(
-                    "Executable SQL comments are not allowed."
-                )
-            out.append("  ")
-            i += 2
-            while i < n and sql[i : i + 2] != "*/":
-                out.append(" " if sql[i] != "\n" else "\n")
-                i += 1
-            if i < n:
-                out.append("  ")
-                i += 2
+            i = _consume_block_comment(sql, i, n, out)
         else:
             out.append(ch)
             i += 1
@@ -255,6 +276,44 @@ def _assert_read_only_pragma(stripped_sql: str) -> None:
         )
 
 
+def _is_bare_transaction_control_starter(words: list[str]) -> bool:
+    return words[0] in _UNSAFE_MANAGED_STATEMENT_STARTERS
+
+
+def _is_start_transaction(words: list[str]) -> bool:
+    return words[0] == "start" and len(words) > 1 and words[1] == "transaction"
+
+
+def _is_prepare_transaction(words: list[str]) -> bool:
+    return words[0] == "prepare" and len(words) > 1 and words[1] == "transaction"
+
+
+def _is_save_transaction(words: list[str]) -> bool:
+    return (
+        words[0] == "save" and len(words) > 1 and words[1] in {"tran", "transaction"}
+    )
+
+
+def _is_set_transaction_control(words: list[str]) -> bool:
+    return words[0] == "set" and any(
+        word in {"autocommit", "transaction"} for word in words[1:5]
+    )
+
+
+def _is_lock_or_unlock_tables(words: list[str]) -> bool:
+    return words[0] in {"lock", "unlock"} and len(words) > 1 and words[1] == "tables"
+
+
+_TRANSACTION_CONTROL_PREDICATES = (
+    _is_bare_transaction_control_starter,
+    _is_start_transaction,
+    _is_prepare_transaction,
+    _is_save_transaction,
+    _is_set_transaction_control,
+    _is_lock_or_unlock_tables,
+)
+
+
 def assert_no_transaction_control(sql: str) -> None:
     """Reject SQL that can escape a caller-managed transaction boundary.
 
@@ -267,28 +326,10 @@ def assert_no_transaction_control(sql: str) -> None:
     if not words:
         return
 
-    first = words[0]
-    transaction_control = first in _UNSAFE_MANAGED_STATEMENT_STARTERS
-    transaction_control = transaction_control or (
-        first == "start" and len(words) > 1 and words[1] == "transaction"
-    )
-    transaction_control = transaction_control or (
-        first == "prepare" and len(words) > 1 and words[1] == "transaction"
-    )
-    transaction_control = transaction_control or (
-        first == "save" and len(words) > 1 and words[1] in {"tran", "transaction"}
-    )
-    transaction_control = transaction_control or (
-        first == "set"
-        and any(word in {"autocommit", "transaction"} for word in words[1:5])
-    )
-    transaction_control = transaction_control or (
-        first in {"lock", "unlock"} and len(words) > 1 and words[1] == "tables"
-    )
-    if transaction_control:
+    if any(predicate(words) for predicate in _TRANSACTION_CONTROL_PREDICATES):
         raise StatementNotAllowedError(
-            f"Transaction/session-control statement {first.upper()!r} is not allowed "
-            "inside a managed sql_execute transaction."
+            f"Transaction/session-control statement {words[0].upper()!r} is not "
+            "allowed inside a managed sql_execute transaction."
         )
 
 
