@@ -248,3 +248,132 @@ def test_passwords_never_in_logs(monkeypatch, caplog):
         auth.load_connections()
         auth.get_api()
     assert "supersecretpw" not in caplog.text
+
+
+# --------------------------------------------------------------------- #
+# _connection_from_spec / load_connections: branches a plain round trip
+# through a valid config never reaches
+# --------------------------------------------------------------------- #
+
+
+def test_connection_from_spec_rejects_invalid_dsn_string():
+    with pytest.raises(ValueError, match="invalid SQL URL"):
+        auth._connection_from_spec("x", "not a valid :// dsn ///")
+
+
+def test_connection_from_spec_rejects_non_string_url_field():
+    with pytest.raises(ValueError, match="invalid SQL URL"):
+        auth._connection_from_spec("x", {"url": 123})
+
+
+def test_connection_from_spec_rejects_invalid_url_field_value():
+    with pytest.raises(ValueError, match="invalid SQL URL"):
+        auth._connection_from_spec("x", {"url": "not a valid :// dsn ///"})
+
+
+def test_connection_from_spec_rejects_non_string_dialect():
+    with pytest.raises(ValueError, match="invalid SQL dialect"):
+        auth._connection_from_spec("x", {"dialect": 123})
+
+
+def test_connection_from_spec_rejects_non_dict_options():
+    with pytest.raises(ValueError, match="options must be a JSON object"):
+        auth._connection_from_spec("x", {"dialect": "postgres", "options": "nope"})
+
+
+def test_connection_from_spec_rejects_non_string_non_dict_spec():
+    with pytest.raises(ValueError, match="DSN string or"):
+        auth._connection_from_spec("x", 12345)
+
+
+def test_sql_connections_rejects_oversized_config(monkeypatch):
+    monkeypatch.setenv(
+        "SQL_CONNECTIONS",
+        json.dumps({"x": "sqlite+pysqlite:///:memory:"})
+        + " " * (auth.MAX_CONNECTION_CONFIG_BYTES),
+    )
+    with pytest.raises(ValueError, match="configuration size limit"):
+        auth.load_connections()
+
+
+def test_sql_connections_rejects_empty_mapping(monkeypatch):
+    monkeypatch.setenv("SQL_CONNECTIONS", "{}")
+    with pytest.raises(ValueError, match="non-empty JSON object"):
+        auth.load_connections()
+
+
+def test_sql_connections_rejects_non_object_json(monkeypatch):
+    monkeypatch.setenv("SQL_CONNECTIONS", "[1, 2, 3]")
+    with pytest.raises(ValueError, match="non-empty JSON object"):
+        auth.load_connections()
+
+
+def test_sql_connections_rejects_too_many_entries(monkeypatch):
+    mapping = {
+        f"conn{i}": "sqlite+pysqlite:///:memory:"
+        for i in range(auth.MAX_CONNECTIONS + 1)
+    }
+    monkeypatch.setenv("SQL_CONNECTIONS", json.dumps(mapping))
+    with pytest.raises(ValueError, match="connection limit"):
+        auth.load_connections()
+
+
+def test_sql_connections_rejects_invalid_connection_name(monkeypatch):
+    monkeypatch.setenv(
+        "SQL_CONNECTIONS", json.dumps({"": "sqlite+pysqlite:///:memory:"})
+    )
+    with pytest.raises(ValueError, match="non-empty bounded strings"):
+        auth.load_connections()
+
+
+def test_discrete_fields_reject_invalid_options_json(monkeypatch):
+    monkeypatch.setenv("SQL_DIALECT", "postgres")
+    monkeypatch.setenv("SQL_OPTIONS", "{not json")
+    with pytest.raises(ValueError, match="SQL_OPTIONS is not valid JSON"):
+        auth.load_connections()
+
+
+def test_discrete_fields_reject_non_object_options(monkeypatch):
+    monkeypatch.setenv("SQL_DIALECT", "postgres")
+    monkeypatch.setenv("SQL_OPTIONS", "[1, 2]")
+    with pytest.raises(ValueError, match="SQL_OPTIONS must be a JSON object"):
+        auth.load_connections()
+
+
+def test_discrete_fields_reject_non_numeric_port(monkeypatch):
+    monkeypatch.setenv("SQL_DIALECT", "postgres")
+    monkeypatch.setenv("SQL_PORT", "not-a-port")
+    with pytest.raises(ValueError, match="SQL_PORT must be an integer"):
+        auth.load_connections()
+
+
+def test_discrete_fields_reject_out_of_range_port(monkeypatch):
+    monkeypatch.setenv("SQL_DIALECT", "postgres")
+    monkeypatch.setenv("SQL_PORT", "99999")
+    with pytest.raises(ValueError, match="SQL_PORT must be an integer"):
+        auth.load_connections()
+
+
+# --------------------------------------------------------------------- #
+# writable_connections: branches beyond the JSON-list and comma-list
+# happy paths already covered above
+# --------------------------------------------------------------------- #
+
+
+def test_write_connection_allowlist_rejects_invalid_json_list(monkeypatch):
+    monkeypatch.setenv("SQL_WRITE_CONNECTIONS", "[not json")
+    with pytest.raises(ValueError, match="JSON list or comma-separated"):
+        auth.writable_connections()
+
+
+def test_write_connection_allowlist_rejects_non_string_json_entries(monkeypatch):
+    monkeypatch.setenv("SQL_WRITE_CONNECTIONS", "[1, 2]")
+    with pytest.raises(ValueError, match="must be a string list"):
+        auth.writable_connections()
+
+
+def test_write_connection_allowlist_rejects_too_many_names(monkeypatch):
+    names = ",".join(f"conn{i}" for i in range(auth.MAX_CONNECTIONS + 1))
+    monkeypatch.setenv("SQL_WRITE_CONNECTIONS", names)
+    with pytest.raises(ValueError, match="connection limit"):
+        auth.writable_connections()
