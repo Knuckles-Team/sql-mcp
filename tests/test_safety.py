@@ -197,3 +197,11 @@ def test_mysql_executable_comment_is_rejected():
 def test_ambiguous_dash_comment_is_rejected():
     with pytest.raises(StatementNotAllowedError, match="Ambiguous"):
         assert_read_only("SELECT 1--not-a-portable-comment")
+
+
+def test_transaction_control_allows_statement_with_no_word_tokens():
+    # "1 + 1" passes assert_single_statement (non-empty) but has no
+    # identifier-shaped tokens at all, so _word_tokens is empty -- the
+    # `if not words: return` guard, distinct from every parametrized case
+    # above (all of which have at least one word token).
+    assert_no_transaction_control("1 + 1")
