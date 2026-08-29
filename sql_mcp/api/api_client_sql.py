@@ -982,6 +982,118 @@ class SqlApi:
             transactional=True,
         )
 
+    @staticmethod
+    def _assert_script_not_empty(statements: list) -> None:
+        if not statements:
+            raise ValueError("'statements' must be a non-empty list of SQL strings.")
+
+    def _assert_script_within_statement_limit(self, statements: list) -> None:
+        if len(statements) > self.max_script_statements:
+            raise ValueError(
+                f"Script exceeds the {self.max_script_statements} statements limit."
+            )
+
+    def _parse_script_batch_params(self, entry_params: list) -> list[Mapping[str, Any]]:
+        if len(entry_params) > self.max_batch_rows:
+            raise ValueError(
+                f"Parameter batch exceeds the {self.max_batch_rows} row limit."
+            )
+        if not entry_params or not all(
+            isinstance(item, Mapping) for item in entry_params
+        ):
+            raise ValueError(
+                "Script batch params must be a non-empty list of objects."
+            )
+        return [dict(item) for item in entry_params]
+
+    def _parse_script_mapping_entry(
+        self, entry: Mapping[str, Any]
+    ) -> tuple[str, Mapping[str, Any] | list[Mapping[str, Any]]]:
+        statement = entry.get("sql")
+        entry_params = entry.get("params")
+        if entry_params is None:
+            entry_params = {}
+        if not isinstance(statement, str):
+            raise ValueError("Every script object requires a string 'sql' field.")
+        if isinstance(entry_params, list):
+            return statement, self._parse_script_batch_params(entry_params)
+        if isinstance(entry_params, Mapping):
+            return statement, dict(entry_params)
+        raise ValueError("Script params must be an object or list of objects.")
+
+    def _parse_script_entry(
+        self, entry: str | Mapping[str, Any]
+    ) -> tuple[str, Mapping[str, Any] | list[Mapping[str, Any]]]:
+        if isinstance(entry, str):
+            return entry, {}
+        if isinstance(entry, Mapping):
+            return self._parse_script_mapping_entry(entry)
+        raise ValueError("Every script entry must be a SQL string or object.")
+
+    def _prepare_script_statements(
+        self, statements: list[str | Mapping[str, Any]]
+    ) -> list[tuple[str, Mapping[str, Any] | list[Mapping[str, Any]]]]:
+        from sql_mcp.safety import assert_no_transaction_control
+
+        prepared: list[tuple[str, Mapping[str, Any] | list[Mapping[str, Any]]]] = []
+        for entry in statements:
+            statement, entry_params = self._parse_script_entry(entry)
+            statement = self._validate_sql(statement)
+            assert_single_statement(statement)
+            assert_no_transaction_control(statement)
+            prepared.append((statement, entry_params))
+        return prepared
+
+    def _assert_script_ddl_is_atomic(
+        self, name: str, prepared: list[tuple[str, Any]]
+    ) -> None:
+        dialect = self.dialect_spec(name)
+        dialect_name = (
+            dialect.name
+            if dialect is not None
+            else self._connections[name].get_backend_name()
+        )
+        if len(prepared) <= 1 or dialect_name not in {"mysql", "oracle"}:
+            return
+        from sql_mcp.safety import first_keyword, strip_literals_and_comments
+
+        ddl_keywords = {"alter", "create", "drop", "rename", "truncate"}
+        if any(
+            first_keyword(strip_literals_and_comments(statement)) in ddl_keywords
+            for statement, _ in prepared
+        ):
+            raise ValueError(
+                f"Dialect {dialect_name!r} implicitly commits DDL; mixed or "
+                "multi-statement DDL scripts cannot be guaranteed atomic. "
+                "Execute each DDL statement explicitly."
+            )
+
+    def _execute_script_statements(
+        self, conn: Connection, prepared: list[tuple[str, Any]]
+    ) -> dict[str, Any]:
+        rowcounts: list[int] = []
+        returned: list[dict[str, Any] | None] = []
+        has_returned_rows = False
+        for statement, entry_params in prepared:
+            result = conn.execute(text(statement), entry_params)
+            try:
+                rowcounts.append(result.rowcount)
+                if result.returns_rows:
+                    returned.append(self._result_envelope(result, self.max_rows))
+                    has_returned_rows = True
+                else:
+                    returned.append(None)
+            finally:
+                result.close()
+        response: dict[str, Any] = {
+            "statements": len(prepared),
+            "rowcounts": rowcounts,
+            "atomic": True,
+        }
+        if has_returned_rows:
+            response["results"] = returned
+        return response
+
     def execute_script(
         self,
         statements: list[str | Mapping[str, Any]],
@@ -992,96 +1104,15 @@ class SqlApi:
 
         Any failure rolls back every prior statement in the list.
         """
-        from sql_mcp.safety import assert_no_transaction_control
-
         name = self._assert_writes_allowed(connection)
-        if not statements:
-            raise ValueError("'statements' must be a non-empty list of SQL strings.")
-        if len(statements) > self.max_script_statements:
-            raise ValueError(
-                f"Script exceeds the {self.max_script_statements} statements limit."
-            )
-        prepared: list[tuple[str, Mapping[str, Any] | list[Mapping[str, Any]]]] = []
-        for entry in statements:
-            if isinstance(entry, str):
-                statement, entry_params = entry, {}
-            elif isinstance(entry, Mapping):
-                statement = entry.get("sql")
-                entry_params = entry.get("params")
-                if entry_params is None:
-                    entry_params = {}
-                if not isinstance(statement, str):
-                    raise ValueError(
-                        "Every script object requires a string 'sql' field."
-                    )
-                if isinstance(entry_params, list):
-                    if len(entry_params) > self.max_batch_rows:
-                        raise ValueError(
-                            f"Parameter batch exceeds the {self.max_batch_rows} row limit."
-                        )
-                    if not entry_params or not all(
-                        isinstance(item, Mapping) for item in entry_params
-                    ):
-                        raise ValueError(
-                            "Script batch params must be a non-empty list of objects."
-                        )
-                    entry_params = [dict(item) for item in entry_params]
-                elif isinstance(entry_params, Mapping):
-                    entry_params = dict(entry_params)
-                else:
-                    raise ValueError(
-                        "Script params must be an object or list of objects."
-                    )
-            else:
-                raise ValueError("Every script entry must be a SQL string or object.")
-            statement = self._validate_sql(statement)
-            assert_single_statement(statement)
-            assert_no_transaction_control(statement)
-            prepared.append((statement, entry_params))
-        dialect = self.dialect_spec(name)
-        dialect_name = (
-            dialect.name
-            if dialect is not None
-            else self._connections[name].get_backend_name()
-        )
-        if len(prepared) > 1 and dialect_name in {"mysql", "oracle"}:
-            from sql_mcp.safety import first_keyword, strip_literals_and_comments
-
-            ddl_keywords = {"alter", "create", "drop", "rename", "truncate"}
-            if any(
-                first_keyword(strip_literals_and_comments(statement)) in ddl_keywords
-                for statement, _ in prepared
-            ):
-                raise ValueError(
-                    f"Dialect {dialect_name!r} implicitly commits DDL; mixed or "
-                    "multi-statement DDL scripts cannot be guaranteed atomic. "
-                    "Execute each DDL statement explicitly."
-                )
+        self._assert_script_not_empty(statements)
+        self._assert_script_within_statement_limit(statements)
+        prepared = self._prepare_script_statements(statements)
+        self._assert_script_ddl_is_atomic(name, prepared)
         eng = self.engine(name)
 
         def run(conn: Connection) -> dict[str, Any]:
-            rowcounts: list[int] = []
-            returned: list[dict[str, Any] | None] = []
-            has_returned_rows = False
-            for statement, entry_params in prepared:
-                result = conn.execute(text(statement), entry_params)
-                try:
-                    rowcounts.append(result.rowcount)
-                    if result.returns_rows:
-                        returned.append(self._result_envelope(result, self.max_rows))
-                        has_returned_rows = True
-                    else:
-                        returned.append(None)
-                finally:
-                    result.close()
-            response: dict[str, Any] = {
-                "statements": len(prepared),
-                "rowcounts": rowcounts,
-                "atomic": True,
-            }
-            if has_returned_rows:
-                response["results"] = returned
-            return response
+            return self._execute_script_statements(conn, prepared)
 
         return self._run_on_connection(
             eng,
