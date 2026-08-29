@@ -750,20 +750,21 @@ class SqlApi:
         normalized = self._normalize_for_json(value, _depth)
         return self._clip_normalized_json(normalized)
 
-    def _result_envelope(self, result: Any, cap: int) -> dict[str, Any]:
-        """Fetch up to ``cap`` rows and describe columns (CONCEPT:SQ-OS.governance.sql-3)."""
-        all_columns = [str(column) for column in result.keys()]
-        columns_truncated = len(all_columns) > self.max_columns
-        raw_columns = all_columns[: self.max_columns]
+    @staticmethod
+    def _dedupe_columns(raw_columns: list[str]) -> list[str]:
         seen: dict[str, int] = {}
         columns: list[str] = []
         for column in raw_columns:
             seen[column] = seen.get(column, 0) + 1
             columns.append(column if seen[column] == 1 else f"{column}__{seen[column]}")
-        fetched = result.fetchmany(cap + 1)
-        truncated = len(fetched) > cap or columns_truncated
+        return columns
+
+    def _collect_bounded_rows(
+        self, fetched: list, columns: list[str], cap: int
+    ) -> tuple[list[dict[str, Any]], int, bool]:
         rows: list[dict[str, Any]] = []
         bytes_returned = 0
+        byte_capped = False
         for raw_row in fetched[:cap]:
             row = {
                 column: self._json_safe_value(value)
@@ -773,11 +774,17 @@ class SqlApi:
                 json.dumps(row, ensure_ascii=False, default=str).encode("utf-8")
             )
             if bytes_returned + row_bytes > self.max_result_bytes:
-                truncated = True
+                byte_capped = True
                 break
             rows.append(row)
             bytes_returned += row_bytes
-        column_meta = [
+        return rows, bytes_returned, byte_capped
+
+    @staticmethod
+    def _column_type_metadata(
+        columns: list[str], raw_columns: list[str], fetched: list, cap: int
+    ) -> list[dict[str, Any]]:
+        return [
             {
                 "name": col,
                 "source_name": raw_columns[index],
@@ -792,11 +799,24 @@ class SqlApi:
             }
             for index, col in enumerate(columns)
         ]
+
+    def _result_envelope(self, result: Any, cap: int) -> dict[str, Any]:
+        """Fetch up to ``cap`` rows and describe columns (CONCEPT:SQ-OS.governance.sql-3)."""
+        all_columns = [str(column) for column in result.keys()]
+        columns_truncated = len(all_columns) > self.max_columns
+        raw_columns = all_columns[: self.max_columns]
+        columns = self._dedupe_columns(raw_columns)
+        fetched = result.fetchmany(cap + 1)
+        truncated = len(fetched) > cap or columns_truncated
+        rows, bytes_returned, byte_capped = self._collect_bounded_rows(
+            fetched, columns, cap
+        )
+        column_meta = self._column_type_metadata(columns, raw_columns, fetched, cap)
         return {
             "columns": column_meta,
             "rows": rows,
             "row_count": len(rows),
-            "truncated": truncated,
+            "truncated": truncated or byte_capped,
             "bytes_returned": bytes_returned,
         }
 
