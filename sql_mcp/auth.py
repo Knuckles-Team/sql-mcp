@@ -45,117 +45,160 @@ def _valid_connection_name(name: object) -> bool:
     )
 
 
-def _connection_from_spec(name: str, spec: object) -> URL:
-    """Build a SQLAlchemy URL from one ``SQL_CONNECTIONS`` entry."""
-    if isinstance(spec, str):
-        try:
-            return make_url(spec)
-        except Exception:
-            raise ValueError(f"Connection {name!r} has an invalid SQL URL.") from None
-    if isinstance(spec, dict):
-        if "url" in spec:
-            if not isinstance(spec["url"], str):
-                raise ValueError(f"Connection {name!r} has an invalid SQL URL.")
-            try:
-                return make_url(spec["url"])
-            except Exception:
-                raise ValueError(
-                    f"Connection {name!r} has an invalid SQL URL."
-                ) from None
-        if "dialect" in spec:
-            if not isinstance(spec["dialect"], str):
-                raise ValueError(f"Connection {name!r} has an invalid SQL dialect.")
-            options = spec.get("options")
-            if options is not None and not isinstance(options, dict):
-                raise ValueError(f"Connection {name!r} options must be a JSON object.")
-            return build_url(
-                spec["dialect"],
-                host=spec.get("host"),
-                port=spec.get("port"),
-                username=spec.get("username"),
-                password=spec.get("password"),
-                database=spec.get("database"),
-                options=options,
-            )
-    raise ValueError(
+def _invalid_spec_error(name: str) -> ValueError:
+    return ValueError(
         f"Connection {name!r} in SQL_CONNECTIONS must be a DSN string or an "
         "object with 'url' or 'dialect' fields."
     )
+
+
+def _connection_from_dsn_string(name: str, spec: str) -> URL:
+    try:
+        return make_url(spec)
+    except Exception:
+        raise ValueError(f"Connection {name!r} has an invalid SQL URL.") from None
+
+
+def _connection_from_url_field(name: str, spec: dict) -> URL:
+    if not isinstance(spec["url"], str):
+        raise ValueError(f"Connection {name!r} has an invalid SQL URL.")
+    try:
+        return make_url(spec["url"])
+    except Exception:
+        raise ValueError(f"Connection {name!r} has an invalid SQL URL.") from None
+
+
+def _connection_from_dialect_fields(name: str, spec: dict) -> URL:
+    if not isinstance(spec["dialect"], str):
+        raise ValueError(f"Connection {name!r} has an invalid SQL dialect.")
+    options = spec.get("options")
+    if options is not None and not isinstance(options, dict):
+        raise ValueError(f"Connection {name!r} options must be a JSON object.")
+    return build_url(
+        spec["dialect"],
+        host=spec.get("host"),
+        port=spec.get("port"),
+        username=spec.get("username"),
+        password=spec.get("password"),
+        database=spec.get("database"),
+        options=options,
+    )
+
+
+def _connection_from_mapping_spec(name: str, spec: dict) -> URL:
+    if "url" in spec:
+        return _connection_from_url_field(name, spec)
+    if "dialect" in spec:
+        return _connection_from_dialect_fields(name, spec)
+    raise _invalid_spec_error(name)
+
+
+def _connection_from_spec(name: str, spec: object) -> URL:
+    """Build a SQLAlchemy URL from one ``SQL_CONNECTIONS`` entry."""
+    if isinstance(spec, str):
+        return _connection_from_dsn_string(name, spec)
+    if isinstance(spec, dict):
+        return _connection_from_mapping_spec(name, spec)
+    raise _invalid_spec_error(name)
+
+
+def _load_connections_from_json(raw: str) -> dict[str, URL]:
+    if len(raw.encode("utf-8")) > MAX_CONNECTION_CONFIG_BYTES:
+        raise ValueError("SQL_CONNECTIONS exceeds the configuration size limit.")
+    try:
+        mapping = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise ValueError(
+            f"SQL_CONNECTIONS is not valid JSON: {type(exc).__name__}"
+        ) from exc
+    if not isinstance(mapping, dict) or not mapping:
+        raise ValueError(
+            "SQL_CONNECTIONS must be a non-empty JSON object mapping "
+            "connection names to DSNs or connection objects."
+        )
+    if len(mapping) > MAX_CONNECTIONS:
+        raise ValueError(
+            f"SQL_CONNECTIONS exceeds the {MAX_CONNECTIONS}-connection limit."
+        )
+    connections: dict[str, URL] = {}
+    for name, spec in mapping.items():
+        if not _valid_connection_name(name):
+            raise ValueError(
+                "SQL_CONNECTIONS names must be non-empty bounded strings."
+            )
+        connections[name] = _connection_from_spec(name, spec)
+    return connections
+
+
+def _load_connection_from_url(url: str) -> dict[str, URL]:
+    try:
+        return {"default": make_url(url)}
+    except Exception:
+        raise ValueError("SQL_URL is not a valid SQLAlchemy URL.") from None
+
+
+def _parse_sql_options() -> dict | None:
+    options_raw = setting("SQL_OPTIONS", "")
+    try:
+        options = json.loads(options_raw) if options_raw.strip() else None
+    except json.JSONDecodeError as exc:
+        raise ValueError(
+            f"SQL_OPTIONS is not valid JSON: {type(exc).__name__}"
+        ) from exc
+    if options is not None and not isinstance(options, dict):
+        raise ValueError("SQL_OPTIONS must be a JSON object.")
+    return options
+
+
+def _parse_sql_port() -> int | None:
+    port_raw = setting("SQL_PORT", "")
+    try:
+        port = int(port_raw) if port_raw.strip() else None
+    except (TypeError, ValueError, OverflowError):
+        raise ValueError("SQL_PORT must be an integer between 1 and 65535.") from None
+    if port is not None and not 1 <= port <= 65_535:
+        raise ValueError("SQL_PORT must be an integer between 1 and 65535.")
+    return port
+
+
+def _load_connections_from_discrete_fields() -> dict[str, URL]:
+    options = _parse_sql_options()
+    port = _parse_sql_port()
+    return {
+        "default": build_url(
+            setting("SQL_DIALECT", "postgres"),
+            host=setting("SQL_HOST", "") or None,
+            port=port,
+            username=setting("SQL_USERNAME", "") or None,
+            password=setting("SQL_PASSWORD", "") or None,
+            database=setting("SQL_DATABASE", "") or None,
+            options=options,
+        )
+    }
+
+
+def _load_connections_memory_fallback() -> dict[str, URL]:
+    logger.info(
+        "No SQL connection configured (SQL_CONNECTIONS/SQL_URL/SQL_HOST); "
+        "registering a zero-infra in-memory SQLite connection named 'memory'."
+    )
+    return {"memory": make_url("sqlite+pysqlite:///:memory:")}
 
 
 def load_connections() -> dict[str, URL]:
     """Load the named-connection registry from the environment."""
     raw = setting("SQL_CONNECTIONS", "")
     if raw.strip():
-        if len(raw.encode("utf-8")) > MAX_CONNECTION_CONFIG_BYTES:
-            raise ValueError("SQL_CONNECTIONS exceeds the configuration size limit.")
-        try:
-            mapping = json.loads(raw)
-        except json.JSONDecodeError as exc:
-            raise ValueError(
-                f"SQL_CONNECTIONS is not valid JSON: {type(exc).__name__}"
-            ) from exc
-        if not isinstance(mapping, dict) or not mapping:
-            raise ValueError(
-                "SQL_CONNECTIONS must be a non-empty JSON object mapping "
-                "connection names to DSNs or connection objects."
-            )
-        if len(mapping) > MAX_CONNECTIONS:
-            raise ValueError(
-                f"SQL_CONNECTIONS exceeds the {MAX_CONNECTIONS}-connection limit."
-            )
-        connections: dict[str, URL] = {}
-        for name, spec in mapping.items():
-            if not _valid_connection_name(name):
-                raise ValueError(
-                    "SQL_CONNECTIONS names must be non-empty bounded strings."
-                )
-            connections[name] = _connection_from_spec(name, spec)
-        return connections
+        return _load_connections_from_json(raw)
 
     url = setting("SQL_URL", "")
     if url.strip():
-        try:
-            return {"default": make_url(url)}
-        except Exception:
-            raise ValueError("SQL_URL is not a valid SQLAlchemy URL.") from None
+        return _load_connection_from_url(url)
 
     if setting("SQL_DIALECT", "") or setting("SQL_HOST", ""):
-        options_raw = setting("SQL_OPTIONS", "")
-        try:
-            options = json.loads(options_raw) if options_raw.strip() else None
-        except json.JSONDecodeError as exc:
-            raise ValueError(
-                f"SQL_OPTIONS is not valid JSON: {type(exc).__name__}"
-            ) from exc
-        if options is not None and not isinstance(options, dict):
-            raise ValueError("SQL_OPTIONS must be a JSON object.")
-        port_raw = setting("SQL_PORT", "")
-        try:
-            port = int(port_raw) if port_raw.strip() else None
-        except (TypeError, ValueError, OverflowError):
-            raise ValueError(
-                "SQL_PORT must be an integer between 1 and 65535."
-            ) from None
-        if port is not None and not 1 <= port <= 65_535:
-            raise ValueError("SQL_PORT must be an integer between 1 and 65535.")
-        return {
-            "default": build_url(
-                setting("SQL_DIALECT", "postgres"),
-                host=setting("SQL_HOST", "") or None,
-                port=port,
-                username=setting("SQL_USERNAME", "") or None,
-                password=setting("SQL_PASSWORD", "") or None,
-                database=setting("SQL_DATABASE", "") or None,
-                options=options,
-            )
-        }
+        return _load_connections_from_discrete_fields()
 
-    logger.info(
-        "No SQL connection configured (SQL_CONNECTIONS/SQL_URL/SQL_HOST); "
-        "registering a zero-infra in-memory SQLite connection named 'memory'."
-    )
-    return {"memory": make_url("sqlite+pysqlite:///:memory:")}
+    return _load_connections_memory_fallback()
 
 
 def allow_writes() -> bool:
@@ -192,6 +235,26 @@ def default_timeout() -> float:
     return value
 
 
+def _parse_write_connections_json(raw: str) -> set[str]:
+    try:
+        parsed = json.loads(raw)
+    except json.JSONDecodeError:
+        raise ValueError(
+            "SQL_WRITE_CONNECTIONS must be a JSON list or comma-separated names."
+        ) from None
+    if not isinstance(parsed, list) or not all(
+        _valid_connection_name(name) for name in parsed
+    ):
+        raise ValueError("SQL_WRITE_CONNECTIONS JSON value must be a string list.")
+    return {name.strip() for name in parsed}
+
+
+def _parse_write_connections_raw(raw: str) -> set[str]:
+    if raw.startswith("["):
+        return _parse_write_connections_json(raw)
+    return {name.strip() for name in raw.split(",") if name.strip()}
+
+
 def writable_connections() -> set[str]:
     """Return the explicit server-side connection allowlist for writes.
 
@@ -202,20 +265,7 @@ def writable_connections() -> set[str]:
     raw = str(setting("SQL_WRITE_CONNECTIONS", "")).strip()
     if not raw:
         return set()
-    if raw.startswith("["):
-        try:
-            parsed = json.loads(raw)
-        except json.JSONDecodeError:
-            raise ValueError(
-                "SQL_WRITE_CONNECTIONS must be a JSON list or comma-separated names."
-            ) from None
-        if not isinstance(parsed, list) or not all(
-            _valid_connection_name(name) for name in parsed
-        ):
-            raise ValueError("SQL_WRITE_CONNECTIONS JSON value must be a string list.")
-        names = {name.strip() for name in parsed}
-    else:
-        names = {name.strip() for name in raw.split(",") if name.strip()}
+    names = _parse_write_connections_raw(raw)
     if not names or not all(_valid_connection_name(name) for name in names):
         raise ValueError("SQL_WRITE_CONNECTIONS must name at least one connection.")
     if len(names) > MAX_CONNECTIONS:
