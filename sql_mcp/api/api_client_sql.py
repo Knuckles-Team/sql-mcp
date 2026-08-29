@@ -164,6 +164,54 @@ def _positive_float(name: str, value: Any) -> float:
     return parsed
 
 
+def _build_connection_registry(
+    connections: Mapping[str, URL | str] | None,
+) -> dict[str, URL]:
+    raw = dict(connections) if connections is not None else auth.load_connections()
+    if not raw:
+        raise ValueError("At least one SQL connection must be configured.")
+    if len(raw) > auth.MAX_CONNECTIONS:
+        raise ValueError(
+            f"SQL connection count exceeds the {auth.MAX_CONNECTIONS}-connection limit."
+        )
+    registry: dict[str, URL] = {}
+    for name, url in raw.items():
+        if not auth._valid_connection_name(name):
+            raise ValueError("Connection names must be non-empty bounded strings.")
+        try:
+            parsed_url = make_url(url) if isinstance(url, str) else url
+        except Exception:
+            raise ValueError(f"Connection {name!r} has an invalid SQL URL.") from None
+        if not isinstance(parsed_url, URL):
+            raise ValueError(f"Connection {name!r} has an invalid SQL URL.")
+        registry[name] = parsed_url
+    return registry
+
+
+def _resolve_allow_writes(allow_writes: bool | None) -> bool:
+    configured = allow_writes if allow_writes is not None else auth.allow_writes()
+    if not isinstance(configured, bool):
+        raise ValueError("allow_writes must be a boolean.")
+    return configured
+
+
+def _resolve_writable_connections(
+    writable_connections: set[str] | None, connections: Mapping[str, URL]
+) -> frozenset:
+    unknown_writable = set(writable_connections or ()) - set(connections)
+    if unknown_writable:
+        raise ValueError("The SQL write allowlist contains unknown connections.")
+    return frozenset(writable_connections or ())
+
+
+def _resolve_default_connection(
+    default_connection: str | None, connections: Mapping[str, URL]
+) -> str:
+    if default_connection is not None and default_connection not in connections:
+        raise ValueError("The configured default SQL connection is unknown.")
+    return default_connection or next(iter(connections))
+
+
 class SqlApi:
     """Multi-connection SQL client over SQLAlchemy Core.
 
@@ -188,32 +236,8 @@ class SqlApi:
         writable_connections: set[str] | None = None,
         default_connection: str | None = None,
     ) -> None:
-        raw = dict(connections) if connections is not None else auth.load_connections()
-        if not raw:
-            raise ValueError("At least one SQL connection must be configured.")
-        if len(raw) > auth.MAX_CONNECTIONS:
-            raise ValueError(
-                f"SQL connection count exceeds the {auth.MAX_CONNECTIONS}-connection limit."
-            )
-        self._connections: dict[str, URL] = {}
-        for name, url in raw.items():
-            if not auth._valid_connection_name(name):
-                raise ValueError("Connection names must be non-empty bounded strings.")
-            try:
-                parsed_url = make_url(url) if isinstance(url, str) else url
-            except Exception:
-                raise ValueError(
-                    f"Connection {name!r} has an invalid SQL URL."
-                ) from None
-            if not isinstance(parsed_url, URL):
-                raise ValueError(f"Connection {name!r} has an invalid SQL URL.")
-            self._connections[name] = parsed_url
-        configured_allow_writes = (
-            allow_writes if allow_writes is not None else auth.allow_writes()
-        )
-        if not isinstance(configured_allow_writes, bool):
-            raise ValueError("allow_writes must be a boolean.")
-        self.allow_writes = configured_allow_writes
+        self._connections: dict[str, URL] = _build_connection_registry(connections)
+        self.allow_writes = _resolve_allow_writes(allow_writes)
         self.max_rows = _positive_int(
             "max_rows", max_rows if max_rows is not None else auth.default_max_rows()
         )
@@ -228,16 +252,12 @@ class SqlApi:
         self.max_result_bytes = _positive_int("max_result_bytes", max_result_bytes)
         self.max_cell_bytes = _positive_int("max_cell_bytes", max_cell_bytes)
         self.max_columns = _positive_int("max_columns", max_columns)
-        unknown_writable = set(writable_connections or ()) - set(self._connections)
-        if unknown_writable:
-            raise ValueError("The SQL write allowlist contains unknown connections.")
-        self._writable_connections = frozenset(writable_connections or ())
-        if (
-            default_connection is not None
-            and default_connection not in self._connections
-        ):
-            raise ValueError("The configured default SQL connection is unknown.")
-        self._default_connection = default_connection or next(iter(self._connections))
+        self._writable_connections = _resolve_writable_connections(
+            writable_connections, self._connections
+        )
+        self._default_connection = _resolve_default_connection(
+            default_connection, self._connections
+        )
         self._engines: dict[str, Engine] = {}
         self._operation_locks: dict[Engine, threading.Lock] = {}
         self._engine_lock = threading.RLock()
