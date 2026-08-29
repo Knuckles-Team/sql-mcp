@@ -343,3 +343,52 @@ async def test_admin_actions(mcp):
     assert pool["pool"] == "StaticPool"
     with pytest.raises(ToolError, match="ping.*version"):
         await call(mcp, "sql_admin", "shutdown")
+
+
+async def test_admin_ping_all_reports_every_connection(mcp):
+    results = tool_payload(await call(mcp, "sql_admin", "ping_all"))
+    assert {r["connection"] for r in results} == {"primary", "analytics"}
+    assert all(r["ok"] is True for r in results)
+
+
+async def test_admin_active_connections_action(mcp):
+    result = tool_payload(await call(mcp, "sql_admin", "active_connections"))
+    # sqlite has no session-listing support; the API surfaces that as a
+    # structured "unsupported" result rather than raising.
+    assert result["supported"] is False
+
+
+async def test_schema_schemas_action_lists_schema_names(mcp):
+    schemas = tool_payload(await call(mcp, "sql_schema", "schemas"))
+    assert isinstance(schemas, list)
+
+
+async def test_schema_indexes_action(mcp):
+    indexes = tool_payload(
+        await call(mcp, "sql_schema", "indexes", {"table": "users"})
+    )
+    assert any(i["name"] == "ix_users_name" for i in indexes)
+
+
+async def test_schema_materialized_views_and_sequences_are_empty_on_sqlite(mcp):
+    materialized_views = tool_payload(await call(mcp, "sql_schema", "materialized_views"))
+    sequences = tool_payload(await call(mcp, "sql_schema", "sequences"))
+    assert materialized_views == []
+    assert sequences == []
+
+
+async def test_schema_table_comment_action(mcp):
+    comment = tool_payload(
+        await call(mcp, "sql_schema", "table_comment", {"table": "users"})
+    )
+    assert "text" in comment
+
+
+async def test_schema_action_requiring_table_rejects_missing_table(mcp):
+    with pytest.raises(ToolError, match="'table'"):
+        await call(mcp, "sql_schema", "columns")
+
+
+async def test_schema_view_definition_rejects_missing_view(mcp):
+    with pytest.raises(ToolError, match="'view'"):
+        await call(mcp, "sql_schema", "view_definition")
