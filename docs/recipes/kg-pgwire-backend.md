@@ -1,7 +1,7 @@
 # Recipe — the epistemic-graph KG as a sql-mcp connection
 
-> Cross-repo concept: `CONCEPT:KG-2.205` (KG-SQL surface) over
-> `CONCEPT:KG-2.189` (engine pg-wire listener) + `CONCEPT:KG-2.202` (SCRAM auth).
+> Cross-repo concepts: `CONCEPT:AU-KG.query.raw-python` (Postgres-wire
+> surface) + `CONCEPT:EG-KG.query.concept-13` (SCRAM identity bridge).
 
 The [epistemic-graph](../../../../epistemic-graph/) engine exposes its Knowledge
 Graph over the **Postgres wire protocol**. A server built with the `pgwire`
@@ -66,7 +66,7 @@ bao kv put apps/sql-mcp \
 ## 3. Register the `kg` connection
 
 Point one of sql-mcp's named connections at the listener
-(`SQL_CONNECTIONS`, `CONCEPT:SQL-1.2`). The deployed stack
+(`SQL_CONNECTIONS`, `CONCEPT:SQ-OS.identity.env-parsing-secret-redaction`). The deployed stack
 (`services/sql-mcp/compose.dev.yml`) already wires this from the vault-injected
 vars:
 
@@ -88,7 +88,7 @@ sql_query  action=execute  connection=kg \
 ```
 
 `sql_admin ping` confirms the SCRAM handshake + latency; the `sql_query` returns
-the bounded `{columns, rows, row_count, truncated}` envelope (`CONCEPT:SQL-1.4`)
+the bounded `{columns, rows, row_count, truncated}` envelope (`CONCEPT:SQ-OS.governance.sql-3`)
 over real KG nodes.
 
 ## Notes

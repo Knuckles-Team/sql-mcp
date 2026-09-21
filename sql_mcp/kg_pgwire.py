@@ -1,13 +1,13 @@
-"""epistemic-graph pg-wire backend helpers for sql-mcp (CONCEPT:SQL-1.7, CONCEPT:KG-2.205).
+"""epistemic-graph pg-wire backend helpers for sql-mcp.
 
 The epistemic-graph engine exposes its Knowledge Graph over the Postgres wire
-protocol (CONCEPT:KG-2.189): a server built ``--features pgwire`` and run with
+protocol (CONCEPT:AU-KG.query.raw-python): a server built ``--features pgwire`` and run with
 ``EPISTEMIC_GRAPH_PGWIRE_ADDR`` set (documented loopback ``127.0.0.1:5433``)
 accepts native SQLAlchemy/psycopg connections and runs read-only SQL over the
 ``nodes``/``edges`` tables. That makes the KG just another named sql-mcp
 connection — no special transport, no bespoke connector.
 
-Auth (CONCEPT:KG-2.202): under SCRAM mode a pg ``user`` maps to an engine
+Auth (CONCEPT:EG-KG.query.concept-13): under SCRAM mode a pg ``user`` maps to an engine
 ``agent_id`` and its password is **derived** from the engine's shared secret::
 
     derived_password(user) = hex(HMAC-SHA256(GRAPH_SERVICE_AUTH_SECRET,
@@ -41,7 +41,7 @@ _PGWIRE_PREFIX = b"pgwire:"
 
 
 def derive_pg_password(secret: str, user: str) -> str:
-    """Return ``hex(HMAC-SHA256(secret, "pgwire:"+user))`` (CONCEPT:KG-2.202).
+    """Return ``hex(HMAC-SHA256(secret, "pgwire:"+user))``.
 
     Byte-for-byte the engine's ``derive_pg_password`` in
     ``epistemic-graph/src/server/pgwire/auth.rs`` — the SCRAM password the engine
@@ -66,7 +66,7 @@ def kg_dsn(
 
     ``postgresql+psycopg://<user>:<password>@<host>:<port>/<graph>`` — the
     ``database`` segment selects the engine graph the connection runs against
-    (CONCEPT:KG-2.189), defaulting to ``__commons__``.
+    (`CONCEPT:AU-KG.query.raw-python`), defaulting to ``__commons__``.
     """
     return f"postgresql+psycopg://{user}:{password}@{host}:{port}/{graph}"
 

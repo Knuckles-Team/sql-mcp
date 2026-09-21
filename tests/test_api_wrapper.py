@@ -7,6 +7,7 @@ import uuid
 from concurrent.futures import ThreadPoolExecutor
 from decimal import Decimal
 from threading import Event
+from typing import Any
 from unittest import mock
 
 import pytest
@@ -182,7 +183,7 @@ def test_write_policy_can_be_limited_per_connection():
 
 
 def test_database_errors_hide_bound_parameter_values(writable_api):
-    secret = "should-never-appear-in-errors"
+    secret = "example-secret-hidden-from-errors"
     with pytest.raises(Exception) as exc_info:
         writable_api.execute(
             "INSERT INTO users (id, name) VALUES (:id, :name)",
@@ -281,9 +282,11 @@ def test_timed_out_write_never_commits_later():
     )
     raw = client.engine("primary").raw_connection()
     try:
-        raw.driver_connection.create_function(
-            "slow_name", 0, lambda: (time.sleep(0.2), "late")[1]
-        )
+        def slow_name() -> str:
+            time.sleep(0.2)
+            return "late"
+
+        raw.driver_connection.create_function("slow_name", 0, slow_name)
         with client.engine("primary").begin() as conn:
             conn.exec_driver_sql("CREATE TABLE timed (name TEXT)")
         with pytest.raises(SqlTimeoutError):
@@ -600,7 +603,7 @@ def test_requires_at_least_one_connection():
     ],
 )
 def test_resource_limits_must_be_positive(field, value):
-    kwargs = {
+    kwargs: dict[str, Any] = {
         "connections": {"primary": MEMORY_URL},
         "allow_writes": False,
         "max_rows": 10,

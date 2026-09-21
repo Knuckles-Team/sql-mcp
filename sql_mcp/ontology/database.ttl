@@ -48,7 +48,7 @@
 
 :references a owl:ObjectProperty ;
     rdfs:label "references" ;
-    rdfs:comment "Links a database view to a table it selects from (CONCEPT:KG-2.212)." ;
+    rdfs:comment "Links a database view to a table it selects from (CONCEPT:EG-KG.query.create-drop-view)." ;
     rdfs:domain :DatabaseView ;
     rdfs:range :DatabaseTable .
 
@@ -79,7 +79,7 @@ planners to dynamically reason about data layouts.""" ;
 
 :DatabaseView a owl:Class ;
     rdfs:label "Database View" ;
-    rdfs:comment "A SQL view (a named query over one or more tables). Extracted from CREATE VIEW DDL (CONCEPT:KG-2.212); its source tables are linked by :references." ;
+    rdfs:comment "A SQL view (a named query over one or more tables). Extracted from CREATE VIEW DDL (CONCEPT:EG-KG.query.create-drop-view); its source tables are linked by :references." ;
     rdfs:subClassOf :ApplicationLayer .
 
 :DatabaseTable a owl:Class ;

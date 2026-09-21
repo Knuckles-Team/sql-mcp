@@ -13,6 +13,7 @@ BRIN
 pydantic
 vibe
 logfire
+hasTable
 langsmith
 searxng
 qbittorrent

@@ -1,4 +1,4 @@
-"""Tests for the epistemic-graph pg-wire backend helpers (CONCEPT:KG-2.205)."""
+"""Tests for the epistemic-graph pg-wire backend helpers."""
 
 import hashlib
 import hmac
@@ -17,7 +17,7 @@ def _reference(secret: str, user: str) -> str:
 
 
 def test_derive_pg_password_matches_engine_formula():
-    secret = "super-secret-engine-key"  # sanitizer:ignore  (test fixture, not a real secret)
+    secret = "example-engine-key"
     user = "sql-mcp"
     assert derive_pg_password(secret, user) == _reference(secret, user)
 

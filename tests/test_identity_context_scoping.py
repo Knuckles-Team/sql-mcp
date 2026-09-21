@@ -20,9 +20,11 @@ from tests.conftest import build_api
 def _install_fake_entitlements(entitled_names) -> None:
     """Install a fake ``agent_utilities.security.entitlements`` module."""
     module = types.ModuleType("agent_utilities.security.entitlements")
-    module.identity_scoped_resources = lambda namespace, names: [
-        n for n in names if n in entitled_names
-    ]
+    setattr(
+        module,
+        "identity_scoped_resources",
+        lambda namespace, names: [n for n in names if n in entitled_names],
+    )
     sys.modules["agent_utilities.security.entitlements"] = module
 
 

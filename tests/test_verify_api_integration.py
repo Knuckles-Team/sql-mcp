@@ -22,6 +22,7 @@ def _load_module():
     spec = importlib.util.spec_from_file_location(
         "verify_api_integration_under_test", _SCRIPT_PATH
     )
+    assert spec is not None
     module = importlib.util.module_from_spec(spec)
     assert spec.loader is not None
     spec.loader.exec_module(module)
@@ -249,7 +250,9 @@ class Registrar:
     spec = importlib.util.spec_from_file_location(
         "verify_api_integration_workspace_scan", fake_script
     )
+    assert spec is not None
     module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
     spec.loader.exec_module(module)
 
     monkeypatch.setattr(sys, "argv", ["verify_api_integration.py"])

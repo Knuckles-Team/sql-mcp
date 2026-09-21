@@ -57,7 +57,9 @@ def parse_api_client(filepath):
         if not isinstance(node, ast.ClassDef) or not _is_api_client_class(node):
             continue
         for item in node.body:
-            if _is_public_client_method(item):
+            if isinstance(
+                item, (ast.FunctionDef, ast.AsyncFunctionDef)
+            ) and _is_public_client_method(item):
                 methods[item.name] = {"line": item.lineno, "class": node.name}
     return methods
 

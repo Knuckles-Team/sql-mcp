@@ -18,7 +18,7 @@ import msgpack
 import pytest
 from agent_utilities.knowledge_graph.core.session import GraphSession, use_session
 from agent_utilities.knowledge_graph.memory.native_ingest import NativeIngestError
-from agent_utilities.models.company_brain import ActorType
+from agent_utilities.security.actor_identity import ActorType
 from agent_utilities.security.brain_context import ActorContext, use_actor
 
 from sql_mcp.kg_ingest import catalog_to_entities, ingest_entities
@@ -237,8 +237,9 @@ def test_catalog_to_entities_rejects_missing_objects_list():
 
 
 def test_catalog_to_entities_rejects_non_dict_catalog():
+    invalid_catalog: Any = "not-a-catalog"
     with pytest.raises(ValueError, match="bounded SQL schema catalog"):
-        catalog_to_entities("not-a-catalog")
+        catalog_to_entities(invalid_catalog)
 
 
 def test_catalog_to_entities_defaults_unset_schema_to_default_label():
