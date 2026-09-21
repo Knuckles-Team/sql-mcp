@@ -1,10 +1,10 @@
 {
   "api_version": "graphos.io/v1",
   "artifacts": {
-    "connector_manifest.yml": "2e541c8dc7c6de0e6207f7daa2dfb9e0f56186629f8ce98d11c17296895c0764",
+    "connector_manifest.yml": "3f57351af0d7b55b2eb2e0cefdff0235b928cd8f9efe81f130c688424280a587",
     "sql_mcp/connectors/mcp_source_presets.json": "ed6bbb14d4a0e706bbe2caa1a714f06093273cc288d49aa43ff887dd5e129c46",
     "sql_mcp/connectors/tool_schema_fingerprints.json": "349901c65b6f1fd273ebdca0df935fab3308c612e7e7d334e836b5eded7fa3e5",
-    "sql_mcp/ontology/database.ttl": "0ee303c26d2e0bbf13c3dd4b8b94da656f540b3782c9c085531c984d7a6d5454",
+    "sql_mcp/ontology/database.ttl": "1486055962ef7a286c349f6d3974bbe5d8176e88b627fb59c201b79a78153c64",
     "sql_mcp/ontology/fixtures/records.json": "2a06e3f58c45c99a612d756419b9029fc7d14f5acaa1db77f964e32cc58c28d1",
     "sql_mcp/ontology/mappings/source.yaml": "15faf4992ea561ea2ffa48bdd39ccb78823b11b31f32aeda2030479e700a521e",
     "sql_mcp/ontology/migrations/manifest.json": "18189bd6a40c3683809ed9d80a2179361bbc8ea79d11ed1c3bed6152f64c3396",
@@ -32,5 +32,5 @@
   "signer": "UNSIGNED-PREVIEW",
   "signing_public_key": "",
   "status": "source-validated",
-  "validated_at": "2026-08-27T02:44:50Z"
+  "validated_at": "2026-09-21T17:23:56Z"
 }
