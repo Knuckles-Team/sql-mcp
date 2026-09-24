@@ -96,18 +96,11 @@ curl -s http://localhost:8000/health        # {"status":"OK"}
 ## Docker Compose
 
 ```bash
-docker compose -f docker/mcp.compose.yml up -d      # MCP server only
-docker compose -f docker/agent.compose.yml up -d    # MCP + agent
+docker compose -f docker/mcp.compose.yml up -d
 ```
 
 Connections, policy, and toggles come from `../.env` (see
 [`.env.example`](https://github.com/Knuckles-Team/sql-mcp/blob/main/.env.example)).
-
-## Run the A2A agent server
-
-```bash
-sql-agent --mcp-config mcp_config.json --web
-```
 
 ## Ingress & DNS
 
