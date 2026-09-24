@@ -4,7 +4,7 @@ import json
 
 import pytest
 
-pytest.importorskip("agent_utilities.mcp.action_dispatch")
+pytest.importorskip("agent_connector_sdk.mcp.action_dispatch")
 
 from fastmcp import Client  # noqa: E402
 

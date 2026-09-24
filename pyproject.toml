@@ -9,7 +9,7 @@ description = "Generic SQL database (Postgres, MySQL/MariaDB, MSSQL, Oracle, SQL
 readme = "README.md"
 classifiers = [ "Development Status :: 4 - Beta", "License :: OSI Approved :: MIT License", "Environment :: Console", "Operating System :: POSIX :: Linux", "Programming Language :: Python :: 3",]
 requires-python = ">=3.12, <3.15"
-dependencies = [ "agent-utilities>=2.0.0,<3.0.0", "python-dotenv>=1.2.2", "sqlalchemy>=2.0.51",]
+dependencies = [ "agent-utilities>=2.0.0,<3.0.0", "python-dotenv>=1.2.2", "sqlalchemy>=2.0.51", "agent-connector-sdk>=0.1.0,<1.0.0",]
 [[project.authors]]
 name = "Project Maintainers"
 email = "maintainers@users.noreply.github.com"
@@ -55,6 +55,7 @@ override-dependencies = [
 ]
 
 [tool.uv.sources]
+agent-connector-sdk = { path = ".uv-workspace-siblings/agent-connector-sdk", editable = true }
 agent-utilities = { path = ".uv-workspace-siblings/agent-utilities", editable = true }
 
 [tool.ruff]
