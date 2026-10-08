@@ -971,7 +971,7 @@ over real KG nodes.</p>
 <ul>
 <li><strong>Read-only by default.</strong> sql-mcp's <code>sql_query</code> only runs SELECT/CTE; the engine
   pg-wire surface also classifies writes and routes them through the governed
-  write path. Leave <code>SQL_ALLOW_WRITES</code> off for the <code>kg</code> connection unless you
+  write path. Leave <code>SQL_ALLOW_WRITES</code> off for the <code>kg</code> connection unless the operator
   intend governed DML over <code>nodes</code>.</li>
 <li><strong>Driver.</strong> Requires the <code>postgres</code> extra (<code>sql-mcp[postgres]</code> → <code>psycopg</code>).</li>
 <li><strong>No new connector code.</strong> This is config + the derivation helper only — the KG
