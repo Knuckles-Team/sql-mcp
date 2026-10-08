@@ -59,4 +59,4 @@ SQL_CONNECTIONS={"pg": "postgresql+psycopg://svc:change-me@localhost:5432/app", 
 ```
 
 SQLite needs no platform at all — `sqlite:///app.db` (or `sqlite://` in
-memory) works out of the box.
+memory) works by default.

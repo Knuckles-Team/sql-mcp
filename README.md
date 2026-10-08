@@ -56,8 +56,8 @@ all values travel as bound parameters — never interpolated into SQL strings.
   named multi-connection support, lazy engine creation, the read-only statement
   gate, row-cap/timeout enforcement, and bounded result envelopes
   (`{columns, rows, row_count, truncated}`).
-- **Four MCP tools** (`sql-mcp` console script): `sql_query` (execute/explain),
-  `sql_execute` (execute/script — gated by `SQL_ALLOW_WRITES`), `sql_schema`
+- **Four MCP tools** (`sql-mcp` console script): `sql_query` (run/explain),
+  `sql_execute` (run/script — gated by `SQL_ALLOW_WRITES`), `sql_schema`
   (schemas/tables/views/columns/indexes/foreign_keys/ddl/sample), and `sql_admin`
   (ping/version/active_connections/connections/dialects). See
   [`docs/usage.md`](docs/usage.md) for the full action surface.
@@ -143,22 +143,22 @@ of the configured connections. The whole set is toggled with `SQLTOOL`.
 | `SQLTOOL` | `True` | Register the SQL tool set |
 
 With nothing configured the server registers a zero-infra in-memory SQLite
-connection named `memory`, so it works out of the box. Tools take an optional
+connection named `memory`, so it works by default. Tools take an optional
 `connection` parameter naming one of the configured connections; it defaults to
 the sole/first one. Passwords are parsed into `sqlalchemy.URL` objects and only
 ever rendered redacted. Copy [`.env.example`](.env.example) to `.env` and
-populate only what you use.
+populate only what the operator use.
 
 ## Installation
 
-Pick the extra that matches what you want to run. DB-driver extras
+Pick the extra that matches what the operator want to run. DB-driver extras
 (`postgres` / `mysql` / `mssql` / `oracle`) are **additive** — combine them with
 `[mcp]` or `[agent]`, e.g. `sql-mcp[mcp,postgres]` (see [Dialects & extras](#dialects--extras)).
 
 | Extra | Installs | Use when |
 |-------|----------|----------|
-| `sql-mcp[mcp]` | Connector-focused MCP server (`agent-utilities[mcp]` — FastMCP/FastAPI + `epistemic-graph[full]`) | You only run the **MCP server** (smallest install / image) |
-| `sql-mcp[agent]` | Agent runtime (`agent-utilities[agent-runtime,logfire]` — model orchestration + `epistemic-graph[full]`) | You run the **integrated agent** |
+| `sql-mcp[mcp]` | Connector-focused MCP server (`agent-utilities[mcp]` — FastMCP/FastAPI + `epistemic-graph[full]`) | The operator only run the **MCP server** (smallest install / image) |
+| `sql-mcp[agent]` | Agent runtime (`agent-utilities[agent-runtime,logfire]` — model orchestration + `epistemic-graph[full]`) | The operator run the **integrated agent** |
 | `sql-mcp[all]` | Everything (`mcp` + `agent` + **every** DB driver + `logfire`) | Development / both surfaces |
 
 ```bash
@@ -191,7 +191,7 @@ agent (`immutable agent digest`) with a co-located `:mcp` sidecar.
 
 Both `[mcp]` and `[agent]` carry the **epistemic-graph** engine through the required
 Agent Utilities core dependency (`epistemic-graph[full]`). The `[mcp]` extra keeps
-the server connector-focused; `[agent]` additionally enables model orchestration. Local
+the server connector-focused; `[agent]` also enables model orchestration. Local
 deployments can use the bundled engine. For production or shared state, run
 **epistemic-graph as a dedicated database service** and configure the runtime to use it.
 Deployment recipes (single-node + Raft HA), connection configuration, and architecture
@@ -212,7 +212,7 @@ export SQL_URL="postgresql+psycopg://svc:****@db.example.com:5432/app"
 sql-mcp
 ```
 
-Or several:
+Or multiple:
 
 ```bash
 export SQL_CONNECTIONS='{
@@ -233,7 +233,7 @@ sql-agent --mcp-url http://localhost:8000/mcp --host 0.0.0.0 --port 8080
 
 > **Install the connector-focused `[mcp]` extra.** Examples use `sql-mcp[mcp]` to add
 > FastMCP / FastAPI through `agent-utilities[mcp]`; the required Agent Utilities core
-> still carries `epistemic-graph[full]`. The `[agent]` extra additionally
+> still carries `epistemic-graph[full]`. The `[agent]` extra also
 > enables model orchestration.
 > Combine it with the database-driver extras needed by the deployment.
 

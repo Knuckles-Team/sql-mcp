@@ -2,7 +2,7 @@
 
 ## The MCP tools
 
-Four consolidated, action-routed tools (few tools, many actions). Every tool
+Four consolidated, action-routed tools (few tools, multiple actions). Every tool
 takes `action`, `params_json` (a JSON object of arguments), and an optional
 `connection` naming one of the configured connections (defaults to the
 sole/first one).

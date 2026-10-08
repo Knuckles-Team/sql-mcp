@@ -21,7 +21,7 @@ one extra:
 | `sql-mcp[oracle]` | `oracledb>=2.0` | Oracle Database |
 | `sql-mcp[all]` | everything above | + `mcp` + `agent` extras |
 
-\* `pyodbc` additionally needs the platform's `unixodbc` and a Microsoft ODBC
+\* `pyodbc` also needs the platform's `unixodbc` and a Microsoft ODBC
 driver (e.g. `msodbcsql18`) installed at the OS level.
 
 Using a dialect whose driver is missing raises a self-explanatory error naming
