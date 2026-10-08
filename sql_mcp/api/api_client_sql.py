@@ -698,7 +698,9 @@ class SqlApi:
             normalized[str(key)] = self._json_safe_value(item, depth + 1)
         return normalized
 
-    def _normalize_sequence_for_json(self, value: list | tuple | set | frozenset, depth: int) -> list:
+    def _normalize_sequence_for_json(
+        self, value: list | tuple | set | frozenset, depth: int
+    ) -> list:
         sequence = list(value)
         normalized = [
             self._json_safe_value(item, depth + 1) for item in sequence[:1_000]
@@ -1001,9 +1003,7 @@ class SqlApi:
         if not entry_params or not all(
             isinstance(item, Mapping) for item in entry_params
         ):
-            raise ValueError(
-                "Script batch params must be a non-empty list of objects."
-            )
+            raise ValueError("Script batch params must be a non-empty list of objects.")
         return [dict(item) for item in entry_params]
 
     def _parse_script_mapping_entry(

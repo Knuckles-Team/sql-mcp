@@ -123,9 +123,7 @@ def _load_connections_from_json(raw: str) -> dict[str, URL]:
     connections: dict[str, URL] = {}
     for name, spec in mapping.items():
         if not _valid_connection_name(name):
-            raise ValueError(
-                "SQL_CONNECTIONS names must be non-empty bounded strings."
-            )
+            raise ValueError("SQL_CONNECTIONS names must be non-empty bounded strings.")
         connections[name] = _connection_from_spec(name, spec)
     return connections
 

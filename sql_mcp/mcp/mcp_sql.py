@@ -152,7 +152,10 @@ def _validate_sql_schema_action(action: str, p: dict[str, Any]) -> None:
 
 def _schema_op_schemas(api, p, schema, conn):
     return partial(
-        api.list_schemas, connection=conn, limit=p.get("limit"), offset=p.get("offset", 0)
+        api.list_schemas,
+        connection=conn,
+        limit=p.get("limit"),
+        offset=p.get("offset", 0),
     )
 
 
