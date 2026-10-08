@@ -82,3 +82,6 @@ ignore_names = ["request", "config"]
 [tool.setuptools.packages.find]
 where = [ ".",]
 include = [ "sql_mcp*",]
+
+[tool.pipelines_hooks.ste]
+exempt = ["specs/*", "specs/**/*"]
