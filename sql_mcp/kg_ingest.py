@@ -189,8 +189,7 @@ def _add_index_entities(
         if not isinstance(index_name, str) or not index_name:
             continue
         index_id = (
-            f"database:index:{state.connection}.{state.label}."
-            f"{table_name}.{index_name}"
+            f"database:index:{state.connection}.{state.label}.{table_name}.{index_name}"
         )
         state.add_entity(
             {

@@ -289,9 +289,7 @@ def _is_prepare_transaction(words: list[str]) -> bool:
 
 
 def _is_save_transaction(words: list[str]) -> bool:
-    return (
-        words[0] == "save" and len(words) > 1 and words[1] in {"tran", "transaction"}
-    )
+    return words[0] == "save" and len(words) > 1 and words[1] in {"tran", "transaction"}
 
 
 def _is_set_transaction_control(words: list[str]) -> bool:
