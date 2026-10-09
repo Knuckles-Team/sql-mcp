@@ -152,23 +152,34 @@ async def test_action_models_reject_unknown_arguments(mcp):
             )
 
 
-async def test_sql_and_kg_work_run_off_the_event_loop(mcp, monkeypatch):
+async def test_sql_reflection_runs_off_loop_kg_ingest_runs_on_loop(mcp, monkeypatch):
+    """SQL reflection still offloads to a worker thread (genuinely blocking
+    SQLAlchemy I/O via ``_invoke_external``). KG ingestion no longer needs that
+    offload: ``agent_connector_sdk.ingest``'s ``KnowledgeIngest.submit()`` does
+    non-blocking async I/O, so ``sql_ingest_schema`` now awaits it directly on
+    the event loop rather than wrapping it in ``_invoke_external`` -- wrapping
+    an async call in a thread-pool offload would create-and-discard a
+    coroutine without ever awaiting it (see FLEET-SDK-MIGRATION-RECIPE.md,
+    pitfall #2), so running it off-loop is no longer correct, not just no
+    longer necessary.
+    """
     monkeypatch.setenv("SQL_ALLOW_KG_INGEST", "True")
     event_loop_thread = threading.get_ident()
-    worker_threads = []
+    reflection_threads = []
+    ingest_threads = []
     api = auth.get_api()
     reflection = api._reflection
 
     def recording_reflection(connection, operation, timeout=None):
         def recorded_operation(inspector):
-            worker_threads.append(threading.get_ident())
+            reflection_threads.append(threading.get_ident())
             return operation(inspector)
 
         return reflection(connection, recorded_operation, timeout)
 
-    def recording_ingest_entities(*args, **kwargs):
-        worker_threads.append(threading.get_ident())
-        return {"nodes_created": 0, "edges_created": 0}
+    async def recording_ingest_entities(*args, **kwargs):
+        ingest_threads.append(threading.get_ident())
+        return {"nodes": 0, "edges": 0}
 
     monkeypatch.setattr(api, "_reflection", recording_reflection)
     monkeypatch.setattr(
@@ -183,8 +194,9 @@ async def test_sql_and_kg_work_run_off_the_event_loop(mcp, monkeypatch):
             {"params_json": "{}", "connection": "primary"},
         )
 
-    assert len(worker_threads) == 2
-    assert all(thread_id != event_loop_thread for thread_id in worker_threads)
+    assert reflection_threads == [reflection_threads[0]]  # exactly one call
+    assert reflection_threads[0] != event_loop_thread
+    assert ingest_threads == [event_loop_thread]
 
 
 async def test_kg_ingest_is_disabled_by_default(mcp):
