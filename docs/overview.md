@@ -1,11 +1,9 @@
 # sql-mcp — Concept Overview
 
-> **Category**: Integration | **Ecosystem Role**: MCP Server + A2A Agent
 > Built on [`agent-connector-sdk`](https://github.com/Knuckles-Team/agent-connector-sdk) — the unified AGI Harness.
 
 ## Description
 
-Generic SQL database **API + MCP Server + A2A Agent** — one connector for
 PostgreSQL, MySQL/MariaDB, Microsoft SQL Server, Oracle, and SQLite over
 SQLAlchemy 2.x Core. Read-only by default, with server-side write gating,
 bound parameters everywhere, row caps, and statement timeouts.
@@ -19,8 +17,6 @@ This project follows the standardized agent-package pattern:
   shims) for cleaner organization.
 - **Dynamic Tool Registration**: action-routed dynamic tool tags, strictly
   lowercase, each togglable with a `*TOOL` environment flag (`SQLTOOL`).
-- **A2A Agent Server**: a Pydantic-AI graph agent (console script `sql-agent`)
-  that calls the MCP tool surface and exposes an AG-UI web interface.
 - **Safety boundary**: `sql_mcp.safety.assert_read_only` (allowlist + CTE
   depth-zero scan) guards every `sql_query` statement; writes require the
   server-side `SQL_ALLOW_WRITES=True` switch.
@@ -32,7 +28,6 @@ This project implements or inherits the following ecosystem concepts:
 | Concept ID | Description | Source |
 |:-----------|:------------|:-------|
 | ECO-4.1 | MCP & Universal Skills | `agent-connector-sdk` (inherited) |
-| AU-ECO.toolkit.journey-map-narrative | A2A Network & Consensus | `agent-connector-sdk` (inherited) |
 | CONCEPT:SQ-OS.governance.sql-2 | Action-dispatch MCP tool surface | [`concepts.md`](concepts.md) |
 | CONCEPT:SQ-OS.safety.allow-deny-classification | Read-only statement gate | [`concepts.md`](concepts.md) |
 

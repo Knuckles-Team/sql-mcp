@@ -1,33 +1,4 @@
 # Sql Mcp
-## API | MCP Server | A2A Agent
-
-![PyPI - Version](https://img.shields.io/pypi/v/sql-mcp)
-![MCP Server](https://badge.mcpx.dev?type=server 'MCP Server')
-![PyPI - Downloads](https://img.shields.io/pypi/dd/sql-mcp)
-![GitHub Repo stars](https://img.shields.io/github/stars/Knuckles-Team/sql-mcp)
-![GitHub forks](https://img.shields.io/github/forks/Knuckles-Team/sql-mcp)
-![GitHub contributors](https://img.shields.io/github/contributors/Knuckles-Team/sql-mcp)
-![PyPI - License](https://img.shields.io/pypi/l/sql-mcp)
-![GitHub](https://img.shields.io/github/license/Knuckles-Team/sql-mcp)
-![GitHub last commit (by committer)](https://img.shields.io/github/last-commit/Knuckles-Team/sql-mcp)
-![GitHub pull requests](https://img.shields.io/github/issues-pr/Knuckles-Team/sql-mcp)
-![GitHub closed pull requests](https://img.shields.io/github/issues-pr-closed/Knuckles-Team/sql-mcp)
-![GitHub issues](https://img.shields.io/github/issues/Knuckles-Team/sql-mcp)
-![GitHub top language](https://img.shields.io/github/languages/top/Knuckles-Team/sql-mcp)
-![GitHub language count](https://img.shields.io/github/languages/count/Knuckles-Team/sql-mcp)
-![GitHub repo size](https://img.shields.io/github/repo-size/Knuckles-Team/sql-mcp)
-![PyPI - Wheel](https://img.shields.io/pypi/wheel/sql-mcp)
-![PyPI - Implementation](https://img.shields.io/pypi/implementation/sql-mcp)
-
-Generic SQL database **API + MCP Server + A2A Agent** for the agent-connector-sdk
-ecosystem — one connector for **PostgreSQL, MySQL/MariaDB, Microsoft SQL Server,
-Oracle, and SQLite** over SQLAlchemy 2.x Core.
-
-*Version: 2.1.0*
-
-> **Documentation** — Installation, deployment, and usage across the API, CLI, and
-> MCP interfaces are maintained in [`docs/`](docs/index.md).
-
 ## Table of Contents
 
 - [Overview](#overview)
@@ -46,7 +17,6 @@ Oracle, and SQLite** over SQLAlchemy 2.x Core.
 
 `sql-mcp` exposes read-only queries, gated DML/DDL, schema reflection, and
 connection administration as typed, deterministic MCP tools, and ships an optional
-Pydantic-AI agent server. It is **read-only by default**: every query passes a
 statement-type allowlist, every result is bounded by a row cap and a timeout, and
 all values travel as bound parameters — never interpolated into SQL strings.
 
@@ -64,7 +34,6 @@ all values travel as bound parameters — never interpolated into SQL strings.
 - **A dialect registry** (`sql_mcp.dialects`) — per-engine driver, URL scheme, pip
   extra, EXPLAIN prefix, and admin SQL. Core ships SQLite only; the other drivers
   install via extras.
-- **An A2A agent server** (`sql-agent` console script) — a Pydantic-AI graph agent
   wired to the MCP server via `MCP_URL`.
 
 ## MCP tools
@@ -153,45 +122,37 @@ populate only what the operator use.
 
 Pick the extra that matches what the operator want to run. DB-driver extras
 (`postgres` / `mysql` / `mssql` / `oracle`) are **additive** — combine them with
-`[mcp]` or `[agent]`, e.g. `sql-mcp[mcp,postgres]` (see [Dialects & extras](#dialects--extras)).
 
 | Extra | Installs | Use when |
 |-------|----------|----------|
 | `sql-mcp[mcp]` | Connector-focused MCP server (`agent-connector-sdk` — FastMCP/FastAPI + `epistemic-graph[full]`) | The operator only run the **MCP server** (smallest install / image) |
-| `sql-mcp[agent]` | Agent runtime (`agent-connector-sdk` — model orchestration + `epistemic-graph[full]`) | The operator run the **integrated agent** |
 | `sql-mcp[all]` | Everything (`mcp` + `agent` + **every** DB driver + `logfire`) | Development / both surfaces |
 
 ```bash
 pip install sql-mcp                  # core (SQLite only, MCP server, API)
 pip install "sql-mcp[mcp]"           # connector-focused MCP server (add drivers: [mcp,postgres])
-pip install "sql-mcp[agent]"         # agent runtime runtime (Pydantic AI + engine)
 pip install "sql-mcp[all]"           # every driver + MCP + agent extras
 pip install -e .                     # from source
 ```
 
-### Container images (`:mcp` vs `:agent`)
+### Container images (`:mcp`)
 
-One multi-stage `docker/Dockerfile` builds two right-sized images, selected by `--target`:
+One multi-stage `docker/Dockerfile` builds the MCP-only image (`--target mcp`):
 
 | Image tag | Build target | Contents | Entrypoint |
 |-----------|--------------|----------|------------|
 | `example/sql-mcp:mcp` | `--target mcp` | `sql-mcp[mcp]` — **connector-focused**, includes `epistemic-graph[full]`; no model-orchestration stack | `sql-mcp` |
-| `example/sql-mcp@sha256:<digest>` | `--target agent` (default) | `sql-mcp[agent]` — **agent runtime**, model orchestration + `epistemic-graph[full]` | `sql-agent` |
 
 ```bash
 docker pull example/sql-mcp:mcp                                   # connector-focused MCP server
 docker build --target mcp   -t example/sql-mcp:mcp    docker/     # build MCP server
-docker build --target agent -t example/sql-mcp:agent-local docker/     # build full agent
 ```
 
-`docker/mcp.compose.yml` runs the connector-focused `:mcp` server; `docker/agent.compose.yml` runs the
 agent (`immutable agent digest`) with a co-located `:mcp` sidecar.
 
 ### Knowledge-graph database (`epistemic-graph`)
 
-Both `[mcp]` and `[agent]` carry the **epistemic-graph** engine through the required
 Agent Connector SDK core dependency (`epistemic-graph[full]`). The `[mcp]` extra keeps
-the server connector-focused; `[agent]` also enables model orchestration. Local
 deployments can use the bundled engine. For production or shared state, run
 **epistemic-graph as a dedicated database service** and configure the runtime to use it.
 Deployment recipes (single-node + Raft HA), connection configuration, and architecture
@@ -223,17 +184,10 @@ export SQL_CONNECTIONS='{
 sql-mcp
 ```
 
-Run the agent server against a live MCP server:
-
-```bash
-sql-agent --mcp-url http://localhost:8000/mcp --host 0.0.0.0 --port 8080
-```
-
 ## MCP config
 
 > **Install the connector-focused `[mcp]` extra.** Examples use `sql-mcp[mcp]` to add
 > FastMCP / FastAPI through `agent-connector-sdk`; the required Agent Connector SDK core
-> still carries `epistemic-graph[full]`. The `[agent]` extra also
 > enables model orchestration.
 > Combine it with the database-driver extras needed by the deployment.
 
@@ -271,7 +225,6 @@ the detailed transport contract.
 
 ```bash
 docker compose -f docker/mcp.compose.yml up -d      # MCP server only
-docker compose -f docker/agent.compose.yml up -d    # MCP + A2A agent
 curl -s http://localhost:8000/health                 # {"status":"OK"}
 ```
 
@@ -298,7 +251,6 @@ python -m pytest          # full suite against in-memory SQLite (no live DBs)
 pre-commit run --all-files
 ```
 
-
 <!-- BEGIN agent-connector-sdk-deployment (generated; do not edit between markers) -->
 
 ## Deploy with `agent-connector-sdk-deployment`
@@ -312,7 +264,6 @@ to **"deploy `sql-mcp` with agent-connector-sdk-deployment"**.
 | Install mode | Command |
 |------|---------|
 | Installed package | `uv tool install "sql-mcp[mcp]"`, then run `sql-mcp` |
-| Editable source | `uv pip install -e ".[agent]"`, then run `sql-mcp` |
 | Immutable container | deploy `registry.example.invalid/sql-mcp@sha256:<digest>` through the operator-selected orchestrator |
 
 The repository embeds no deployment profile, credential value, certificate path, or
@@ -373,7 +324,6 @@ configured secret provider.
 | `MCP_URL` | `http://localhost:8000/mcp` | URL of the MCP server the agent connects to |
 | `PROVIDER` | `openai` | LLM provider for the agent |
 | `MODEL_ID` | `gpt-4o` | Model id for the agent |
-| `ENABLE_WEB_UI` | `True` | Serve the AG-UI web interface |
 
 _24 package + 16 inherited variable(s). Auto-generated from `.env.example` + the shared agent-connector-sdk set — do not edit._
 <!-- ENV-VARS-TABLE:END -->
