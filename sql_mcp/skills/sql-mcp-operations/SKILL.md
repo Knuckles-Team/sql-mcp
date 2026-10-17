@@ -2,12 +2,12 @@
 name: sql-mcp-operations
 skill_type: skill
 description: >-
-  Operate sql-mcp through its governed MCP and GraphOS capabilities, including sql mcp knowledge graph ingestion, sql mcp query execution, sql mcp schema inspection. Use when a request requires this provider's read, change, automation, ingestion, troubleshooting, or evidence workflows.
+  Operate sql-mcp through its governed MCP and Arbora capabilities, including sql mcp knowledge graph ingestion, sql mcp query execution, sql mcp schema inspection. Use when a request requires this provider's read, change, automation, ingestion, troubleshooting, or evidence workflows.
 ---
 
 # Sql Mcp Operations
 
-Use the provider's governed MCP tools through GraphOS delegation.
+Use the provider's governed MCP tools through Arbora delegation.
 
 ## Workflow
 

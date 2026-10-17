@@ -10,7 +10,7 @@ SQLAlchemy/psycopg connections and runs read-only SQL over the `nodes`/`edges`
 tables (the same DataFusion path `Method::Sql` uses). So the KG needs **no
 special connector** in sql-mcp — it is just another named connection.
 
-This is the complement to the native KG-SQL MCP tool: agent-connector-sdk' graph-os
+This is the complement to the native KG-SQL MCP tool: agent-connector-sdk' arbora
 exposes `graph_query(scope="sql")` (+ REST `/graph/query`) for SQL-on-the-KG over
 MCP; this recipe reaches the *same* engine surface from a generic SQL client.
 
