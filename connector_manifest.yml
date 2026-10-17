@@ -141,7 +141,7 @@ sync:
   updated_field: null
   pagination: null
   doc_type: database_table
-  tool_schema_sha256: 081c70207e94b742b2f062a048b0c6b504271b404c6e24ac85e39134ce049897
+  tool_schema_sha256: 7bac1580cfe31ec2d45ce09b25d93d92ccaad0cba676b4db67236829a8f1a071
   raw:
     server: sql-mcp
     tool: sql_schema

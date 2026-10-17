@@ -9,7 +9,6 @@ __all__: list[str] = []
 
 CORE_MODULES = ["sql_mcp.api_client"]
 OPTIONAL_MODULES = {
-    "sql_mcp.agent_server": "agent",
     "sql_mcp.mcp_server": "mcp",
 }
 

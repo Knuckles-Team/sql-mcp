@@ -1,6 +1,6 @@
 # sql-mcp
 
-Generic SQL database **API + MCP Server + A2A Agent** for the agent-utilities
+Generic SQL database **API + MCP Server + A2A Agent** for the agent-connector-sdk
 ecosystem — one connector for PostgreSQL, MySQL/MariaDB, Microsoft SQL Server,
 Oracle, and SQLite over SQLAlchemy 2.x Core.
 

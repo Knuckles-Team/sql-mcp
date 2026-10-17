@@ -316,21 +316,17 @@ class SqlApi:
     def _entitled(self, namespace: str, names: list[str]) -> list[str]:
         """Filter a connection-name list to what the calling identity may reach.
 
-        Routes the names through agent-utilities' shared identity-scoped
+        Routes the names through agent-connector-sdk' shared identity-scoped
         resolver (CONCEPT:AU-OS.identity.identity-scoped-resource-autoload): a
         caller's Okta/Keycloak groups decide which named SQL connections
         auto-load for them. The ambient ``SYSTEM_ACTOR``
         (unauthenticated/local) holds ``admin`` → sees all, so behaviour is
         unchanged until a real identity scopes it down. Degrades to the full
-        list if agent-utilities predates the resolver.
+        list if agent-connector-sdk predates the resolver.
         """
         try:
-            from agent_utilities.security.brain_context import (
-                IdentityRequiredError,
-            )
-            from agent_utilities.security.entitlements import (
-                identity_scoped_resources,
-            )
+            from agent_connector_sdk.identity import IdentityRequiredError
+            from agent_connector_sdk.entitlements import identity_scoped_resources
         except Exception:
             return list(names)
         try:
