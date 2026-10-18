@@ -1,6 +1,5 @@
 # sql-mcp
 
-Generic SQL database **API + MCP Server + A2A Agent** for the agent-utilities
 ecosystem — one connector for PostgreSQL, MySQL/MariaDB, Microsoft SQL Server,
 Oracle, and SQLite over SQLAlchemy 2.x Core.
 
@@ -16,7 +15,6 @@ Oracle, and SQLite over SQLAlchemy 2.x Core.
 ## Overview
 
 `sql-mcp` wraps relational databases with typed, deterministic MCP tools, and
-ships an optional Pydantic-AI agent server. It provides:
 
 - **`SqlApi`** — a SQLAlchemy 2.x Core facade with named multi-connection
   support, lazy engine creation, a read-only statement gate, row-cap/timeout
@@ -57,4 +55,3 @@ sql-mcp --transport streamable-http --host 0.0.0.0 --port 8000
 ```
 
 See **[Installation](installation.md)** for the full matrix (PyPI extras, Docker
-image, transports, the agent server).

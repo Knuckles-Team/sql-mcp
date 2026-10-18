@@ -65,7 +65,6 @@ Store the real remote URL, outbound identity reference, and TLS-profile referenc
 This page covers running `sql-mcp` as long-lived servers.
 
 > `sql-mcp` ships both an **MCP server** (console script `sql-mcp`) and an
-> **A2A agent server** (console script `sql-agent`).
 
 ## Run the MCP server
 
@@ -97,17 +96,10 @@ curl -s http://localhost:8000/health        # {"status":"OK"}
 
 ```bash
 docker compose -f docker/mcp.compose.yml up -d      # MCP server only
-docker compose -f docker/agent.compose.yml up -d    # MCP + agent
 ```
 
 Connections, policy, and toggles come from `../.env` (see
 [`.env.example`](https://github.com/Knuckles-Team/sql-mcp/blob/main/.env.example)).
-
-## Run the A2A agent server
-
-```bash
-sql-agent --mcp-config mcp_config.json --web
-```
 
 ## Ingress & DNS
 

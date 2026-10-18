@@ -1,15 +1,15 @@
 [build-system]
-requires = [ "setuptools>=80.9.0", "wheel",]
+requires = [ "setuptools>=84.0.0", "wheel",]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "sql-mcp"
-version = "2.1.0"
-description = "Generic SQL database (Postgres, MySQL/MariaDB, MSSQL, Oracle, SQLite) API + MCP Server + A2A Server for Agentic AI!"
+version = "2.2.0"
+description = "Generic SQL database (Postgres, MySQL/MariaDB, MSSQL, Oracle, SQLite) API + MCP Server for Agentic AI!"
 readme = "README.md"
 classifiers = [ "Development Status :: 4 - Beta", "License :: OSI Approved :: MIT License", "Environment :: Console", "Operating System :: POSIX :: Linux", "Programming Language :: Python :: 3",]
 requires-python = ">=3.12, <3.15"
-dependencies = [ "agent-connector-sdk>=0.1.0,<1.0.0", "agent-utilities>=2.0.0,<3.0.0", "python-dotenv>=1.2.2", "sqlalchemy>=2.0.51",]
+dependencies = [ "agent-connector-sdk[mcp]>=0.2.1,<1.0.0", "python-dotenv>=1.2.4", "sqlalchemy>=2.1.5",]
 [[project.authors]]
 name = "Project Maintainers"
 email = "maintainers@users.noreply.github.com"
@@ -18,29 +18,27 @@ email = "maintainers@users.noreply.github.com"
 text = "MIT"
 
 [project.optional-dependencies]
-mcp = [ "agent-utilities[mcp]>=2.0.0,<3.0.0",]
-agent = [ "agent-utilities[agent-runtime,logfire]>=2.0.0,<3.0.0",]
-postgres = [ "psycopg[binary]>=3.3.4",]
-mysql = [ "pymysql>=1.2.0",]
+mcp = [ "agent-connector-sdk[mcp]>=0.2.1,<1.0.0",]
+postgres = [ "psycopg[binary]>=3.3.6",]
+mysql = [ "pymysql>=1.2.3",]
 mssql = [ "pyodbc>=5.3.0",]
-oracle = [ "oracledb>=4.0.2",]
-all = [ "sql-mcp[mcp,agent,postgres,mysql,mssql,oracle,logfire]>=1.0.0",]
+oracle = [ "oracledb>=26.0.1",]
+all = [ "sql-mcp[mcp,postgres,mysql,mssql,oracle]>=1.0.0",]
 test = [ "pytest-xdist>=3.8.0", "pytest>=9.1.1", "pytest-asyncio>=1.4.0", "pytest-cov>=7.1.0",]
 
 [project.scripts]
 sql-mcp = "sql_mcp.mcp_server:mcp_server"
-sql-agent = "sql_mcp.agent_server:agent_server"
 
-[project.entry-points."agent_utilities.skill_providers"]
+[project.entry-points."agent_connector_sdk.skill_providers"]
 sql-mcp = "sql_mcp.skills"
 
-[project.entry-points."agent_utilities.prompt_providers"]
+[project.entry-points."agent_connector_sdk.prompt_providers"]
 sql-mcp = "sql_mcp.prompts"
 
-[project.entry-points."agent_utilities.ontology_providers"]
+[project.entry-points."agent_connector_sdk.ontology_providers"]
 sql-mcp = "sql_mcp.ontology"
 
-[project.entry-points."agent_utilities.source_connector_providers"]
+[project.entry-points."agent_connector_sdk.source_connector_providers"]
 sql-mcp = "sql_mcp.connectors"
 
 [tool.uv.workspace]
@@ -51,12 +49,9 @@ include-package-data = true
 
 [tool.uv]
 override-dependencies = [
-    "fastmcp-slim[client,server]>=4.0.0b1",
+    "fastmcp-slim[client,server]>=4.1.0",
 ]
 
-[tool.uv.sources]
-agent-connector-sdk = { path = ".uv-workspace-siblings/agent-connector-sdk", editable = true }
-agent-utilities = { path = ".uv-workspace-siblings/agent-utilities", editable = true }
 
 [tool.ruff]
 line-length = 88

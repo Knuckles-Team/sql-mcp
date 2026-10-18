@@ -4,8 +4,7 @@
 
 This connector inherits the ecosystem bridge concept `ECO-4.0`
 (connector parity standard) from
-[`agent-utilities`](https://github.com/Knuckles-Team/agent-utilities/blob/main/docs/overview.md),
-alongside `ECO-4.1` (MCP & Universal Skills) and `AU-ECO.toolkit.journey-map-narrative` (A2A Network).
+[`agent-connector-sdk`](https://github.com/Knuckles-Team/agent-connector-sdk/blob/main/docs/overview.md),
 
 Stable concept IDs trace the connector's core ideas across the documentation,
 code docstrings, and tests.
@@ -18,4 +17,3 @@ code docstrings, and tests.
 | `CONCEPT:SQ-OS.safety.allow-deny-classification` | Read-Only Statement Gate | Literal/comment-stripping classifier: allowlisted starters, depth-zero CTE inspection, single-statement enforcement; writes only via `sql_execute` + `SQL_ALLOW_WRITES` |
 | `CONCEPT:SQ-OS.governance.sql-3` | Bounded Result Envelope | Every result is `{columns, rows, row_count, truncated}` with a clamped row cap and a per-call timeout on a worker thread |
 | `CONCEPT:SQ-OS.governance.action-routing-through-fastmcp` | Action-Dispatch Tools | `sql_query`, `sql_execute`, `sql_schema`, `sql_admin` — thin `action` + `params_json` shims over `SqlApi` |
-| `CONCEPT:SQ-OS.governance.sql-4` | A2A Agent Server | The Pydantic-AI agent server (`sql-agent`) wired to the MCP server via `MCP_URL` |

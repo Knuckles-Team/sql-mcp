@@ -77,8 +77,3 @@ configuration table).
 
 ## CLI
 
-```bash
-sql-mcp                                                    # stdio
-sql-mcp --transport streamable-http --host 0.0.0.0 --port 8000
-sql-agent --mcp-url http://localhost:8000/mcp --port 8080  # A2A agent
-```

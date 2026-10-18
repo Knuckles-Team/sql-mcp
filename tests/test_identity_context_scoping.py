@@ -4,8 +4,8 @@ The caller's entitled SQL connections auto-load; a non-entitled named
 connection is denied; the default falls to the first entitled when the
 configured default is off-limits. Tests the resolution/enforcement logic with
 the entitlement source mocked (the resolver itself is tested in
-agent-utilities, per the container-manager-mcp/vector-mcp/documentdb-mcp
-reference pattern: a fake ``agent_utilities.security.entitlements`` module
+agent-connector-sdk, per the container-manager-mcp/vector-mcp/documentdb-mcp
+reference pattern: a fake ``agent_connector_sdk.security.entitlements`` module
 rather than reassigning ``SqlApi._entitled`` on the instance).
 """
 
@@ -18,20 +18,20 @@ from tests.conftest import build_api
 
 
 def _install_fake_entitlements(entitled_names) -> None:
-    """Install a fake ``agent_utilities.security.entitlements`` module."""
-    module = types.ModuleType("agent_utilities.security.entitlements")
+    """Install a fake ``agent_connector_sdk.security.entitlements`` module."""
+    module = types.ModuleType("agent_connector_sdk.entitlements")
     setattr(
         module,
         "identity_scoped_resources",
         lambda namespace, names: [n for n in names if n in entitled_names],
     )
-    sys.modules["agent_utilities.security.entitlements"] = module
+    sys.modules["agent_connector_sdk.entitlements"] = module
 
 
 @pytest.fixture(autouse=True)
 def _cleanup_fake_module():
     yield
-    sys.modules.pop("agent_utilities.security.entitlements", None)
+    sys.modules.pop("agent_connector_sdk.entitlements", None)
 
 
 def _api(entitled):

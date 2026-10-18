@@ -5,7 +5,6 @@
 ```bash
 pip install sql-mcp              # core: SQLite over stdlib-backed SQLAlchemy
 pip install "sql-mcp[mcp]"       # + MCP server runtime
-pip install "sql-mcp[agent]"     # + Pydantic-AI A2A agent server
 ```
 
 ## Per-dialect extras matrix
