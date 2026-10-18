@@ -7,7 +7,6 @@
         "sql-mcp"
       ],
       "env": {
-        "MCP_TOOL_MODE": "intent",
         "SQLTOOL": "True",
         "SQL_ALLOW_WRITES": "False",
         "SQL_CONNECTIONS": "{\"warehouse\": \"postgresql+psycopg://svc:password@db:5432/dw\"}",

@@ -21,16 +21,16 @@ async def test_get_mcp_instance_registers_sql_tools(monkeypatch):
     monkeypatch.setenv("SQL_URL", "sqlite+pysqlite:///:memory:")
     monkeypatch.setattr("sys.argv", ["sql-mcp"])
     mcp, args, middlewares = get_mcp_instance()
-    assert {"sql_query", "sql_execute", "sql_schema", "sql_admin"} <= (
-        await list_tool_names(mcp)
-    )
+    names = await list_tool_names(mcp)
+    assert {"sql_query", "sql_execute", "sql_ingest_schema"} <= names
+    assert not {"sql_schema", "sql_admin"} & names
 
 
 async def test_sqltool_flag_disables_registration(monkeypatch):
     monkeypatch.setenv("SQLTOOL", "False")
     monkeypatch.setattr("sys.argv", ["sql-mcp"])
     mcp, args, middlewares = get_mcp_instance()
-    assert "sql_query" not in await list_tool_names(mcp)
+    assert "sql_ingest_schema" not in await list_tool_names(mcp)
 
 
 async def test_operational_routes_expose_status_only(monkeypatch):
