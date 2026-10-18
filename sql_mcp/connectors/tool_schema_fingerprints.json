@@ -2,7 +2,5 @@
   "algorithm": "agent-connector-sdk:mcp-tool-contract-compat:v2",
   "connector": "sql-mcp",
   "schema_version": "1",
-  "tools": {
-    "sql_schema": "7bac1580cfe31ec2d45ce09b25d93d92ccaad0cba676b4db67236829a8f1a071"
-  }
+  "tools": {}
 }
