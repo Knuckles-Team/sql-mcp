@@ -6,8 +6,6 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Generic SQL database API + MCP Server + A2A Agent — Postgres, MySQL/MariaDB, MSSQL, Oracle, and SQLite for the agent-utilities ecosystem.">
-      
       
       
         <link rel="canonical" href="https://knuckles-team.github.io/sql-mcp/deployment/">
@@ -712,17 +710,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#run-the-a2a-agent-server" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Run the A2A agent server
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#ingress-dns" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -959,17 +946,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#run-the-a2a-agent-server" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Run the A2A agent server
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#ingress-dns" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1049,8 +1025,7 @@ the image remains immutable and contains no environment connection profile.</p>
 
 <p>This page covers running <code>sql-mcp</code> as long-lived servers.</p>
 <blockquote>
-<p><code>sql-mcp</code> ships both an <strong>MCP server</strong> (console script <code>sql-mcp</code>) and an
-<strong>A2A agent server</strong> (console script <code>sql-agent</code>).</p>
+<p><code>sql-mcp</code> ships both an <strong>MCP server</strong> (console script <code>sql-mcp</code>) and an</p>
 </blockquote>
 <h2 id="run-the-mcp-server">Run the MCP server<a class="headerlink" href="#run-the-mcp-server" title="Permanent link">&para;</a></h2>
 <div class="tabbed-set tabbed-alternate" data-tabs="1:3"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">stdio (default)</label><label for="__tabbed_1_2">streamable-http</label><label for="__tabbed_1_3">sse</label></div>
@@ -1074,13 +1049,9 @@ the image remains immutable and contains no environment connection profile.</p>
 </span></code></pre></div>
 <h2 id="docker-compose">Docker Compose<a class="headerlink" href="#docker-compose" title="Permanent link">&para;</a></h2>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker/mcp.compose.yml<span class="w"> </span>up<span class="w"> </span>-d<span class="w">      </span><span class="c1"># MCP server only</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker/agent.compose.yml<span class="w"> </span>up<span class="w"> </span>-d<span class="w">    </span><span class="c1"># MCP + agent</span>
 </span></code></pre></div>
 <p>Connections, policy, and toggles come from <code>../.env</code> (see
 <a href="https://github.com/Knuckles-Team/sql-mcp/blob/main/.env.example"><code>.env.example</code></a>).</p>
-<h2 id="run-the-a2a-agent-server">Run the A2A agent server<a class="headerlink" href="#run-the-a2a-agent-server" title="Permanent link">&para;</a></h2>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>sql-agent<span class="w"> </span>--mcp-config<span class="w"> </span>mcp_config.json<span class="w"> </span>--web
-</span></code></pre></div>
 <h2 id="ingress-dns">Ingress &amp; DNS<a class="headerlink" href="#ingress-dns" title="Permanent link">&para;</a></h2>
 <p>Behind the fleet's Caddy reverse proxy, publish the streamable-http MCP
 endpoint and register the hostname in Technitium DNS; point clients at

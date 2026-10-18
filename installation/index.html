@@ -6,8 +6,6 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Generic SQL database API + MCP Server + A2A Agent — Postgres, MySQL/MariaDB, MSSQL, Oracle, and SQLite for the agent-utilities ecosystem.">
-      
       
       
         <link rel="canonical" href="https://knuckles-team.github.io/sql-mcp/installation/">
@@ -882,7 +880,6 @@
 <h2 id="pypi">PyPI<a class="headerlink" href="#pypi" title="Permanent link">&para;</a></h2>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip<span class="w"> </span>install<span class="w"> </span>sql-mcp<span class="w">              </span><span class="c1"># core: SQLite over stdlib-backed SQLAlchemy</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">"sql-mcp[mcp]"</span><span class="w">       </span><span class="c1"># + MCP server runtime</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">"sql-mcp[agent]"</span><span class="w">     </span><span class="c1"># + Pydantic-AI A2A agent server</span>
 </span></code></pre></div>
 <h2 id="per-dialect-extras-matrix">Per-dialect extras matrix<a class="headerlink" href="#per-dialect-extras-matrix" title="Permanent link">&para;</a></h2>
 <p>Core ships SQLite only so the base install stays thin. Each networked dialect is

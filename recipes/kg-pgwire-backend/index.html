@@ -6,8 +6,6 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Generic SQL database API + MCP Server + A2A Agent — Postgres, MySQL/MariaDB, MSSQL, Oracle, and SQLite for the agent-utilities ecosystem.">
-      
       
       
         <link rel="canonical" href="https://knuckles-team.github.io/sql-mcp/recipes/kg-pgwire-backend/">
@@ -911,7 +909,7 @@ feature and started with <code>EPISTEMIC_GRAPH_PGWIRE_ADDR</code> set accepts na
 SQLAlchemy/psycopg connections and runs read-only SQL over the <code>nodes</code>/<code>edges</code>
 tables (the same DataFusion path <code>Method::Sql</code> uses). So the KG needs <strong>no
 special connector</strong> in sql-mcp — it is just another named connection.</p>
-<p>This is the complement to the native KG-SQL MCP tool: agent-utilities' graph-os
+<p>This is the complement to the native KG-SQL MCP tool: agent-connector-sdk' arbora
 exposes <code>graph_query(scope="sql")</code> (+ REST <code>/graph/query</code>) for SQL-on-the-KG over
 MCP; this recipe reaches the <em>same</em> engine surface from a generic SQL client.</p>
 <h2 id="1-deploy-the-engine-with-pg-wire-scram">1. Deploy the engine with pg-wire + SCRAM<a class="headerlink" href="#1-deploy-the-engine-with-pg-wire-scram" title="Permanent link">&para;</a></h2>

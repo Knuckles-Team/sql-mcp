@@ -6,8 +6,6 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Generic SQL database API + MCP Server + A2A Agent — Postgres, MySQL/MariaDB, MSSQL, Oracle, and SQLite for the agent-utilities ecosystem.">
-      
       
       
         <link rel="canonical" href="https://knuckles-team.github.io/sql-mcp/overview/">
@@ -858,12 +856,10 @@
 
 <h1 id="sql-mcp-concept-overview">sql-mcp — Concept Overview<a class="headerlink" href="#sql-mcp-concept-overview" title="Permanent link">&para;</a></h1>
 <blockquote>
-<p><strong>Category</strong>: Integration | <strong>Ecosystem Role</strong>: MCP Server + A2A Agent
-Built on <a href="https://github.com/Knuckles-Team/agent-utilities"><code>agent-utilities</code></a> — the unified AGI Harness.</p>
+<p>Built on <a href="https://github.com/Knuckles-Team/agent-connector-sdk"><code>agent-connector-sdk</code></a> — the unified AGI Harness.</p>
 </blockquote>
 <h2 id="description">Description<a class="headerlink" href="#description" title="Permanent link">&para;</a></h2>
-<p>Generic SQL database <strong>API + MCP Server + A2A Agent</strong> — one connector for
-PostgreSQL, MySQL/MariaDB, Microsoft SQL Server, Oracle, and SQLite over
+<p>PostgreSQL, MySQL/MariaDB, Microsoft SQL Server, Oracle, and SQLite over
 SQLAlchemy 2.x Core. Read-only by default, with server-side write gating,
 bound parameters everywhere, row caps, and statement timeouts.</p>
 <h2 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">&para;</a></h2>
@@ -874,8 +870,6 @@ bound parameters everywhere, row caps, and statement timeouts.</p>
   shims) for cleaner organization.</li>
 <li><strong>Dynamic Tool Registration</strong>: action-routed dynamic tool tags, strictly
   lowercase, each togglable with a <code>*TOOL</code> environment flag (<code>SQLTOOL</code>).</li>
-<li><strong>A2A Agent Server</strong>: a Pydantic-AI graph agent (console script <code>sql-agent</code>)
-  that calls the MCP tool surface and exposes an AG-UI web interface.</li>
 <li><strong>Safety boundary</strong>: <code>sql_mcp.safety.assert_read_only</code> (allowlist + CTE
   depth-zero scan) guards every <code>sql_query</code> statement; writes require the
   server-side <code>SQL_ALLOW_WRITES=True</code> switch.</li>
@@ -894,12 +888,7 @@ bound parameters everywhere, row caps, and statement timeouts.</p>
 <tr>
 <td style="text-align: left;">ECO-4.1</td>
 <td style="text-align: left;">MCP &amp; Universal Skills</td>
-<td style="text-align: left;"><code>agent-utilities</code> (inherited)</td>
-</tr>
-<tr>
-<td style="text-align: left;">AU-ECO.toolkit.journey-map-narrative</td>
-<td style="text-align: left;">A2A Network &amp; Consensus</td>
-<td style="text-align: left;"><code>agent-utilities</code> (inherited)</td>
+<td style="text-align: left;"><code>agent-connector-sdk</code> (inherited)</td>
 </tr>
 <tr>
 <td style="text-align: left;">CONCEPT:SQ-OS.governance.sql-2</td>
@@ -914,7 +903,7 @@ bound parameters everywhere, row caps, and statement timeouts.</p>
 </tbody>
 </table>
 <blockquote>
-<p>📖 <strong>Full Registry</strong>: See <a href="https://github.com/Knuckles-Team/agent-utilities/blob/main/docs/overview.md"><code>agent-utilities/docs/overview.md</code></a> for the complete 5-Pillar concept index.</p>
+<p>📖 <strong>Full Registry</strong>: See <a href="https://github.com/Knuckles-Team/agent-connector-sdk/blob/main/docs/overview.md"><code>agent-connector-sdk/docs/overview.md</code></a> for the complete 5-Pillar concept index.</p>
 </blockquote>
 
 
