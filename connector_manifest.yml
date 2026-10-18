@@ -129,28 +129,7 @@ schema_mappings:
       isPrimaryKey: xsd:boolean
       isUnique: xsd:boolean
       sqlDialect: xsd:string
-sync:
-- preset: sql-tables
-  server: sql-mcp
-  tool: sql_schema
-  action: tables
-  records_path: ''
-  id_field: ''
-  title_field: ''
-  text_field: ''
-  updated_field: null
-  pagination: null
-  doc_type: database_table
-  tool_schema_sha256: 7bac1580cfe31ec2d45ce09b25d93d92ccaad0cba676b4db67236829a8f1a071
-  raw:
-    server: sql-mcp
-    tool: sql_schema
-    action: tables
-    records_path: ''
-    id_field: ''
-    title_field: ''
-    text_field: ''
-    doc_type: database_table
+sync: []
 provenance:
   generated_by: scripts/generate_connector_manifests.py
   generated_at: '2026-09-21T17:23:56Z'
