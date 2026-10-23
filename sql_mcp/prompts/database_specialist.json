@@ -4,8 +4,6 @@
   "schema_version": "1.0",
   "prompt_version": "0.1.0",
   "source": "sql-mcp",
-  "extends": "agent-connector-sdk:base",
-  "compose": "append",
   "description": "Relational database specialist: safe parameterized querying, schema reflection, and knowledge-graph ingestion over the sql-mcp MCP server.",
   "metadata": {
     "topic": "Relational Databases",

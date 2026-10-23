@@ -69,8 +69,8 @@
     rdfs:comment """Ontology for modeling relational database schemas, tables, columns,
 and keys. This maps database artifacts to logical Data Objects at the
 ArchiMate Application/Technology layer, allowing code generators and
-planners to dynamically reason about data layouts.""" ;
-    owl:imports <http://knuckles.team/kg/enterprise> .
+planners to dynamically reason about data layouts.""" .
+
 
 :DatabaseSchema a owl:Class ;
     rdfs:label "Database Schema" ;
