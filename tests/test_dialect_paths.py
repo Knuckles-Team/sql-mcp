@@ -26,7 +26,7 @@ def fake_engine(result):
 @pytest.fixture
 def pg_api():
     client = Api(
-        connections={"pg": "postgresql+psycopg://svc:pw@db:5432/app"},
+        connections={"pg": "postgresql+psycopg://svc:password@db:5432/app"},
         allow_writes=False,
         max_rows=50,
         timeout=5.0,
@@ -37,7 +37,7 @@ def pg_api():
 
 def test_explain_unsupported_for_mssql():
     client = Api(
-        connections={"mart": "mssql+pyodbc://svc:pw@db:1433/mart"},
+        connections={"mart": "mssql+pyodbc://svc:password@db:1433/mart"},
         allow_writes=False,
         max_rows=50,
         timeout=5.0,
@@ -51,7 +51,7 @@ def test_explain_unsupported_for_mssql():
 
 def test_explain_unsupported_for_oracle():
     client = Api(
-        connections={"oracle": "oracle+oracledb://svc:pw@db:1521/app"},
+        connections={"oracle": "oracle+oracledb://svc:password@db:1521/app"},
         allow_writes=False,
         max_rows=50,
         timeout=5.0,
@@ -158,7 +158,7 @@ def test_engine_creation_requires_driver(pg_api):
 
 def test_unregistered_dialect_reports_no_session_view():
     client = Api(
-        connections={"fb": "firebird://svc:pw@db/x"},
+        connections={"fb": "firebird://svc:password@db/x"},
         allow_writes=False,
         max_rows=50,
         timeout=5.0,

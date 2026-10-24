@@ -196,11 +196,11 @@ def test_get_api_caches_until_reset(monkeypatch):
 def test_passwords_redacted_in_connection_descriptions(monkeypatch):
     monkeypatch.setenv(
         "SQL_CONNECTIONS",
-        json.dumps({"dw": "postgresql+psycopg://bob:supersecretpw@db:5432/dw"}),
+        json.dumps({"dw": "postgresql+psycopg://bob:placeholder@db:5432/dw"}),
     )
     api = auth.get_api()
     described = api.describe_connections()
-    assert "supersecretpw" not in json.dumps(described)
+    assert "placeholder" not in json.dumps(described)
     assert "***" in described[0]["url"]
 
 
@@ -210,7 +210,7 @@ def test_url_query_secrets_are_redacted_in_connection_descriptions(monkeypatch):
         json.dumps(
             {
                 "dw": (
-                    "postgresql+psycopg://bob:pw@db:5432/dw?"
+                    "postgresql+psycopg://bob:password@db:5432/dw?"
                     "sslmode=require&access_token=query-secret&sslpassword=tls-secret"
                 )
             }
@@ -242,12 +242,12 @@ def test_odbc_connect_query_is_fully_redacted(monkeypatch):
 def test_passwords_never_in_logs(monkeypatch, caplog):
     monkeypatch.setenv(
         "SQL_CONNECTIONS",
-        json.dumps({"dw": "postgresql+psycopg://bob:supersecretpw@db:5432/dw"}),
+        json.dumps({"dw": "postgresql+psycopg://bob:placeholder@db:5432/dw"}),
     )
     with caplog.at_level("DEBUG"):
         auth.load_connections()
         auth.get_api()
-    assert "supersecretpw" not in caplog.text
+    assert "placeholder" not in caplog.text
 
 
 # --------------------------------------------------------------------- #
