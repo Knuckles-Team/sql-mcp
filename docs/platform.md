@@ -55,7 +55,7 @@ volumes:
 Matching connection strings:
 
 ```bash
-SQL_CONNECTIONS={"pg": "postgresql+psycopg://svc:change-me@localhost:5432/app", "maria": "mysql+pymysql://root:change-me@localhost:3306/app", "mssql": "mssql+pyodbc://sa:Change-Me-123@localhost:1433/master?driver=ODBC+Driver+18+for+SQL+Server"}
+SQL_CONNECTIONS={"pg": "postgresql+psycopg://USER:PASSWORD@localhost:5432/app", "maria": "mysql+pymysql://USER:PASSWORD@localhost:3306/app", "mssql": "mssql+pyodbc://USER:PASSWORD@localhost:1433/master?driver=ODBC+Driver+18+for+SQL+Server"}
 ```
 
 SQLite needs no platform at all — `sqlite:///app.db` (or `sqlite://` in

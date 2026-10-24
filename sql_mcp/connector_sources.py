@@ -8,66 +8,40 @@ from __future__ import annotations
 
 from typing import Any
 
-from agent_connector_sdk.ingest.sources import IngestSourceDeclaration, IngestSourceSpec
-
-CONNECTOR: str = "sql-mcp"
-
 SOURCES: tuple[Any, ...] = ()
+
+SCHEMA_VERSION = 2
+
+FIELD_SETS: dict[str, dict[str, str]] = {
+    "fields_1": {
+        "dataType": "xsd:string",
+        "isForeignKey": "xsd:boolean",
+        "isNullable": "xsd:boolean",
+        "isPrimaryKey": "xsd:boolean",
+        "isUnique": "xsd:boolean",
+        "sqlDialect": "xsd:string",
+    },
+}
 
 SCHEMA_MAPPINGS: dict[str, Any] = {
     "DatabaseColumn": {
-        "fields": {
-            "dataType": "xsd:string",
-            "isForeignKey": "xsd:boolean",
-            "isNullable": "xsd:boolean",
-            "isPrimaryKey": "xsd:boolean",
-            "isUnique": "xsd:boolean",
-            "sqlDialect": "xsd:string",
-        },
+        "field_sets": ["fields_1"],
         "ontology_class": "ApplicationLayer",
     },
     "DatabaseIndex": {
-        "fields": {
-            "dataType": "xsd:string",
-            "isForeignKey": "xsd:boolean",
-            "isNullable": "xsd:boolean",
-            "isPrimaryKey": "xsd:boolean",
-            "isUnique": "xsd:boolean",
-            "sqlDialect": "xsd:string",
-        },
+        "field_sets": ["fields_1"],
         "ontology_class": "ApplicationLayer",
     },
     "DatabaseSchema": {
-        "fields": {
-            "dataType": "xsd:string",
-            "isForeignKey": "xsd:boolean",
-            "isNullable": "xsd:boolean",
-            "isPrimaryKey": "xsd:boolean",
-            "isUnique": "xsd:boolean",
-            "sqlDialect": "xsd:string",
-        },
+        "field_sets": ["fields_1"],
         "ontology_class": "TechnologyLayer",
     },
     "DatabaseTable": {
-        "fields": {
-            "dataType": "xsd:string",
-            "isForeignKey": "xsd:boolean",
-            "isNullable": "xsd:boolean",
-            "isPrimaryKey": "xsd:boolean",
-            "isUnique": "xsd:boolean",
-            "sqlDialect": "xsd:string",
-        },
+        "field_sets": ["fields_1"],
         "ontology_class": "ApplicationLayer",
     },
     "DatabaseView": {
-        "fields": {
-            "dataType": "xsd:string",
-            "isForeignKey": "xsd:boolean",
-            "isNullable": "xsd:boolean",
-            "isPrimaryKey": "xsd:boolean",
-            "isUnique": "xsd:boolean",
-            "sqlDialect": "xsd:string",
-        },
+        "field_sets": ["fields_1"],
         "ontology_class": "ApplicationLayer",
     },
 }
@@ -99,23 +73,3 @@ RESOURCES: tuple[dict[str, str], ...] = (
         "name": "DatabaseView",
     },
 )
-
-
-def declaration() -> IngestSourceDeclaration:
-    """The declaration the server assembles from this module."""
-    specs: list[IngestSourceSpec] = []
-    for item in SOURCES:
-        for entry in item["connector_sources"]:
-            body: dict[str, Any] = {
-                k: v for k, v in entry.items() if k not in ("tool", "mapping")
-            }
-            spec = {**body, "tools": (entry["tool"],)}
-            specs.append(IngestSourceSpec.model_validate(spec))
-    return IngestSourceDeclaration.model_validate(
-        {
-            "connector": CONNECTOR,
-            "sources": specs,
-            "schema_mappings": SCHEMA_MAPPINGS,
-            "resources": RESOURCES,
-        }
-    )
