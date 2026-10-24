@@ -325,8 +325,8 @@ def test_batch_and_script_limits_are_enforced():
 @pytest.mark.parametrize(
     "url",
     [
-        "mysql+pymysql://svc:pw@db/app",
-        "oracle+oracledb://svc:pw@db/app",
+        "mysql+pymysql://svc:password@db/app",
+        "oracle+oracledb://svc:password@db/app",
     ],
 )
 def test_implicit_commit_dialects_reject_multi_statement_ddl_scripts(url):
