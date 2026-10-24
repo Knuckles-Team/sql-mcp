@@ -50,7 +50,7 @@ python -m sql_mcp.kg_pgwire derive-password --user sql-mcp
 
 # or the whole DSN in one shot:
 python -m sql_mcp.kg_pgwire dsn --user sql-mcp --host 127.0.0.1 --port 5433 --graph __commons__
-# -> postgresql+psycopg://sql-mcp:<hex>@127.0.0.1:5433/__commons__
+# -> postgresql+psycopg://USER:PASSWORD@127.0.0.1:5433/__commons__
 ```
 
 Store the derived password as a **vault ref** (OpenBao `apps/sql-mcp`, key

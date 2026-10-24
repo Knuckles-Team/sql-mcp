@@ -4,7 +4,6 @@ import importlib
 import inspect
 from typing import Any
 
-__version__ = "0.1.0"
 __all__: list[str] = []
 
 CORE_MODULES = ["sql_mcp.api_client"]
@@ -69,3 +68,20 @@ def __getattr__(name: str) -> Any:
 
 def __dir__() -> list[str]:
     return sorted(list(globals().keys()) + __all__)
+
+
+from agent_connector_sdk.connector import Connector
+
+from sql_mcp.api_client import Api
+from sql_mcp.auth import get_api
+from sql_mcp.mcp_server import readiness
+
+connector = Connector(
+    api=Api,
+    get_client=get_api,
+    tools="sql_mcp.mcp_server",
+    instructions="Generic SQL database MCP Server - read-only queries, gated DML/DDL, schema reflection, and connection admin over SQLAlchemy 2.x Core (SQLite, Postgres, MySQL/MariaDB, MSSQL, Oracle) with named multi-connection support.",
+    readiness=readiness,
+)
+
+__all__ = ["connector"]
