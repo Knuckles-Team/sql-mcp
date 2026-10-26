@@ -325,8 +325,8 @@ class SqlApi:
         list if agent-connector-sdk predates the resolver.
         """
         try:
-            from agent_connector_sdk.identity import IdentityRequiredError
             from agent_connector_sdk.entitlements import identity_scoped_resources
+            from agent_connector_sdk.identity import IdentityRequiredError
         except Exception:
             return list(names)
         try:

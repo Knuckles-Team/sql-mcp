@@ -76,4 +76,3 @@ Construct it without arguments to read the `SQL_*` environment (see the README
 configuration table).
 
 ## CLI
-
