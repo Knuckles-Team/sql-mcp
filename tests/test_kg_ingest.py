@@ -28,7 +28,9 @@ class _FakeTransport:
         self.requests: list[SourceIngestionRequest] = []
 
     async def source_status(self, _connector: str, _stream: str) -> Any:
-        return SimpleNamespace(accepted_checkpoint=None)
+        return SimpleNamespace(
+            connector=_connector, stream=_stream, accepted_checkpoint=None
+        )
 
     async def submit(self, request: SourceIngestionRequest) -> Any:
         self.requests.append(request)
@@ -65,9 +67,7 @@ def _catalog():
                     },
                     {"name": "org_id", "type": "INTEGER", "nullable": True},
                 ],
-                "foreign_keys": [
-                    {"columns": ["org_id"], "referred_table": "orgs"}
-                ],
+                "foreign_keys": [{"columns": ["org_id"], "referred_table": "orgs"}],
                 "indexes": [
                     {
                         "name": "ix_users_org",
@@ -238,7 +238,9 @@ def test_catalog_to_entities_skips_non_dict_foreign_keys():
         "target": "database:table:default.public.users",
         "relationship": "referencesTable",
     } in relationships
-    assert len([r for r in relationships if r["relationship"] == "referencesTable"]) == 1
+    assert (
+        len([r for r in relationships if r["relationship"] == "referencesTable"]) == 1
+    )
 
 
 def test_catalog_to_entities_skips_invalid_columns_and_indexes():
@@ -266,9 +268,7 @@ def test_catalog_to_entities_caps_relationships_independently_of_entity_count():
     # (max_objects * 4) while entities stays well under max_objects -- the
     # only way to exercise add_relationship's own cap independently of
     # entities_full().
-    foreign_keys = [
-        {"columns": [], "referred_table": f"ref_{i}"} for i in range(20)
-    ]
+    foreign_keys = [{"columns": [], "referred_table": f"ref_{i}"} for i in range(20)]
     catalog = {
         "connection": "default",
         "schema": "public",
