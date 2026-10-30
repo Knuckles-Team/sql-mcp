@@ -4,7 +4,7 @@
 
 This connector inherits the ecosystem bridge concept `ECO-4.0`
 (connector parity standard) from
-[`agent-connector-sdk`](https://github.com/Knuckles-Team/agent-connector-sdk/blob/main/docs/overview.md),
+[`scion-sdk`](https://github.com/Knuckles-Team/scion-sdk/blob/main/docs/overview.md),
 
 Stable concept IDs trace the connector's core ideas across the documentation,
 code docstrings, and tests.

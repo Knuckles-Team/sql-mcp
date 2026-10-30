@@ -155,7 +155,7 @@ async def test_action_models_reject_unknown_arguments(mcp):
 async def test_sql_reflection_runs_off_loop_kg_ingest_runs_on_loop(mcp, monkeypatch):
     """SQL reflection still offloads to a worker thread (genuinely blocking
     SQLAlchemy I/O via ``_invoke_external``). KG ingestion no longer needs that
-    offload: ``agent_connector_sdk.ingest``'s ``KnowledgeIngest.submit()`` does
+    offload: ``scion_sdk.ingest``'s ``KnowledgeIngest.submit()`` does
     non-blocking async I/O, so ``sql_ingest_schema`` now awaits it directly on
     the event loop rather than wrapping it in ``_invoke_external`` -- wrapping
     an async call in a thread-pool offload would create-and-discard a

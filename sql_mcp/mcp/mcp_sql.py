@@ -611,7 +611,7 @@ def register_sql_tools(mcp: FastMCP) -> None:
             include_indexes=p.get("include_indexes", True),
             max_objects=p.get("max_objects", 5_000),
         )
-        # ingest_entities is async now (agent_connector_sdk.ingest does its own
+        # ingest_entities is async now (scion_sdk.ingest does its own
         # non-blocking I/O), so it runs directly on the event loop rather than
         # through _invoke_external's thread-pool offload: that offload exists
         # for genuinely blocking work, and wrapping an async call in it would

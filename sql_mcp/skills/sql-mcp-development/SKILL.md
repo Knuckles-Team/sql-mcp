@@ -9,7 +9,7 @@ description: >-
 license: MIT
 tags: [sql, database, connector, development, testing, pages, specs]
 metadata:
-  author: Genius
+  author: Knuckles-Team
   version: '0.1.0'
 ---
 # SQL MCP Development
@@ -18,7 +18,7 @@ Use this skill for changes inside the `sql-mcp` package. The connector owns the
 SQLAlchemy Core facade, named-connection configuration, dialect registry,
 read-only safety gate, bounded result envelopes, knowledge-graph ingestion, and
 the action-routed MCP tools. Shared transports and connector contracts belong
-to `agent-connector-sdk`; admission, serving, and durable graph state belong to
+to `scion-sdk`; admission, serving, and durable graph state belong to
 their owning repositories.
 
 ## Repository map

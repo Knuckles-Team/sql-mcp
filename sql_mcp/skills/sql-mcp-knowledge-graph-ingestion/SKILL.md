@@ -12,7 +12,7 @@ description: >-
 license: MIT
 tags: [sql, database, knowledge-graph, ingestion, ontology, mcp]
 metadata:
-  author: Genius
+  author: Knuckles-Team
   version: '0.1.0'
 ---
 # SQL Knowledge-Graph Ingestion
