@@ -1,6 +1,6 @@
 """Main FastMCP server and tool registration for sql-mcp."""
 
-from agent_connector_sdk.connector_hooks import Readiness
+from scion_sdk.connector_hooks import Readiness
 
 from sql_mcp.auth import get_api
 from sql_mcp.mcp.mcp_sql import register_sql_tools

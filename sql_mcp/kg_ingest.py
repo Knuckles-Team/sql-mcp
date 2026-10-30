@@ -1,6 +1,6 @@
 """Epistemic-graph ingestion for reflected relational schemas.
 
-Writes use ``agent_connector_sdk.ingest`` -- the generated ``SourceIngest`` client,
+Writes use ``scion_sdk.ingest`` -- the generated ``SourceIngest`` client,
 not a local ingestion helper. Nodes use canonical ``node_type`` and edges use
 canonical ``relationship``; nodes and edges commit in one transaction. Missing
 engine dependencies, rejected records, conflicts, and transaction failures
@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from agent_connector_sdk.ingest import (
+from scion_sdk.ingest import (
     ChangeSet,
     Entity,
     IngestBinding,
