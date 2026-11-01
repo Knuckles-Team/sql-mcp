@@ -5,7 +5,7 @@
 
 The [epistemic-graph](../../../../epistemic-graph/) engine exposes its Knowledge
 Graph over the **Postgres wire protocol**. A server built with the `pgwire`
-feature and started with `EPISTEMIC_GRAPH_PGWIRE_ADDR` set accepts native
+feature and started with `MEDULLA_PGWIRE_ADDR` set accepts native
 SQLAlchemy/psycopg connections and runs read-only SQL over the `nodes`/`edges`
 tables (the same DataFusion path `Method::Sql` uses). So the KG needs **no
 special connector** in sql-mcp — it is just another named connection.
@@ -23,9 +23,9 @@ secret set so SCRAM is the default:
 # engine side (epistemic-graph)
 cargo build --release --features "server,query,pgwire,redb"
 GRAPH_SERVICE_AUTH_SECRET=<engine-secret> \
-EPISTEMIC_GRAPH_PGWIRE_ADDR=127.0.0.1:5433 \
-EPISTEMIC_GRAPH_PGWIRE_AUTH=scram \
-  target/release/epistemic-graph-server --persist-dir /var/lib/epistemic-graph
+MEDULLA_PGWIRE_ADDR=127.0.0.1:5433 \
+MEDULLA_PGWIRE_AUTH=scram \
+  target/release/medulla-server --persist-dir /var/lib/epistemic-graph
 ```
 
 When `GRAPH_SERVICE_AUTH_SECRET` is set, `scram` is the default auth mode; the pg

@@ -2,7 +2,7 @@
 
 The epistemic-graph engine exposes its Knowledge Graph over the Postgres wire
 protocol (CONCEPT:AU-KG.query.raw-python): a server built ``--features pgwire`` and run with
-``EPISTEMIC_GRAPH_PGWIRE_ADDR`` set (documented loopback ``127.0.0.1:5433``)
+``MEDULLA_PGWIRE_ADDR`` set (documented loopback ``127.0.0.1:5433``)
 accepts native SQLAlchemy/psycopg connections and runs read-only SQL over the
 ``nodes``/``edges`` tables. That makes the KG just another named sql-mcp
 connection — no special transport, no bespoke connector.
