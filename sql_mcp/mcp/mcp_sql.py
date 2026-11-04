@@ -581,7 +581,7 @@ def register_sql_tools(mcp: FastMCP) -> None:
         """Reflect a connection's schema and ingest it into the knowledge graph.
 
         Walks tables, columns, foreign keys, indexes, and views via the SQL
-        client and pushes them into epistemic-graph as typed :DatabaseSchema /
+        client and pushes them into medulla as typed :DatabaseSchema /
         :DatabaseTable / :DatabaseColumn / :DatabaseView / :DatabaseIndex nodes
         (with :hasTable / :hasColumn / :hasView / :hasIndex / :referencesTable
         links). Native ingestion is atomic and fails closed when the graph engine

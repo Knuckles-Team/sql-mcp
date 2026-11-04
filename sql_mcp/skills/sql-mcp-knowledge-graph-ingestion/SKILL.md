@@ -2,7 +2,7 @@
 name: sql-mcp-knowledge-graph-ingestion
 skill_type: skill
 description: >-
-  Mirror a relational database's reflected structure into the epistemic-graph
+  Mirror a relational database's reflected structure into the medulla
   knowledge graph as typed OWL nodes via the sql-mcp MCP server. Use when the
   agent must make a database's schema queryable in the KG — tables, columns,
   views, indexes, and foreign-key relationships become :DatabaseTable /
@@ -18,7 +18,7 @@ metadata:
 # SQL Knowledge-Graph Ingestion
 
 Push the **reflected schema** of any configured connection into the ONE
-epistemic-graph knowledge graph as **typed OWL nodes**, via the **sql-mcp** MCP
+medulla knowledge graph as **typed OWL nodes**, via the **sql-mcp** MCP
 server. The connector walks tables, columns, foreign keys, indexes, and views
 and maps them to the classes federated by `sql_mcp.ontology`
 (`http://knuckles.team/kg/database`).
@@ -36,7 +36,7 @@ and maps them to the classes federated by `sql_mcp.ontology`
 ## Prerequisites & environment
 Connect via the `mcp-client` skill against the **`sql-mcp`** MCP server. Needs the
 usual SQL connection variables (`SQL_CONNECTIONS` / `SQL_URL` / discrete fields —
-see `sql-mcp-query-execution`) **and** a reachable epistemic-graph engine.
+see `sql-mcp-query-execution`) **and** a reachable medulla engine.
 Ingestion is **best-effort**: with no engine reachable it cleanly no-ops
 (`{"ingested": null}`) and the connector keeps working.
 

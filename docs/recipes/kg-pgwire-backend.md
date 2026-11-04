@@ -1,9 +1,9 @@
-# Recipe — the epistemic-graph KG as a sql-mcp connection
+# Recipe — the medulla KG as a sql-mcp connection
 
 > Cross-repo concepts: `CONCEPT:AU-KG.query.raw-python` (Postgres-wire
 > surface) + `CONCEPT:EG-KG.query.concept-13` (SCRAM identity bridge).
 
-The [epistemic-graph](../../../../epistemic-graph/) engine exposes its Knowledge
+The [medulla](../../../../medulla/) engine exposes its Knowledge
 Graph over the **Postgres wire protocol**. A server built with the `pgwire`
 feature and started with `MEDULLA_PGWIRE_ADDR` set accepts native
 SQLAlchemy/psycopg connections and runs read-only SQL over the `nodes`/`edges`
@@ -20,12 +20,12 @@ Build/run the engine with the listener bound (loopback by convention) and an aut
 secret set so SCRAM is the default:
 
 ```bash
-# engine side (epistemic-graph)
+# engine side (medulla)
 cargo build --release --features "server,query,pgwire,redb"
 GRAPH_SERVICE_AUTH_SECRET=<engine-secret> \
 MEDULLA_PGWIRE_ADDR=127.0.0.1:5433 \
 MEDULLA_PGWIRE_AUTH=scram \
-  target/release/medulla-server --persist-dir /var/lib/epistemic-graph
+  target/release/medulla-server --persist-dir /var/lib/medulla
 ```
 
 When `GRAPH_SERVICE_AUTH_SECRET` is set, `scram` is the default auth mode; the pg

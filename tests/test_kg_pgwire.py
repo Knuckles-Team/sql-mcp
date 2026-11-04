@@ -1,4 +1,4 @@
-"""Tests for the epistemic-graph pg-wire backend helpers."""
+"""Tests for the medulla pg-wire backend helpers."""
 
 import hashlib
 import hmac
