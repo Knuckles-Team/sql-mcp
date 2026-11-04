@@ -16,13 +16,13 @@ from typing import Any
 
 import pytest
 from scion_sdk.ingest import IngestError, KnowledgeIngest
-from epistemic_graph.generated.source_ingestion import SourceIngestionRequest
+from medulla.generated.source_ingestion import SourceIngestionRequest
 
 from sql_mcp.kg_ingest import catalog_to_entities, ingest_entities
 
 
 class _FakeTransport:
-    """Records every submitted request; no epistemic-graph engine required."""
+    """Records every submitted request; no medulla engine required."""
 
     def __init__(self) -> None:
         self.requests: list[SourceIngestionRequest] = []

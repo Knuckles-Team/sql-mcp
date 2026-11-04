@@ -1,8 +1,8 @@
-"""epistemic-graph pg-wire backend helpers for sql-mcp.
+"""medulla pg-wire backend helpers for sql-mcp.
 
-The epistemic-graph engine exposes its Knowledge Graph over the Postgres wire
+The medulla engine exposes its Knowledge Graph over the Postgres wire
 protocol (CONCEPT:AU-KG.query.raw-python): a server built ``--features pgwire`` and run with
-``EPISTEMIC_GRAPH_PGWIRE_ADDR`` set (documented loopback ``127.0.0.1:5433``)
+``MEDULLA_PGWIRE_ADDR`` set (documented loopback ``127.0.0.1:5433``)
 accepts native SQLAlchemy/psycopg connections and runs read-only SQL over the
 ``nodes``/``edges`` tables. That makes the KG just another named sql-mcp
 connection — no special transport, no bespoke connector.
@@ -44,7 +44,7 @@ def derive_pg_password(secret: str, user: str) -> str:
     """Return ``hex(HMAC-SHA256(secret, "pgwire:"+user))``.
 
     Byte-for-byte the engine's ``derive_pg_password`` in
-    ``epistemic-graph/src/server/pgwire/auth.rs`` — the SCRAM password the engine
+    ``medulla/src/server/pgwire/auth.rs`` — the SCRAM password the engine
     validates a login against, computable offline by anyone holding the engine
     secret. A change there is a breaking change here (No-Legacy: keep them atomic).
     """
@@ -83,7 +83,7 @@ def _resolve_secret(arg_secret: str | None) -> str:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="sql_mcp.kg_pgwire",
-        description="Derive the epistemic-graph pg-wire SCRAM password / DSN.",
+        description="Derive the medulla pg-wire SCRAM password / DSN.",
     )
     sub = parser.add_subparsers(dest="cmd", required=True)
 

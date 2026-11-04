@@ -1,11 +1,11 @@
 # Sql Mcp Knowledge Graph Ingestion
 
-Mirror a relational database's reflected structure into the epistemic-graph knowledge graph as typed OWL nodes via the sql-mcp MCP server. Use when the agent must make a database's schema queryable in the KG — tables, columns, views, indexes, and foreign-key relationships become :DatabaseTable / :DatabaseColumn / :DatabaseView / :DatabaseIndex nodes with structural links. Do NOT use to run SQL (use sql-mcp-query-execution) or merely list schema objects without persisting them (use sql-mcp-schema-inspection).
+Mirror a relational database's reflected structure into the medulla knowledge graph as typed OWL nodes via the sql-mcp MCP server. Use when the agent must make a database's schema queryable in the KG — tables, columns, views, indexes, and foreign-key relationships become :DatabaseTable / :DatabaseColumn / :DatabaseView / :DatabaseIndex nodes with structural links. Do NOT use to run SQL (use sql-mcp-query-execution) or merely list schema objects without persisting them (use sql-mcp-schema-inspection).
 
 # SQL Knowledge-Graph Ingestion
 
 Push the **reflected schema** of any configured connection into the ONE
-epistemic-graph knowledge graph as **typed OWL nodes**, via the **sql-mcp** MCP
+medulla knowledge graph as **typed OWL nodes**, via the **sql-mcp** MCP
 server. The connector walks tables, columns, foreign keys, indexes, and views
 and maps them to the classes federated by `sql_mcp.ontology`
 (`[configured-endpoint]`).
@@ -24,7 +24,7 @@ and maps them to the classes federated by `sql_mcp.ontology`
 Connect via the `mcp-client` skill against the **`sql-mcp`** MCP server. Needs the
 usual SQL connection variables (`SQL_CONNECTIONS` / `SQL_URL` / discrete fields —
 see `sql-mcp-query-execution`), `SQL_ALLOW_KG_INGEST=True`, and a reachable,
-authenticated epistemic-graph engine. Ingestion fails closed when reflection or
+authenticated medulla engine. Ingestion fails closed when reflection or
 the native atomic graph transaction fails.
 
 ## Tools & actions
