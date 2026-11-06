@@ -27,18 +27,17 @@ see `sql-mcp-query-execution`), `SQL_ALLOW_KG_INGEST=True`, and a reachable,
 authenticated medulla engine. Ingestion fails closed when reflection or
 the native atomic graph transaction fails.
 
-## Tools & actions
+## Tools
 | Tool | Purpose |
 |------|---------|
 | `sql_ingest_schema` | Reflect a connection/schema and ingest it as typed KG nodes |
 
-### Key parameters (`params_json`, a JSON string)
-- `schema` — optional namespace to reflect (omit for the connection's default schema).
-- `include_views` — include `:DatabaseView` nodes (default `true`).
-- `include_indexes` — include `:DatabaseIndex` nodes (default `true`).
-- `max_objects` — upper bound for reflected schema objects (default and maximum
-  `5000`; also capped by the server's result-row limit).
-- `connection` — optional named connection (empty = the default one).
+### Key parameters
+- `schema` is the optional namespace to reflect (omit for the connection's default schema).
+- `include_views` includes `:DatabaseView` nodes (default `true`).
+- `include_indexes` includes `:DatabaseIndex` nodes (default `true`).
+- `max_objects` caps reflected objects (default and maximum 5000).
+- `connection` is an optional named connection (empty = the default one).
 
 ## What lands in the graph
 | Class | Id shape | Key properties |
@@ -52,18 +51,12 @@ the native atomic graph transaction fails.
 Links: `:hasTable` (schema→table), `:hasColumn` (table→column), `:hasView`
 (schema→view), `:hasIndex` (table→index), `:referencesTable` (FK table→table).
 
-## Recipes (`params_json`)
-Ingest the default schema (tables + columns + FKs + indexes + views):
-```json
-{}
-```
-Ingest one named schema, skip indexes:
-```json
-{"schema":"public","include_indexes":false}
-```
+## Recipes
+Ingest the default schema (tables, columns, foreign keys, indexes, views): call `sql_ingest_schema` with no arguments.
+
+Ingest one named schema and skip indexes: `sql_ingest_schema` with `schema="public"`, `include_indexes=false`.
 
 ## Gotchas
-- `params_json` is a **string** of JSON, not an object.
 - A missing identity, unreachable engine, rejected record, or failed transaction
   is an error; the connector does not silently report success.
 - Re-running is safe: nodes MERGE on their deterministic id, so re-ingest after a

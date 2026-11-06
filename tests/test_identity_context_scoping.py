@@ -20,11 +20,7 @@ from tests.conftest import build_api
 def _install_fake_entitlements(entitled_names) -> None:
     """Install a fake ``scion_sdk.security.entitlements`` module."""
     module = types.ModuleType("scion_sdk.entitlements")
-    setattr(
-        module,
-        "identity_scoped_resources",
-        lambda namespace, names: [n for n in names if n in entitled_names],
-    )
+    module.identity_scoped_resources = lambda namespace, names: [n for n in names if n in entitled_names]
     sys.modules["scion_sdk.entitlements"] = module
 
 

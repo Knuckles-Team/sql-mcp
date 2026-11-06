@@ -7,9 +7,9 @@ import pytest
 pytest.importorskip("scion_sdk.mcp.action_dispatch")
 
 from fastmcp import Client  # noqa: E402
+from scion_sdk.connector import build_server  # noqa: E402
 
 from sql_mcp import auth  # noqa: E402
-from scion_sdk.connector import build_server  # noqa: E402
 
 
 async def list_tool_names(mcp) -> set[str]:

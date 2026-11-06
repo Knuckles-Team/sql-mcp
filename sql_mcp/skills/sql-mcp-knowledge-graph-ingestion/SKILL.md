@@ -37,19 +37,19 @@ and maps them to the classes federated by `sql_mcp.ontology`
 Connect via the `mcp-client` skill against the **`sql-mcp`** MCP server. Needs the
 usual SQL connection variables (`SQL_CONNECTIONS` / `SQL_URL` / discrete fields —
 see `sql-mcp-query-execution`) **and** a reachable medulla engine.
-Ingestion is **best-effort**: with no engine reachable it cleanly no-ops
-(`{"ingested": null}`) and the connector keeps working.
+Ingestion is gated by `SQL_ALLOW_KG_INGEST=True` and fails closed when the engine is unreachable.
 
-## Tools & actions
+## Tools
 | Tool | Purpose |
 |------|---------|
 | `sql_ingest_schema` | Reflect a connection/schema and ingest it as typed KG nodes |
 
-### Key parameters (`params_json`, a JSON string)
-- `schema` — optional namespace to reflect (omit for the connection's default schema).
-- `include_views` — include `:DatabaseView` nodes (default `true`).
-- `include_indexes` — include `:DatabaseIndex` nodes (default `true`).
-- `connection` — optional named connection (empty = the default one).
+### Key parameters
+- `schema` is the optional namespace to reflect (omit for the connection's default schema).
+- `include_views` includes `:DatabaseView` nodes (default `true`).
+- `include_indexes` includes `:DatabaseIndex` nodes (default `true`).
+- `max_objects` caps reflected objects (default and maximum 5000).
+- `connection` is an optional named connection (empty = the default one).
 
 ## What lands in the graph
 | Class | Id shape | Key properties |
@@ -63,20 +63,13 @@ Ingestion is **best-effort**: with no engine reachable it cleanly no-ops
 Links: `:hasTable` (schema→table), `:hasColumn` (table→column), `:hasView`
 (schema→view), `:hasIndex` (table→index), `:referencesTable` (FK table→table).
 
-## Recipes (`params_json`)
-Ingest the default schema (tables + columns + FKs + indexes + views):
-```json
-{}
-```
-Ingest one named schema, skip indexes:
-```json
-{"schema":"public","include_indexes":false}
-```
+## Recipes
+Ingest the default schema (tables, columns, foreign keys, indexes, views): call `sql_ingest_schema` with no arguments.
+
+Ingest one named schema and skip indexes: `sql_ingest_schema` with `schema="public"`, `include_indexes=false`.
 
 ## Gotchas
-- `params_json` is a **string** of JSON, not an object.
-- Best-effort by design: a `null` `ingested` value means no engine was reachable,
-  **not** an error — nothing is raised.
+- Ingest is off unless `SQL_ALLOW_KG_INGEST=True`, and it fails closed: an unreachable engine raises, nothing is half-written.
 - Re-running is safe: nodes MERGE on their deterministic id, so re-ingest after a
   migration updates in place rather than duplicating.
 - Foreign-key `:referencesTable` links assume the referred table lives in the

@@ -38,35 +38,26 @@ Connect via the `mcp-client` skill against the **`sql-mcp`** MCP server.
 With nothing configured the server registers a zero-infra in-memory SQLite
 connection named `memory`, so the tools work out of the box.
 
-## Tools & actions
-Each condensed tool takes an `action` + a `params_json` **JSON string** and an
-optional `connection` naming a configured connection (empty = default).
+## Tools
+One typed tool per operation. Every tool takes an optional `connection` naming a configured connection (empty = default).
 
-| Tool | Actions |
+| Tool | Purpose |
 |------|---------|
-| `sql_query` | `execute` (read-only SELECT/CTE), `explain` (query plan) |
-| `sql_execute` | `execute` (one DML/DDL stmt), `script` (statements in one txn) |
+| `sql_query` | Read-only SELECT/CTE with bound `params`, `max_rows` and `timeout` |
+| `sql_explain` | Query plan for a read-only statement |
+| `sql_execute` | One DML/DDL statement in a transaction; `params` may be a list for executemany |
+| `sql_execute_script` | A list of statements in one all-or-nothing transaction |
 
-## Recipes (`params_json`)
-Read rows with bound parameters and a row cap:
-```json
-{"sql":"SELECT id, email FROM users WHERE status = :s ORDER BY id LIMIT :n","params":{"s":"active","n":50},"max_rows":50,"timeout":10}
-```
-Query plan for a statement:
-```json
-{"sql":"SELECT * FROM orders WHERE customer_id = :c","params":{"c":42}}
-```
-`executemany` insert (writes must be enabled), one statement, list of param dicts:
-```json
-{"sql":"INSERT INTO audit (actor, action) VALUES (:a, :act)","params":[{"a":"svc","act":"login"},{"a":"svc","act":"logout"}]}
-```
-All-or-nothing script (rolls back on any failure):
-```json
-{"statements":["CREATE TABLE t (id INTEGER PRIMARY KEY)","INSERT INTO t (id) VALUES (1)"]}
-```
+## Recipes
+Read rows with bound parameters and a row cap: call `sql_query` with `sql="SELECT id, email FROM users WHERE status = :s ORDER BY id LIMIT :n"`, `params={"s": "active", "n": 50}`, `max_rows=50`, `timeout=10`.
+
+Query plan: call `sql_explain` with `sql="SELECT * FROM orders WHERE customer_id = :c"`, `params={"c": 42}`.
+
+`executemany` insert (writes must be enabled): call `sql_execute` with `sql="INSERT INTO audit (actor, action) VALUES (:a, :act)"` and `params=[{"a": "svc", "act": "login"}, {"a": "svc", "act": "logout"}]`.
+
+All-or-nothing script (rolls back on any failure): call `sql_execute_script` with `statements=["CREATE TABLE t (id INTEGER PRIMARY KEY)", "INSERT INTO t (id) VALUES (1)"]`.
 
 ## Gotchas
-- `params_json` is a **string** of JSON, not an object — serialize it.
 - Reads must be a **single** statement and read-only (`SELECT`/`WITH`/`EXPLAIN`/
   `SHOW`/`DESCRIBE`/`PRAGMA`/`VALUES`); anything else is rejected by the safety gate.
 - `sql_execute` raises `WritesDisabledError` unless `SQL_ALLOW_WRITES=True`.

@@ -282,6 +282,7 @@ def test_timed_out_write_never_commits_later():
     )
     raw = client.engine("primary").raw_connection()
     try:
+
         def slow_name() -> str:
             time.sleep(0.2)
             return "late"

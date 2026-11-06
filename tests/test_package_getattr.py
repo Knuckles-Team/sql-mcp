@@ -52,17 +52,9 @@ def test_getattr_reports_mcp_available_when_module_imports(sql_mcp):
     assert sql_mcp.__getattr__("_MCP_AVAILABLE") is True
 
 
-
-
-
-
-
-
 def test_getattr_mcp_available_false_when_import_fails(sql_mcp, monkeypatch):
     monkeypatch.setattr(sql_mcp, "_import_module_safely", lambda name: None)
     assert sql_mcp.__getattr__("_MCP_AVAILABLE") is False
-
-
 
 
 def test_getattr_raises_attribute_error_for_unknown_name(sql_mcp):

@@ -18,7 +18,7 @@ Tool-neutral rules for any AI agent or human working in this repository. This bl
 ## Project Structure
 - `sql_mcp/`: Main server code
   - `api/api_client_sql.py`: `SqlApi` — the SQLAlchemy 2.x Core facade (all business logic)
-  - `mcp/mcp_sql.py`: the four action-dispatch MCP tools (thin shims)
+  - `mcp/mcp_sql.py`: the dialect and schema-ingest MCP tools; every other tool is derived from `OperationApi` in `api_client.py`
   - `dialects.py`: the dialect registry (`CONCEPT:SQ-OS.governance.url-building-drivers-dialect`)
   - `safety.py`: the read-only statement gate (`CONCEPT:SQ-OS.safety.allow-deny-classification`)
   - `auth.py`: named-connection + policy config from env (`CONCEPT:SQ-OS.identity.env-parsing-secret-redaction`)

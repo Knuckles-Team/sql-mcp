@@ -8,7 +8,23 @@ from __future__ import annotations
 
 from typing import Any
 
-SOURCES: tuple[Any, ...] = ()
+from scion_sdk.ingest.live_declaration import source_meta
+
+CONNECTOR = "sql-mcp"
+
+SOURCES: tuple[Any, ...] = (
+    source_meta(
+        tool="sql_schema_catalog",
+        source_id="sql-schema-objects",
+        record_type="DatabaseTable",
+        id_field="name",
+        preset={"doc_type": "sql_schema_object", "params_style": "args"},
+        records_path="objects",
+        server="sql-mcp",
+        text_field="name",
+        title_field="name",
+    ),
+)
 
 SCHEMA_VERSION = 2
 

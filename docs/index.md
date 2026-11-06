@@ -19,8 +19,8 @@ Oracle, and SQLite over SQLAlchemy 2.x Core.
 - **`SqlApi`** — a SQLAlchemy 2.x Core facade with named multi-connection
   support, lazy engine creation, a read-only statement gate, row-cap/timeout
   enforcement, and bounded result envelopes.
-- **Four MCP tools** — action-dispatch wrappers (`sql_query`, `sql_execute`,
-  `sql_schema`, `sql_admin`) that expose queries, gated writes, schema
+- **One MCP tool per operation** (`sql_query`, `sql_execute`,
+  `sql_list_tables`, `sql_ping`, and the rest) that expose queries, gated writes, schema
   reflection, and connection administration to an agent or policy router.
 - **A dialect registry** — SQLite ships in core (stdlib-backed); PostgreSQL,
   MySQL/MariaDB, MSSQL, and Oracle drivers install via pip extras.
