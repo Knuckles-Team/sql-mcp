@@ -11,9 +11,9 @@ code docstrings, and tests.
 
 | Concept ID | Name | Description |
 |---|---|---|
-| `CONCEPT:SQ-OS.governance.sql-2` | SQL MCP Domain | The SQL tool domain registered by `register_sql_tools()` — four consolidated, action-routed tools |
+| `CONCEPT:SQ-OS.governance.sql-2` | SQL MCP Domain | The SQL tool domain registered by `register_sql_tools()` — the dialect and schema-ingest tools beside the per-operation tools |
 | `CONCEPT:SQ-OS.governance.url-building-drivers-dialect` | Dialect Registry | `DIALECTS` — per-engine `DialectSpec` (URL scheme, optional driver + pip extra, EXPLAIN prefix, admin SQL); the vector-mcp backend-registry pattern |
 | `CONCEPT:SQ-OS.identity.env-parsing-secret-redaction` | Named Connection Config | `SQL_CONNECTIONS` JSON / `SQL_URL` / discrete env fields -> named `sqlalchemy.URL` registry; passwords only ever rendered redacted |
 | `CONCEPT:SQ-OS.safety.allow-deny-classification` | Read-Only Statement Gate | Literal/comment-stripping classifier: allowlisted starters, depth-zero CTE inspection, single-statement enforcement; writes only via `sql_execute` + `SQL_ALLOW_WRITES` |
 | `CONCEPT:SQ-OS.governance.sql-3` | Bounded Result Envelope | Every result is `{columns, rows, row_count, truncated}` with a clamped row cap and a per-call timeout on a worker thread |
-| `CONCEPT:SQ-OS.governance.action-routing-through-fastmcp` | Action-Dispatch Tools | `sql_query`, `sql_execute`, `sql_schema`, `sql_admin` — thin `action` + `params_json` shims over `SqlApi` |
+| `CONCEPT:SQ-OS.governance.action-routing-through-fastmcp` | Per-operation Tools | one typed tool per `SqlApi` operation, served through `OperationApi` |

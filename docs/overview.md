@@ -13,9 +13,8 @@ bound parameters everywhere, row caps, and statement timeouts.
 This project follows the standardized agent-package pattern:
 
 - **Modular Design**: split into `api/` (the `SqlApi` SQLAlchemy 2.x Core
-  facade — all business logic) and `mcp/` (action-routed tool modules — thin
-  shims) for cleaner organization.
-- **Dynamic Tool Registration**: action-routed dynamic tool tags, strictly
+  facade — all business logic) and `mcp/` (the non-client tools; every client operation is served as its own typed tool) for cleaner organization.
+- **Dynamic Tool Registration**: dynamic tool tags, strictly
   lowercase, each togglable with a `*TOOL` environment flag (`SQLTOOL`).
 - **Safety boundary**: `sql_mcp.safety.assert_read_only` (allowlist + CTE
   depth-zero scan) guards every `sql_query` statement; writes require the

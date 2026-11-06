@@ -3,7 +3,7 @@ name: sql-mcp-development
 skill_type: skill
 description: >-
   Develop, test, and release the sql-mcp connector while preserving its
-  SQLAlchemy Core, MCP action, safety, packaged-content, and spec-delivery
+  SQLAlchemy Core, MCP tool, safety, packaged-content, and spec-delivery
   contracts. Use when changing SQL access, dialect support, connector content,
   documentation, workflows, or repository-owned specifications.
 license: MIT
@@ -24,7 +24,7 @@ their owning repositories.
 ## Repository map
 
 - `sql_mcp/api_client.py` is the SQLAlchemy Core facade and connection lifecycle.
-- `sql_mcp/mcp_server.py` exposes the four action-routed MCP tool surfaces.
+- `sql_mcp/api_client.py` also defines `OperationApi`, the facade whose public methods are served one typed tool each; `sql_mcp/mcp/mcp_sql.py` adds the dialect and schema-ingest tools.
 - `sql_mcp/dialects.py` owns dialect registration and driver guidance.
 - `sql_mcp/safety.py` owns read-only classification and write-policy checks.
 - `sql_mcp/auth.py` owns named connections, environment parsing, and redaction.

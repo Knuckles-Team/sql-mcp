@@ -15,8 +15,8 @@ from types import SimpleNamespace
 from typing import Any
 
 import pytest
-from scion_sdk.ingest import IngestError, KnowledgeIngest
 from medulla.generated.source_ingestion import SourceIngestionRequest
+from scion_sdk.ingest import IngestError, KnowledgeIngest
 
 from sql_mcp.kg_ingest import catalog_to_entities, ingest_entities
 

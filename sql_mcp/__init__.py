@@ -72,13 +72,13 @@ def __dir__() -> list[str]:
 
 from scion_sdk.connector import Connector
 
-from sql_mcp.api_client import Api
+from sql_mcp.api_client import OperationApi
 from sql_mcp.auth import get_api
 from sql_mcp.mcp_server import readiness
 
 connector = Connector(
-    api=Api,
-    get_client=get_api,
+    api=OperationApi,
+    get_client=lambda: OperationApi(get_api()),
     tools="sql_mcp.mcp_server",
     instructions="Generic SQL database MCP Server - read-only queries, gated DML/DDL, schema reflection, and connection admin over SQLAlchemy 2.x Core (SQLite, Postgres, MySQL/MariaDB, MSSQL, Oracle) with named multi-connection support.",
     readiness=readiness,

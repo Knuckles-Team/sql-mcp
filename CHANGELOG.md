@@ -21,6 +21,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Requires `agent-connector-sdk>=0.4.1`; data sources are declared in code (`connector_sources`).
 
 ## [Unreleased]
+### Surface backfill (scion-sdk 0.9.0)
+- Removed the unserved action-routed `sql_query`/`sql_execute`/`sql_schema`/`sql_admin` code and its params_json models; every operation is one typed tool. Plumbing (`engine`, `dispose`, `dialect_spec`) is no longer served as a tool. `sql_admin_dialects` is now `sql_list_dialects` and `sql_ingest_schema` takes typed arguments.
+- Declared a data resource, tool-use contracts, links, data locations and business roles; replaced the single prompt with an operator prompt and three business-role prompts; raised `scion-sdk` to `>=0.9.0`.
+
 
 ## [0.1.0] - 2026-06-11
 ### Added

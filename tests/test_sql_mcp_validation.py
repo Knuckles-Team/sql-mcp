@@ -1,21 +1,22 @@
-"""MCP tool layer (CONCEPT:SQ-OS.governance.action-routing-through-fastmcp): action routing through a FastMCP client."""
+"""MCP tool layer: one typed tool per operation, served through a FastMCP client."""
 
 import json
 import threading
 
 import pytest
-from fastmcp import Client, FastMCP
+from fastmcp import Client
 from fastmcp.exceptions import ToolError
+from mcp.shared.exceptions import MCPError
+from scion_sdk.connector import build_server
 from sqlalchemy import text
 
 from sql_mcp import auth
-from sql_mcp.mcp.mcp_sql import register_sql_tools
 from tests.conftest import SEED_STATEMENTS
 
 
 @pytest.fixture
 def mcp(monkeypatch):
-    """A FastMCP server wired to a seeded in-memory SQLite default connection."""
+    """The served MCP server wired to a seeded in-memory SQLite default connection."""
     monkeypatch.setenv(
         "SQL_CONNECTIONS",
         json.dumps(
@@ -26,60 +27,71 @@ def mcp(monkeypatch):
         ),
     )
     monkeypatch.delenv("SQL_ALLOW_WRITES", raising=False)
+    monkeypatch.delenv("SQL_URL", raising=False)
     auth.reset_api()
     api = auth.get_api()
     with api.engine("primary").begin() as conn:
         for stmt in SEED_STATEMENTS:
             conn.execute(text(stmt))
-    server = FastMCP("sql-mcp-test")
-    register_sql_tools(server)
+    _, server = build_server(
+        "sql_mcp", command_args=["--transport", "stdio", "--auth-type", "none"]
+    )
     yield server
     auth.reset_api()
 
 
 def tool_payload(result):
-    """Decode a CallToolResult: `-> Any` tools emit unstructured text content."""
-    if result.data is not None:
-        return result.data
-    if not result.content:
-        return []
-    text_block = result.content[0].text
-    try:
-        return json.loads(text_block)
-    except json.JSONDecodeError:
-        return text_block
+    """Decode a CallToolResult into plain data."""
+    data = result.data
+    if data is None:
+        if not result.content:
+            return []
+        try:
+            return json.loads(result.content[0].text)
+        except json.JSONDecodeError:
+            return result.content[0].text
+    if isinstance(data, dict) and set(data) == {"result"}:
+        return data["result"]
+    return data
 
 
-async def call(mcp, tool, action, params=None, connection=""):
+async def call(mcp, tool, **arguments):
     async with Client(mcp) as client:
-        return await client.call_tool(
-            tool,
-            {
-                "action": action,
-                "params_json": json.dumps(params or {}),
-                "connection": connection,
-            },
-        )
+        return await client.call_tool(tool, arguments)
 
 
-async def test_all_five_tools_registered(mcp):
+async def test_operation_tools_are_served_and_plumbing_is_not(mcp):
     async with Client(mcp) as client:
         names = {tool.name for tool in await client.list_tools()}
-    assert names == {
+    assert {
         "sql_query",
+        "sql_explain",
         "sql_execute",
-        "sql_schema",
-        "sql_admin",
+        "sql_execute_script",
+        "sql_list_tables",
+        "sql_ping",
+        "sql_list_dialects",
         "sql_ingest_schema",
-    }
+    } <= names
+    assert not {"sql_engine", "sql_dispose", "sql_dialect_spec"} & names
+    assert not {"sql_schema", "sql_admin"} & names
+
+
+async def test_no_served_tool_takes_an_action_argument(mcp):
+    async with Client(mcp) as client:
+        for tool in await client.list_tools():
+            assert "action" not in tool.input_schema.get("properties", {}), tool.name
+            assert "params_json" not in tool.input_schema.get("properties", {}), (
+                tool.name
+            )
 
 
 async def test_query_execute_returns_envelope(mcp):
     result = await call(
         mcp,
         "sql_query",
-        "execute",
-        {"sql": "SELECT id, name FROM users WHERE id = :id", "params": {"id": 1}},
+        sql="SELECT id, name FROM users WHERE id = :id",
+        params={"id": 1},
     )
     payload = tool_payload(result)
     assert payload["rows"] == [{"id": 1, "name": "ada"}]
@@ -87,82 +99,18 @@ async def test_query_execute_returns_envelope(mcp):
     assert [c["name"] for c in payload["columns"]] == ["id", "name"]
 
 
-async def test_query_explain_action(mcp):
-    result = await call(
-        mcp, "sql_query", "explain", {"sql": "SELECT * FROM users WHERE id = 1"}
-    )
+async def test_query_explain(mcp):
+    result = await call(mcp, "sql_explain", sql="SELECT * FROM users WHERE id = 1")
     assert tool_payload(result)["row_count"] >= 1
 
 
 async def test_query_rejects_write_statements(mcp):
-    with pytest.raises(ToolError, match="read-only"):
-        await call(mcp, "sql_query", "execute", {"sql": "DELETE FROM users"})
-
-
-async def test_query_unknown_action_rejected(mcp):
-    with pytest.raises(ToolError, match="execute.*explain"):
-        await call(mcp, "sql_query", "drop_everything", {"sql": "SELECT 1"})
-
-
-@pytest.mark.parametrize(
-    ("tool", "arguments"),
-    [
-        ("sql_query", {"action": "execute"}),
-        ("sql_execute", {"action": "execute"}),
-        ("sql_schema", {"action": "schemas"}),
-        ("sql_admin", {"action": "ping"}),
-        ("sql_ingest_schema", {}),
-    ],
-)
-async def test_params_json_must_decode_to_an_object(mcp, tool, arguments):
-    async with Client(mcp) as client:
-        with pytest.raises(ToolError, match="JSON object"):
-            await client.call_tool(
-                tool,
-                {**arguments, "params_json": "[]", "connection": ""},
-            )
-
-
-@pytest.mark.parametrize(
-    ("payload", "message"),
-    [
-        ('{"timeout": NaN}', "Non-finite"),
-        ('{"x":' + "[" * 21 + "0" + "]" * 21 + "}", "nesting depth"),
-    ],
-)
-async def test_params_json_rejects_unsafe_shapes(mcp, payload, message):
-    async with Client(mcp) as client:
-        with pytest.raises(ToolError, match=message):
-            await client.call_tool(
-                "sql_admin",
-                {"action": "ping", "params_json": payload, "connection": ""},
-            )
-
-
-async def test_action_models_reject_unknown_arguments(mcp):
-    async with Client(mcp) as client:
-        with pytest.raises(ToolError, match="extra_forbidden"):
-            await client.call_tool(
-                "sql_admin",
-                {
-                    "action": "ping",
-                    "params_json": '{"unexpected": true}',
-                    "connection": "",
-                },
-            )
+    with pytest.raises((ToolError, MCPError), match="read-only"):
+        await call(mcp, "sql_query", sql="DELETE FROM users")
 
 
 async def test_sql_reflection_runs_off_loop_kg_ingest_runs_on_loop(mcp, monkeypatch):
-    """SQL reflection still offloads to a worker thread (genuinely blocking
-    SQLAlchemy I/O via ``_invoke_external``). KG ingestion no longer needs that
-    offload: ``scion_sdk.ingest``'s ``KnowledgeIngest.submit()`` does
-    non-blocking async I/O, so ``sql_ingest_schema`` now awaits it directly on
-    the event loop rather than wrapping it in ``_invoke_external`` -- wrapping
-    an async call in a thread-pool offload would create-and-discard a
-    coroutine without ever awaiting it (see FLEET-SDK-MIGRATION-RECIPE.md,
-    pitfall #2), so running it off-loop is no longer correct, not just no
-    longer necessary.
-    """
+    """Reflection offloads to a worker thread; KG ingest awaits on the event loop."""
     monkeypatch.setenv("SQL_ALLOW_KG_INGEST", "True")
     event_loop_thread = threading.get_ident()
     reflection_threads = []
@@ -182,39 +130,27 @@ async def test_sql_reflection_runs_off_loop_kg_ingest_runs_on_loop(mcp, monkeypa
         return {"nodes": 0, "edges": 0}
 
     monkeypatch.setattr(api, "_reflection", recording_reflection)
-    monkeypatch.setattr(
-        "sql_mcp.kg_ingest.ingest_entities",
-        recording_ingest_entities,
-    )
+    monkeypatch.setattr("sql_mcp.kg_ingest.ingest_entities", recording_ingest_entities)
 
-    await call(mcp, "sql_schema", "tables")
-    async with Client(mcp) as client:
-        await client.call_tool(
-            "sql_ingest_schema",
-            {"params_json": "{}", "connection": "primary"},
-        )
+    await call(mcp, "sql_list_tables")
+    await call(mcp, "sql_ingest_schema", connection="primary")
 
-    assert reflection_threads == [reflection_threads[0]]  # exactly one call
+    assert len(reflection_threads) == 1
     assert reflection_threads[0] != event_loop_thread
     assert ingest_threads == [event_loop_thread]
 
 
 async def test_kg_ingest_is_disabled_by_default(mcp):
-    async with Client(mcp) as client:
-        with pytest.raises(ToolError, match="SQL_ALLOW_KG_INGEST"):
-            await client.call_tool(
-                "sql_ingest_schema",
-                {"params_json": "{}", "connection": "primary"},
-            )
+    with pytest.raises((ToolError, MCPError), match="SQL_ALLOW_KG_INGEST"):
+        await call(mcp, "sql_ingest_schema", connection="primary")
 
 
 async def test_execute_blocked_by_default(mcp):
-    with pytest.raises(ToolError, match="SQL_ALLOW_WRITES"):
+    with pytest.raises((ToolError, MCPError), match="SQL_ALLOW_WRITES"):
         await call(
             mcp,
             "sql_execute",
-            "execute",
-            {"sql": "INSERT INTO users (id, name) VALUES (9, 'eve')"},
+            sql="INSERT INTO users (id, name) VALUES (9, 'eve')",
         )
 
 
@@ -225,121 +161,97 @@ async def test_execute_allowed_when_writes_enabled(mcp, monkeypatch):
     result = await call(
         mcp,
         "sql_execute",
-        "execute",
-        {
-            "sql": "INSERT INTO users (id, name) VALUES (:id, :name)",
-            "params": {"id": 9, "name": "eve"},
-        },
+        sql="INSERT INTO users (id, name) VALUES (:id, :name)",
+        params={"id": 9, "name": "eve"},
     )
     assert tool_payload(result)["rowcount"] == 1
 
 
-async def test_execute_script_action(mcp, monkeypatch):
+async def test_execute_script(mcp, monkeypatch):
     api = auth.get_api()
     monkeypatch.setattr(api, "allow_writes", True)
     monkeypatch.setattr(api, "_writable_connections", frozenset({"primary"}))
     result = await call(
         mcp,
-        "sql_execute",
-        "script",
-        {
-            "statements": [
-                "CREATE TABLE notes (id INTEGER PRIMARY KEY, body TEXT)",
-                "INSERT INTO notes (id, body) VALUES (1, 'hi')",
-            ]
-        },
+        "sql_execute_script",
+        statements=[
+            "CREATE TABLE notes (id INTEGER PRIMARY KEY, body TEXT)",
+            "INSERT INTO notes (id, body) VALUES (1, 'hi')",
+        ],
     )
     assert tool_payload(result)["statements"] == 2
 
 
-async def test_execute_script_action_binds_values(mcp, monkeypatch):
+async def test_execute_script_binds_values(mcp, monkeypatch):
     api = auth.get_api()
     monkeypatch.setattr(api, "allow_writes", True)
     monkeypatch.setattr(api, "_writable_connections", frozenset({"primary"}))
     await call(
         mcp,
-        "sql_execute",
-        "script",
-        {
-            "statements": [
-                {
-                    "sql": "INSERT INTO users (id, name) VALUES (:id, :name)",
-                    "params": {"id": 12, "name": "mary"},
-                }
-            ]
-        },
+        "sql_execute_script",
+        statements=[
+            {
+                "sql": "INSERT INTO users (id, name) VALUES (:id, :name)",
+                "params": {"id": 12, "name": "mary"},
+            }
+        ],
     )
     result = await call(
         mcp,
         "sql_query",
-        "execute",
-        {"sql": "SELECT name FROM users WHERE id = :id", "params": {"id": 12}},
+        sql="SELECT name FROM users WHERE id = :id",
+        params={"id": 12},
     )
     assert tool_payload(result)["rows"] == [{"name": "mary"}]
 
 
-async def test_schema_actions(mcp):
-    tables = tool_payload(await call(mcp, "sql_schema", "tables"))
-    assert sorted(tables) == ["orders", "users"]
-    views = tool_payload(await call(mcp, "sql_schema", "views"))
-    assert views == ["user_emails"]
-    columns = tool_payload(await call(mcp, "sql_schema", "columns", {"table": "users"}))
+async def test_schema_tools(mcp):
+    assert sorted(tool_payload(await call(mcp, "sql_list_tables"))) == [
+        "orders",
+        "users",
+    ]
+    assert tool_payload(await call(mcp, "sql_list_views")) == ["user_emails"]
+    columns = tool_payload(await call(mcp, "sql_list_columns", table="users"))
     assert {c["name"] for c in columns} == {"id", "name", "email"}
-    fks = tool_payload(
-        await call(mcp, "sql_schema", "foreign_keys", {"table": "orders"})
-    )
+    fks = tool_payload(await call(mcp, "sql_list_foreign_keys", table="orders"))
     assert fks[0]["referred_table"] == "users"
-    sample = tool_payload(
-        await call(mcp, "sql_schema", "sample", {"table": "users", "limit": 2})
-    )
+    sample = tool_payload(await call(mcp, "sql_sample_rows", table="users", limit=2))
     assert sample["row_count"] == 2
-    ddl = tool_payload(await call(mcp, "sql_schema", "ddl", {"table": "users"}))
+    ddl = tool_payload(await call(mcp, "sql_table_ddl", table="users"))
     assert "CREATE TABLE" in ddl.upper()
-    constraints = tool_payload(
-        await call(mcp, "sql_schema", "constraints", {"table": "users"})
-    )
+    constraints = tool_payload(await call(mcp, "sql_list_constraints", table="users"))
     assert constraints["primary_key"]["columns"] == ["id"]
     definition = tool_payload(
-        await call(
-            mcp,
-            "sql_schema",
-            "view_definition",
-            {"view": "user_emails"},
-        )
+        await call(mcp, "sql_view_definition", view="user_emails")
     )
     assert "SELECT" in definition.upper()
-    catalog = tool_payload(await call(mcp, "sql_schema", "catalog", {"max_objects": 1}))
+    catalog = tool_payload(await call(mcp, "sql_schema_catalog", max_objects=1))
     assert catalog["object_count"] == 1
+    indexes = tool_payload(await call(mcp, "sql_list_indexes", table="users"))
+    assert any(i["name"] == "ix_users_name" for i in indexes)
+    assert tool_payload(await call(mcp, "sql_list_materialized_views")) == []
+    assert tool_payload(await call(mcp, "sql_list_sequences")) == []
+    comment = tool_payload(await call(mcp, "sql_table_comment", table="users"))
+    assert "text" in comment
+    assert isinstance(tool_payload(await call(mcp, "sql_list_schemas")), list)
 
 
 async def test_connection_param_routes_to_named_connection(mcp):
-    analytics_tables = tool_payload(
-        await call(mcp, "sql_schema", "tables", connection="analytics")
+    assert (
+        tool_payload(await call(mcp, "sql_list_tables", connection="analytics")) == []
     )
-    assert analytics_tables == []
-    with pytest.raises(ToolError, match="Unknown SQL connection"):
-        await call(mcp, "sql_query", "execute", {"sql": "SELECT 1"}, connection="bogus")
+    with pytest.raises((ToolError, MCPError), match="Unknown SQL connection"):
+        await call(mcp, "sql_query", sql="SELECT 1", connection="bogus")
 
 
-async def test_connection_param_is_length_bounded(mcp):
-    with pytest.raises(ToolError, match="128"):
-        await call(
-            mcp,
-            "sql_query",
-            "execute",
-            {"sql": "SELECT 1"},
-            connection="x" * 129,
-        )
-
-
-async def test_admin_actions(mcp):
-    ping = tool_payload(await call(mcp, "sql_admin", "ping"))
+async def test_admin_tools(mcp):
+    ping = tool_payload(await call(mcp, "sql_ping"))
     assert ping["ok"] is True and ping["connection"] == "primary"
-    version = tool_payload(await call(mcp, "sql_admin", "version"))
+    version = tool_payload(await call(mcp, "sql_server_version"))
     assert version["dialect"] == "sqlite"
-    connections = tool_payload(await call(mcp, "sql_admin", "connections"))
+    connections = tool_payload(await call(mcp, "sql_describe_connections"))
     assert [c["name"] for c in connections] == ["primary", "analytics"]
-    dialects = tool_payload(await call(mcp, "sql_admin", "dialects"))
+    dialects = tool_payload(await call(mcp, "sql_list_dialects"))
     assert {d["dialect"] for d in dialects} == {
         "sqlite",
         "postgres",
@@ -349,58 +261,18 @@ async def test_admin_actions(mcp):
     }
     sqlite_entry = next(d for d in dialects if d["dialect"] == "sqlite")
     assert sqlite_entry["driver_installed"] is True
-    capabilities = tool_payload(await call(mcp, "sql_admin", "capabilities"))
+    capabilities = tool_payload(await call(mcp, "sql_capabilities"))
     assert capabilities["dialect"] == "sqlite"
-    pool = tool_payload(await call(mcp, "sql_admin", "pool_status"))
+    pool = tool_payload(await call(mcp, "sql_pool_status"))
     assert pool["pool"] == "StaticPool"
-    with pytest.raises(ToolError, match="ping.*version"):
-        await call(mcp, "sql_admin", "shutdown")
 
 
-async def test_admin_ping_all_reports_every_connection(mcp):
-    results = tool_payload(await call(mcp, "sql_admin", "ping_all"))
+async def test_ping_all_reports_every_connection(mcp):
+    results = tool_payload(await call(mcp, "sql_ping_all"))
     assert {r["connection"] for r in results} == {"primary", "analytics"}
     assert all(r["ok"] is True for r in results)
 
 
-async def test_admin_active_connections_action(mcp):
-    result = tool_payload(await call(mcp, "sql_admin", "active_connections"))
-    # sqlite has no session-listing support; the API surfaces that as a
-    # structured "unsupported" result rather than raising.
+async def test_active_connections_reports_unsupported_on_sqlite(mcp):
+    result = tool_payload(await call(mcp, "sql_active_connections"))
     assert result["supported"] is False
-
-
-async def test_schema_schemas_action_lists_schema_names(mcp):
-    schemas = tool_payload(await call(mcp, "sql_schema", "schemas"))
-    assert isinstance(schemas, list)
-
-
-async def test_schema_indexes_action(mcp):
-    indexes = tool_payload(
-        await call(mcp, "sql_schema", "indexes", {"table": "users"})
-    )
-    assert any(i["name"] == "ix_users_name" for i in indexes)
-
-
-async def test_schema_materialized_views_and_sequences_are_empty_on_sqlite(mcp):
-    materialized_views = tool_payload(await call(mcp, "sql_schema", "materialized_views"))
-    sequences = tool_payload(await call(mcp, "sql_schema", "sequences"))
-    assert materialized_views == []
-    assert sequences == []
-
-
-async def test_schema_table_comment_action(mcp):
-    comment = tool_payload(
-        await call(mcp, "sql_schema", "table_comment", {"table": "users"})
-    )
-    assert "text" in comment
-
-
-async def test_schema_action_requiring_table_rejects_missing_table(mcp):
-    with pytest.raises(ToolError, match="'table'"):
-        await call(mcp, "sql_schema", "columns")
-
-
-async def test_schema_view_definition_rejects_missing_view(mcp):
-    with pytest.raises(ToolError, match="'view'"):
-        await call(mcp, "sql_schema", "view_definition")

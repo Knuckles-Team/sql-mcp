@@ -25,43 +25,31 @@ connection variables as query execution apply (`SQL_CONNECTIONS` / `SQL_URL` /
 discrete `SQL_DIALECT`+host fields); reflection needs no write access. See
 `sql-mcp-query-execution` for the full env matrix.
 
-## Tools & actions
-The condensed `sql_schema` tool takes an `action` + `params_json` **JSON string**
-and an optional `connection`.
+## Tools
+One typed tool per operation, each with an optional `connection`.
 
-| Tool | Actions |
+| Tool | Purpose |
 |------|---------|
-| `sql_schema` | `schemas`, `tables`, `views`, `columns`, `indexes`, `foreign_keys`, `ddl`, `sample` |
+| `sql_list_schemas` / `sql_list_tables` / `sql_list_views` | Names, with optional `schema`, `limit`, `offset` |
+| `sql_list_materialized_views` / `sql_list_sequences` | Materialized views and sequences |
+| `sql_list_columns` / `sql_list_indexes` / `sql_list_foreign_keys` / `sql_list_constraints` | Describe one `table` |
+| `sql_table_ddl` / `sql_table_comment` / `sql_view_definition` | DDL, comment and view SQL |
+| `sql_sample_rows` | Preview rows (`limit` clamped to the server row cap) |
+| `sql_schema_catalog` | Bounded catalog of a schema (`max_objects`, `include_views`) |
 
 ### Key parameters
-- `schema` — optional namespace for `tables`/`views`/`columns`/… (omit for the default).
-- `table` — required for `columns`, `indexes`, `foreign_keys`, `ddl`, `sample`.
-- `limit` — row preview count for `sample` (clamped to the server row cap).
+- `schema` is an optional namespace (omit for the default).
+- `table` is required for the table-scoped tools; `view` for `sql_view_definition`.
+- `limit` is the row preview count for `sql_sample_rows`.
 
-## Recipes (`params_json`)
-List tables in a schema:
-```json
-{"schema":"public"}
-```
-Describe a table's columns:
-```json
-{"table":"users","schema":"public"}
-```
-Read the foreign keys off a table (to map relationships):
-```json
-{"table":"orders","schema":"public"}
-```
-Reflect CREATE TABLE DDL:
-```json
-{"table":"users","schema":"public"}
-```
-Preview 5 rows:
-```json
-{"table":"users","limit":5,"schema":"public"}
-```
+## Recipes
+List tables in a schema: `sql_list_tables` with `schema="public"`.
+
+Describe a table: `sql_list_columns` with `table="users"`, `schema="public"`; map relationships with `sql_list_foreign_keys` on `table="orders"`.
+
+Reflect CREATE TABLE DDL: `sql_table_ddl` with `table="users"`. Preview 5 rows: `sql_sample_rows` with `table="users"`, `limit=5`.
 
 ## Gotchas
-- `params_json` is a **string** of JSON, not an object.
 - `schema` is optional; when omitted the dialect's default schema is used —
   which differs per engine (`public` on Postgres, the database name on MySQL, etc.).
 - `sample` still obeys the server row cap: `limit` is clamped to `SQL_MAX_ROWS`.
