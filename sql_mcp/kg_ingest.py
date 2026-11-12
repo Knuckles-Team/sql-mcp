@@ -1,4 +1,4 @@
-"""Epistemic-graph ingestion for reflected relational schemas.
+"""Medulla ingestion for reflected relational schemas.
 
 Writes use ``scion_sdk.ingest`` -- the generated ``SourceIngest`` client,
 not a local ingestion helper. Nodes use canonical ``node_type`` and edges use
