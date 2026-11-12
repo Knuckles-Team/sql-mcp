@@ -1,11 +1,12 @@
 @prefix fibo-fi: <https://spec.edmcouncil.org/fibo/ontology/FBC/FinancialInstruments/FinancialInstruments/> .
+@prefix core: <https://knuckles-team.github.io/ontology/core#> .
 @prefix fibo-org: <https://spec.edmcouncil.org/fibo/ontology/FND/Organizations/Organizations/> .
 @prefix bibo: <http://purl.org/ontology/bibo/> .
 @prefix time: <http://www.w3.org/2006/time#> .
 @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
 @prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix dc: <http://purl.org/dc/terms/> .
-@prefix : <http://knuckles.team/kg#> .
+@prefix : <https://knuckles-team.github.io/ontology/connector/sql#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
@@ -64,7 +65,7 @@
     rdfs:domain :DatabaseTable ;
     rdfs:range :DatabaseTable .
 
-<http://knuckles.team/kg/database> a owl:Ontology ;
+<https://knuckles-team.github.io/ontology/connector/database> a owl:Ontology ;
     rdfs:label "Relational Database Schema Ontology" ;
     rdfs:comment """Ontology for modeling relational database schemas, tables, columns,
 and keys. This maps database artifacts to logical Data Objects at the
@@ -75,27 +76,27 @@ planners to dynamically reason about data layouts.""" .
 :DatabaseSchema a owl:Class ;
     rdfs:label "Database Schema" ;
     rdfs:comment "A logical grouping of database tables and relations." ;
-    rdfs:subClassOf :TechnologyLayer .
+    rdfs:subClassOf core:TechnologyLayer .
 
 :DatabaseView a owl:Class ;
     rdfs:label "Database View" ;
     rdfs:comment "A SQL view (a named query over one or more tables). Extracted from CREATE VIEW DDL (CONCEPT:EG-KG.query.create-drop-view); its source tables are linked by :references." ;
-    rdfs:subClassOf :ApplicationLayer .
+    rdfs:subClassOf core:ApplicationLayer .
 
 :DatabaseTable a owl:Class ;
     rdfs:label "Database Table" ;
     rdfs:comment "A database table representing a logical data object." ;
-    rdfs:subClassOf :ApplicationLayer .
+    rdfs:subClassOf core:ApplicationLayer .
 
 :DatabaseColumn a owl:Class ;
     rdfs:label "Database Column" ;
     rdfs:comment "An individual column within a database table." ;
-    rdfs:subClassOf :ApplicationLayer .
+    rdfs:subClassOf core:ApplicationLayer .
 
 :DatabaseIndex a owl:Class ;
     rdfs:label "Database Index" ;
     rdfs:comment "A named index over one or more columns of a table (unique or non-unique), reflected from the live schema (CONCEPT:AU-KG.ingest.enterprise-source-extractor)." ;
-    rdfs:subClassOf :ApplicationLayer .
+    rdfs:subClassOf core:ApplicationLayer .
 
 :hasIndex a owl:ObjectProperty ;
     rdfs:label "has index" ;
