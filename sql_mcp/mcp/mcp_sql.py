@@ -84,7 +84,7 @@ def register_sql_tools(mcp: FastMCP) -> None:
 
         if not allow_kg_ingest():
             raise PermissionError(
-                "Epistemic Graph ingestion is disabled. Start the server with "
+                "Medulla ingestion is disabled. Start the server with "
                 "SQL_ALLOW_KG_INGEST=True to enable this external write path."
             )
         api = get_api()

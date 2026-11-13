@@ -21,7 +21,7 @@ Push the **reflected schema** of any configured connection into the ONE
 medulla knowledge graph as **typed OWL nodes**, via the **sql-mcp** MCP
 server. The connector walks tables, columns, foreign keys, indexes, and views
 and maps them to the classes federated by `sql_mcp.ontology`
-(`http://knuckles.team/kg/database`).
+(`https://knuckles-team.github.io/ontology/connector/database`).
 
 ## When to use
 - Make a database's structure discoverable/queryable inside the KG.

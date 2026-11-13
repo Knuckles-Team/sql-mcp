@@ -205,7 +205,7 @@ def allow_writes() -> bool:
 
 
 def allow_kg_ingest() -> bool:
-    """Whether SQL schema writes into Epistemic Graph are enabled."""
+    """Whether SQL schema writes into Medulla are enabled."""
     return bool(setting("SQL_ALLOW_KG_INGEST", False))
 
 

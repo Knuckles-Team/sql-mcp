@@ -1,4 +1,4 @@
-"""Epistemic-graph typed-node ingestion -- Wire-First coverage for sql-mcp.
+"""Medulla typed-node ingestion -- Wire-First coverage for sql-mcp.
 
 Exercises the real ``ingest_entities`` seam against a fake
 ``scion_sdk.ingest`` transport (no engine required), plus the pure
