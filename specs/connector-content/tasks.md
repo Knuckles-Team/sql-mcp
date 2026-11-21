@@ -7,3 +7,4 @@ Each task line reads `- [ ] T001 [P] [US1] <ID>-R012.4 description`. Tasks run p
 - [x] T001 [US1] CONN-SQL-MCP-CONNECTOR-CONTENT-R001 Default content.
 - [ ] T002 [US2] CONN-SQL-MCP-CONNECTOR-CONTENT-R002 Register the approved SQL receiver in the served tool surface.
 - [ ] T003 [US3] CONN-SQL-MCP-CONNECTOR-CONTENT-R003 Column profile in the SQL catalog ingest.
+- [x] T004 [US4] CONN-SQL-MCP-CONNECTOR-CONTENT-R004 The pack extends only the core ontology.

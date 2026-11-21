@@ -16,7 +16,7 @@ This plan states how `sql-mcp` delivers the rows of `CONN-SQL-MCP-CONNECTOR-CONT
 - **Project Type**: connector
 - **Performance Goals**: N/A, the vendor service sets the latency
 - **Constraints**: vendor calls go through the SDK governed client; no connector-local transport
-- **Scale/Scope**: 3 active row(s) in this spec
+- **Scale/Scope**: 4 active row(s) in this spec
 
 ## Constitution Check
 
@@ -54,7 +54,7 @@ This plan states how `sql-mcp` delivers the rows of `CONN-SQL-MCP-CONNECTOR-CONT
 - **Project Type**: connector
 - **Performance Goals**: N/A, the vendor service sets the latency
 - **Constraints**: vendor calls go through the SDK governed client; no connector-local transport
-- **Scale/Scope**: 3 active row(s) in this spec
+- **Scale/Scope**: 4 active row(s) in this spec
 
 ### Constitution Check
 
@@ -92,7 +92,7 @@ This plan states how `sql-mcp` delivers the rows of `CONN-SQL-MCP-CONNECTOR-CONT
 - **Project Type**: connector
 - **Performance Goals**: N/A, the vendor service sets the latency
 - **Constraints**: vendor calls go through the SDK governed client; no connector-local transport
-- **Scale/Scope**: 3 active row(s) in this spec
+- **Scale/Scope**: 4 active row(s) in this spec
 
 ### Constitution Check
 
@@ -183,6 +183,7 @@ None. The constitution check passed.
 - `CONN-SQL-MCP-CONNECTOR-CONTENT-R001`: `sql-mcp` in `pyproject.toml` runs `scion_sdk.cli:serve`, which builds the server from the `scion_sdk.connector` entry point `sql_mcp:connector` (`sql_mcp/__init__.py:79`); the SDK `Connector` then lists the packaged skills, ontology and prompts.
 - `CONN-SQL-MCP-CONNECTOR-CONTENT-R002`: process start runs `sql_mcp/mcp_server.py`, which calls `register_sql_source_tools(server, client)` from `scion_sdk.adapters.sql_source`.
 - `CONN-SQL-MCP-CONNECTOR-CONTENT-R003`: the catalog ingest job calls `catalog_to_entities` (sql_mcp/kg_ingest.py:276), which calls `build_column_profile` of `scion_sdk.ingest.sql_profile` for each catalog column.
+- `CONN-SQL-MCP-CONNECTOR-CONTENT-R004`: the ontology loader reads `sql_mcp/ontology/` at server start; the engine imports the served pack and finds no redeclared core term.
 
 ## Cross-repo seams
 
