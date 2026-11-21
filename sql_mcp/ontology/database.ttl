@@ -17,12 +17,6 @@
     rdfs:domain :DatabaseColumn ;
     rdfs:range xsd:string .
 
-:hasColumn a owl:ObjectProperty ;
-    rdfs:label "has column" ;
-    rdfs:comment "Links a database table to its constituent columns." ;
-    rdfs:domain :DatabaseTable ;
-    rdfs:range :DatabaseColumn .
-
 :hasTable a owl:ObjectProperty ;
     rdfs:label "has table" ;
     rdfs:comment "Links a database schema to its constituent tables." ;
@@ -41,12 +35,6 @@
     rdfs:domain :DatabaseColumn ;
     rdfs:range xsd:boolean .
 
-:isPrimaryKey a owl:DatatypeProperty ;
-    rdfs:label "is primary key" ;
-    rdfs:comment "Boolean flag indicating if this column is part of the primary key." ;
-    rdfs:domain :DatabaseColumn ;
-    rdfs:range xsd:boolean .
-
 :references a owl:ObjectProperty ;
     rdfs:label "references" ;
     rdfs:comment "Links a database view to a table it selects from (CONCEPT:EG-KG.query.create-drop-view)." ;
@@ -59,19 +47,12 @@
     rdfs:domain :DatabaseColumn ;
     rdfs:range :DatabaseColumn .
 
-:referencesTable a owl:ObjectProperty ;
-    rdfs:label "references table" ;
-    rdfs:comment "Links a table to another table via foreign key relationship." ;
-    rdfs:domain :DatabaseTable ;
-    rdfs:range :DatabaseTable .
-
 <https://knuckles-team.github.io/ontology/connector/database> a owl:Ontology ;
     rdfs:label "Relational Database Schema Ontology" ;
     rdfs:comment """Ontology for modeling relational database schemas, tables, columns,
 and keys. This maps database artifacts to logical Data Objects at the
 ArchiMate Application/Technology layer, allowing code generators and
 planners to dynamically reason about data layouts.""" .
-
 
 :DatabaseSchema a owl:Class ;
     rdfs:label "Database Schema" ;
@@ -115,9 +96,3 @@ planners to dynamically reason about data layouts.""" .
     rdfs:comment "Boolean flag indicating whether an index enforces uniqueness." ;
     rdfs:domain :DatabaseIndex ;
     rdfs:range xsd:boolean .
-
-:sqlDialect a owl:DatatypeProperty ;
-    rdfs:label "sql dialect" ;
-    rdfs:comment "The SQL dialect of the connection the artifact was reflected from (e.g., postgres, mysql, sqlite)." ;
-    rdfs:domain :DatabaseSchema ;
-    rdfs:range xsd:string .

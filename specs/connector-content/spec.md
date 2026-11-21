@@ -42,6 +42,14 @@ The fleet operator and the engine rely on this behaviour of `sql-mcp`: Subsystem
 
 1. **Given** the `sql-mcp` connector built from the default branch, **When** `sql_mcp/kg_ingest.py::catalog_to_entities` runs, **Then** test: `tests/test_catalog_profile.py::test_every_column_entity_has_a_profile` (L3). A served test lists the column entities of a fixture database.
 
+### User Story 4 - The pack extends only the core ontology (Priority: P1)
+
+The fleet operator and the engine rely on this behaviour of ``: its pack adds terms under the core ontology and declares no second copy of a core term. It is proven independently of the other stories.
+
+**Acceptance Scenarios**:
+
+1. **Given** the `` connector built from the default branch, **When** `tests/test_ontology_extends_core.py::test_pack_declares_no_core_term` runs, **Then** the served Turtle declares none of the listed core terms.
+
 ### Edge Cases
 
 - The vendor service is unreachable or rejects the credential: the connector returns the SDK typed error and never a partial result.
@@ -52,12 +60,14 @@ The fleet operator and the engine rely on this behaviour of `sql-mcp`: Subsystem
 - **FR-001**: Default content. Rows: `CONN-SQL-MCP-CONNECTOR-CONTENT-R001`.
 - **FR-002**: Register the approved SQL receiver in the served tool surface. Rows: `CONN-SQL-MCP-CONNECTOR-CONTENT-R002`.
 - **FR-003**: Column profile in the SQL catalog ingest. Rows: `CONN-SQL-MCP-CONNECTOR-CONTENT-R003`.
+- **FR-004**: The pack extends only the core ontology. Rows: `CONN-SQL-MCP-CONNECTOR-CONTENT-R004`.
 
 ## Success Criteria
 
 - **SC-001**: `resources/list` includes `skill://` and `ontology://`; `prompts/list` includes each packaged prompt. Rows: `CONN-SQL-MCP-CONNECTOR-CONTENT-R001`.
 - **SC-002**: Test: `tests/test_approved_sql_served.py::test_sql_mcp_serves_approved_query` (L3) calls the registered tool against a local database. It asserts rows, bounds and a refusal for a write statement. Rows: `CONN-SQL-MCP-CONNECTOR-CONTENT-R002`.
 - **SC-003**: Test: `tests/test_catalog_profile.py::test_every_column_entity_has_a_profile` (L3). A served test lists the column entities of a fixture database. Rows: `CONN-SQL-MCP-CONNECTOR-CONTENT-R003`.
+- **SC-004**: The served Turtle declares none of the listed core terms. Rows: `CONN-SQL-MCP-CONNECTOR-CONTENT-R004`.
 
 ## Assumptions
 
@@ -71,3 +81,4 @@ The fleet operator and the engine rely on this behaviour of `sql-mcp`: Subsystem
 | FR-001 | `CONN-SQL-MCP-CONNECTOR-CONTENT-R001` | plan.md Production caller chain | T-001 | tests/test_default_content_surfaces.py::test_default_content_surfaces |
 | FR-002 | `CONN-SQL-MCP-CONNECTOR-CONTENT-R002` | plan.md Production caller chain | T-002 | tests/test_approved_sql_served.py::test_sql_mcp_serves_approved_query |
 | FR-003 | `CONN-SQL-MCP-CONNECTOR-CONTENT-R003` | plan.md Production caller chain | T-003 | sql_mcp/kg_ingest.py::catalog_to_entities |
+| FR-004 | `CONN-SQL-MCP-CONNECTOR-CONTENT-R004` | plan.md Production caller chain | T-004 | tests/test_ontology_extends_core.py::test_pack_declares_no_core_term |
