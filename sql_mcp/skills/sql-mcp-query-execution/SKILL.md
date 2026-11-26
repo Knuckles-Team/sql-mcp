@@ -2,14 +2,7 @@
 name: sql-mcp-query-execution
 skill_type: skill
 description: >-
-  Run parameterized SQL over the sql-mcp MCP server — read-only SELECT/CTE
-  queries and query plans, plus gated DML/DDL writes and multi-statement
-  scripts. Use when the agent must query a relational database (Postgres,
-  MySQL/MariaDB, MSSQL, Oracle, SQLite), read rows with a row cap and timeout,
-  inspect a query plan with EXPLAIN, or (when writes are enabled) run an
-  INSERT/UPDATE/DELETE/DDL statement in a transaction. Do NOT use for schema
-  discovery (use sql-mcp-schema-inspection) or for pushing schema into the
-  knowledge graph (use sql-mcp-knowledge-graph-ingestion).
+  Run parameterized SQL over the sql-mcp MCP server: read-only SELECT/CTE queries, query plans, and gated DML/DDL writes and scripts. Use to read rows with a row cap and timeout, check a plan or, when writes are enabled, change data. Not for schema discovery (sql-mcp-schema-inspection) or KG ingest (sql-mcp-knowledge-graph-ingestion).
 license: MIT
 tags: [sql, database, query, sqlalchemy, mcp]
 metadata:
@@ -17,6 +10,8 @@ metadata:
   version: '0.1.0'
 ---
 # SQL Query Execution
+
+Scope: Run parameterized SQL over the sql-mcp MCP server — read-only SELECT/CTE queries and query plans, plus gated DML/DDL writes and multi-statement scripts. Use when the agent must query a relational database (Postgres, MySQL/MariaDB, MSSQL, Oracle, SQLite), read rows with a row cap and timeout, inspect a query plan with EXPLAIN, or (when writes are enabled) run an INSERT/UPDATE/DELETE/DDL statement in a transaction. Do NOT use for schema discovery (use sql-mcp-schema-inspection) or for pushing schema into the knowledge graph (use sql-mcp-knowledge-graph-ingestion).
 
 Parameterized read and write access to any configured SQL connection through the
 **sql-mcp** MCP server. Every statement runs through SQLAlchemy `text()` with
@@ -51,6 +46,22 @@ Connect via the `mcp-client` skill against the **`sql-mcp`** MCP server.
 
 With nothing configured the server registers a zero-infra in-memory SQLite
 connection named `memory`, so the tools work out of the box.
+
+## Steps
+
+1. Discover the objects first by calling `sql_list_tables` with the target `connection`. Verify the tables you will query are listed.
+2. Check cost on large reads by calling `sql_explain` with `sql` and `params`. Verify a plan comes back (not supported on MSSQL).
+3. Read rows by calling `sql_query` with a bound `sql` using `:name` parameters, plus `params`, `max_rows` and `timeout`. Verify the envelope has rows and check whether `truncated` is true.
+4. Change data only when `SQL_ALLOW_WRITES=True` and approved, by calling `sql_execute` or `sql_execute_script`. Verify the reported affected row count matches the intent.
+5. Confirm the write by calling `sql_query` on the changed rows. Verify the expected values are present.
+
+## Failure recovery
+
+| Failure | Cause | Recovery |
+|---------|-------|----------|
+| `WritesDisabledError` | `SQL_ALLOW_WRITES` is not `True` on the server | Ask the operator to enable `SQL_ALLOW_WRITES=True` for the server, or keep the task read-only with `sql_query` |
+| Statement rejected by the safety gate | `sql_query` received a write or several statements | Send one read-only SELECT or WITH statement, or move the change to `sql_execute` |
+| Result has `truncated` true | Row cap reached | Page with `LIMIT` and `OFFSET` in `sql` and keep `max_rows` at or below the server cap |
 
 ## Tools
 One typed tool per operation. Every tool takes an optional `connection` naming a configured connection (empty = default).

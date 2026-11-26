@@ -2,13 +2,7 @@
 name: sql-mcp-schema-inspection
 skill_type: skill
 description: >-
-  Reflect relational database structure over the sql-mcp MCP server — list
-  schemas, tables, and views; describe a table's columns, indexes, and foreign
-  keys; render CREATE TABLE DDL; and preview sample rows. Use when the agent
-  must discover what a database contains before querying it, map relationships
-  between tables, or produce dialect-correct DDL. Do NOT use to run arbitrary
-  SQL (use sql-mcp-query-execution) or to push the reflected structure into the
-  knowledge graph (use sql-mcp-knowledge-graph-ingestion).
+  Reflect relational database structure over the sql-mcp MCP server: list schemas, tables and views, describe columns, indexes and foreign keys, render CREATE TABLE DDL and preview sample rows. Use to discover what a database holds before querying. Not for running SQL (sql-mcp-query-execution) or KG ingest (sql-mcp-knowledge-graph-ingestion).
 license: MIT
 tags: [sql, database, schema, reflection, mcp]
 metadata:
@@ -16,6 +10,8 @@ metadata:
   version: '0.1.0'
 ---
 # SQL Schema Inspection
+
+Scope: Reflect relational database structure over the sql-mcp MCP server — list schemas, tables, and views; describe a table's columns, indexes, and foreign keys; render CREATE TABLE DDL; and preview sample rows. Use when the agent must discover what a database contains before querying it, map relationships between tables, or produce dialect-correct DDL. Do NOT use to run arbitrary SQL (use sql-mcp-query-execution) or to push the reflected structure into the knowledge graph (use sql-mcp-knowledge-graph-ingestion).
 
 Read-only reflection of the live schema of any configured connection through the
 **sql-mcp** MCP server, built on SQLAlchemy's inspector. Table/column identifiers
@@ -37,6 +33,21 @@ Connect via the `mcp-client` skill against the **`sql-mcp`** MCP server. The sam
 connection variables as query execution apply (`SQL_CONNECTIONS` / `SQL_URL` /
 discrete `SQL_DIALECT`+host fields); reflection needs no write access. See
 `sql-mcp-query-execution` for the full env matrix.
+
+## Steps
+
+1. List what exists by calling `sql_list_schemas` and `sql_list_tables` with `schema`. Verify the table you need appears in the result.
+2. Describe the table by calling `sql_list_columns` with `table`, and `sql_list_foreign_keys` for relationships. Verify the columns and key targets match expectations.
+3. Reflect dialect DDL when needed by calling `sql_table_ddl` with `table`. Verify the output starts with a CREATE TABLE statement for that table.
+4. Peek at the data by calling `sql_sample_rows` with `table` and a small `limit`. Verify rows return and the count does not exceed the server row cap.
+
+## Failure recovery
+
+| Failure | Cause | Recovery |
+|---------|-------|----------|
+| Table not found | Wrong `schema` for the dialect | Call `sql_list_schemas`, then pass the correct `schema` to `sql_list_tables` |
+| No connection error | None of `SQL_CONNECTIONS`, `SQL_URL` or discrete `SQL_DIALECT` fields is set | Set one of them and pass a valid `connection` name, or use the built-in `memory` connection |
+| Huge output on a wide schema | Columns requested for every table | List tables first, then call `sql_list_columns` only for chosen tables, or use `sql_schema_catalog` with `max_objects` |
 
 ## Tools
 One typed tool per operation, each with an optional `connection`.
