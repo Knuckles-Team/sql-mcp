@@ -83,6 +83,22 @@ readiness checks to `Knuckles-Team/pipelines` at `rev: main`. Keep those shared
 hooks; do not copy their implementation into this repository or bypass a
 failure.
 
+## Steps
+
+1. Find the owning spec row by running `git grep -n "<term>" -- specs`. Verify one row owns the behavior you will change.
+2. Make the smallest change inside the connector seams, such as `sql_mcp/safety.py` or `sql_mcp/api_client.py`. Verify `git diff --stat` shows only intended files.
+3. Run the focused tests with `uv run --locked pytest tests/test_safety.py tests/test_api_wrapper.py -q`. Verify the run ends with all tests passed.
+4. Run the shared gate with `uvx pre-commit run --all-files`. Verify every hook reports Passed.
+5. Stage reviewed paths with `git add -- <path>` and check `git diff --cached --name-status`. Verify only intended files are listed and the commit carries a `Spec:` trailer.
+
+## Failure recovery
+
+| Failure | Cause | Recovery |
+|---------|-------|----------|
+| Safety test fails after a change | A user value was concatenated into SQL or the read-only gate was loosened | Bind the value with a SQLAlchemy `text()` parameter and restore the gate in `sql_mcp/safety.py` |
+| Pre-commit hook fails | Formatting, spelling or spec finding | Read the hook output, fix the flagged file, and re-stage the exact path |
+| No spec row matches | Behavior is not yet specified | Extend the closest row under `specs/` first, then re-run the `git grep` search |
+
 ## Spec delivery and Pages
 
 `.github/workflows/pages.yml` calls
