@@ -1,17 +1,30 @@
 # Sql Mcp
-## Table of Contents
+## MCP
 
-- [Overview](#overview)
-- [What it provides](#what-it-provides)
-- [MCP tools](#mcp-tools)
-- [Dialects & extras](#dialects--extras)
-- [Configuration (environment)](#configuration-environment)
-- [Installation](#installation)
-- [Usage](#usage)
-- [MCP config](#mcp-config)
-- [Docker deployment](#docker-deployment)
-- [Safety model](#safety-model)
-- [Tests](#tests)
+![PyPI - Version](https://img.shields.io/pypi/v/sql-mcp)
+![MCP Server](https://badge.mcpx.dev?type=server 'MCP Server')
+![PyPI - Downloads](https://img.shields.io/pypi/dd/sql-mcp)
+![GitHub Repo stars](https://img.shields.io/github/stars/Knuckles-Team/sql-mcp)
+![GitHub forks](https://img.shields.io/github/forks/Knuckles-Team/sql-mcp)
+![GitHub contributors](https://img.shields.io/github/contributors/Knuckles-Team/sql-mcp)
+![PyPI - License](https://img.shields.io/pypi/l/sql-mcp)
+![GitHub](https://img.shields.io/github/license/Knuckles-Team/sql-mcp)
+![GitHub last commit (by committer)](https://img.shields.io/github/last-commit/Knuckles-Team/sql-mcp)
+![GitHub pull requests](https://img.shields.io/github/issues-pr/Knuckles-Team/sql-mcp)
+![GitHub closed pull requests](https://img.shields.io/github/issues-pr-closed/Knuckles-Team/sql-mcp)
+![GitHub issues](https://img.shields.io/github/issues/Knuckles-Team/sql-mcp)
+![GitHub top language](https://img.shields.io/github/languages/top/Knuckles-Team/sql-mcp)
+![GitHub language count](https://img.shields.io/github/languages/count/Knuckles-Team/sql-mcp)
+![GitHub repo size](https://img.shields.io/github/repo-size/Knuckles-Team/sql-mcp)
+![GitHub repo file count (file type)](https://img.shields.io/github/directory-file-count/Knuckles-Team/sql-mcp)
+![PyPI - Wheel](https://img.shields.io/pypi/wheel/sql-mcp)
+![PyPI - Implementation](https://img.shields.io/pypi/implementation/sql-mcp)
+
+> **Documentation** — Installation, deployment, and usage across the API, CLI, MCP,
+> and A2A agent interfaces are maintained in the
+> [official documentation](https://knuckles-team.github.io/sql-mcp/).
+
+---
 
 ## Overview
 
@@ -20,7 +33,9 @@ connection administration as typed, deterministic MCP tools, and ships an option
 statement-type allowlist, every result is bounded by a row cap and a timeout, and
 all values travel as bound parameters — never interpolated into SQL strings.
 
-## What it provides
+---
+
+## Key Features
 
 - **`SqlApi`** (`sql_mcp.api.api_client_sql`) — a SQLAlchemy 2.x Core facade with
   named multi-connection support, lazy engine creation, the read-only statement
@@ -36,7 +51,11 @@ all values travel as bound parameters — never interpolated into SQL strings.
   install via extras.
   wired to the MCP server via `MCP_URL`.
 
-## MCP tools
+---
+
+## MCP
+
+### MCP tools
 
 The table below is auto-generated from the MCP server — do not edit by hand.
 
@@ -87,104 +106,7 @@ _2 action-routed tool(s) (default) · 22 verbose 1:1 tool(s). Each is enabled un
 Every tool takes `action`, `params_json`, and an optional `connection` naming one
 of the configured connections. The whole set is toggled with `SQLTOOL`.
 
-## Dialects & extras
-
-| Dialect | SQLAlchemy scheme | Driver | Install |
-|---|---|---|---|
-| SQLite | `sqlite+pysqlite` | stdlib | `pip install sql-mcp` (core) |
-| PostgreSQL | `postgresql+psycopg` | psycopg 3 | `pip install sql-mcp[postgres]` |
-| MySQL / MariaDB | `mysql+pymysql` | PyMySQL | `pip install sql-mcp[mysql]` |
-| SQL Server | `mssql+pyodbc` | pyodbc | `pip install sql-mcp[mssql]` |
-| Oracle | `oracle+oracledb` | python-oracledb | `pip install sql-mcp[oracle]` |
-
-`pip install sql-mcp[all]` pulls every driver plus the MCP and agent extras.
-
-## Configuration (environment)
-
-| Var | Default | Meaning |
-|---|---|---|
-| `SQL_CONNECTIONS` | _(empty)_ | JSON map of named connections: DSN strings or `{dialect, host, port, username, password, database, options}` objects |
-| `SQL_URL` | _(empty)_ | Single DSN registered as connection `default` |
-| `SQL_DIALECT` / `SQL_HOST` / `SQL_PORT` / `SQL_USERNAME` / `SQL_PASSWORD` / `SQL_DATABASE` / `SQL_OPTIONS` | _(empty)_ | Discrete fields for a single `default` connection |
-| `SQL_ALLOW_WRITES` | `False` | Enable `sql_execute` (DML/DDL). **Read-only by default** |
-| `SQL_MAX_ROWS` | `500` | Per-call row cap; tool requests are clamped to it |
-| `SQL_TIMEOUT_SECONDS` | `30` | Per-statement timeout |
-| `SQLTOOL` | `True` | Register the SQL tool set |
-
-With nothing configured the server registers a zero-infra in-memory SQLite
-connection named `memory`, so it works by default. Tools take an optional
-`connection` parameter naming one of the configured connections; it defaults to
-the sole/first one. Passwords are parsed into `sqlalchemy.URL` objects and only
-ever rendered redacted. Copy [`.env.example`](.env.example) to `.env` and
-populate only what the operator use.
-
-## Installation
-
-Pick the extra that matches what the operator want to run. DB-driver extras
-(`postgres` / `mysql` / `mssql` / `oracle`) are **additive** — combine them with
-
-| Extra | Installs | Use when |
-|-------|----------|----------|
-| `sql-mcp[mcp]` | Connector-focused MCP server (`scion-sdk` — FastMCP/FastAPI + `medulla[full]`) | The operator only run the **MCP server** (smallest install / image) |
-| `sql-mcp[all]` | Everything (`mcp` + `agent` + **every** DB driver + `logfire`) | Development / both surfaces |
-
-```bash
-pip install sql-mcp                  # core (SQLite only, MCP server, API)
-pip install "sql-mcp[mcp]"           # connector-focused MCP server (add drivers: [mcp,postgres])
-pip install "sql-mcp[all]"           # every driver + MCP + agent extras
-pip install -e .                     # from source
-```
-
-### Container images (`:mcp`)
-
-One multi-stage `docker/Dockerfile` builds the MCP-only image (`--target mcp`):
-
-| Image tag | Build target | Contents | Entrypoint |
-|-----------|--------------|----------|------------|
-| `example/sql-mcp:mcp` | `--target mcp` | `sql-mcp[mcp]` — **connector-focused**, includes `medulla[full]`; no model-orchestration stack | `sql-mcp` |
-
-```bash
-docker pull example/sql-mcp:mcp                                   # connector-focused MCP server
-docker build --target mcp   -t example/sql-mcp:mcp    docker/     # build MCP server
-```
-
-agent (`immutable agent digest`) with a co-located `:mcp` sidecar.
-
-### Knowledge-graph database (`medulla`)
-
-Scion SDK core dependency (`medulla[full]`). The `[mcp]` extra keeps
-deployments can use the bundled engine. For production or shared state, run
-**medulla as a dedicated database service** and configure the runtime to use it.
-Deployment recipes (single-node + Raft HA), connection configuration, and architecture
-diagrams are documented in the
-[medulla deployment guide](https://knuckles-team.github.io/medulla/deployment/).
-
-## Usage
-
-```bash
-sql-mcp                        # stdio MCP server (default transport)
-sql-mcp --transport streamable-http --host 0.0.0.0 --port 8000
-```
-
-Point it at a database:
-
-```bash
-export SQL_URL="postgresql+psycopg://svc:****@db.example.com:5432/app"
-sql-mcp
-```
-
-Or multiple:
-
-```bash
-export SQL_CONNECTIONS='{
-  "warehouse": "postgresql+psycopg://svc:****@dw.example.com:5432/dw",
-  "erp": {"dialect": "mysql", "host": "erp.example.com", "username": "svc",
-           "password": "****", "database": "erp"}
-}'
-sql-mcp
-```
-
-## MCP config
+### MCP config
 
 > **Install the connector-focused `[mcp]` extra.** Examples use `sql-mcp[mcp]` to add
 > FastMCP / FastAPI through `scion-sdk`; the required Scion SDK core
@@ -221,6 +143,22 @@ the detailed transport contract.
   `MCP_ALLOWED_HOSTS` in `AgentConfig`.
 <!-- END GENERATED: additional-deployment-options -->
 
+---
+
+## Dialects & extras
+
+| Dialect | SQLAlchemy scheme | Driver | Install |
+|---|---|---|---|
+| SQLite | `sqlite+pysqlite` | stdlib | `pip install sql-mcp` (core) |
+| PostgreSQL | `postgresql+psycopg` | psycopg 3 | `pip install sql-mcp[postgres]` |
+| MySQL / MariaDB | `mysql+pymysql` | PyMySQL | `pip install sql-mcp[mysql]` |
+| SQL Server | `mssql+pyodbc` | pyodbc | `pip install sql-mcp[mssql]` |
+| Oracle | `oracle+oracledb` | python-oracledb | `pip install sql-mcp[oracle]` |
+
+`pip install sql-mcp[all]` pulls every driver plus the MCP and agent extras.
+
+---
+
 ## Docker deployment
 
 ```bash
@@ -230,6 +168,8 @@ curl -s http://localhost:8000/health                 # {"status":"OK"}
 
 Both services read configuration from `../.env` (copy
 [`.env.example`](.env.example)); see [`docs/deployment.md`](docs/deployment.md).
+
+---
 
 ## Safety model
 
@@ -244,6 +184,8 @@ Both services read configuration from `../.env` (copy
 - **Parameterized only** — values bind via `:name` parameters; identifiers are
   quoted by SQLAlchemy reflection, never hand-interpolated.
 
+---
+
 ## Tests
 
 ```bash
@@ -251,28 +193,27 @@ python -m pytest          # full suite against in-memory SQLite (no live DBs)
 pre-commit run --all-files
 ```
 
-<!-- BEGIN scion-sdk-deployment (generated; do not edit between markers) -->
-
-## Deploy with `scion-sdk-deployment`
-
-Provision this package with the consolidated **`scion-sdk-deployment`**
-workflow. It selects an installed-package, editable-source, or immutable-container
-path; records only runtime secret and TLS-profile references in `AgentConfig`; and
-runs doctor, registration, policy, observability, and rollback gates. Ask your agent
-to **"deploy `sql-mcp` with scion-sdk-deployment"**.
-
-| Install mode | Command |
-|------|---------|
-| Installed package | `uv tool install "sql-mcp[mcp]"`, then run `sql-mcp` |
-| Immutable container | deploy `registry.example.invalid/sql-mcp@sha256:<digest>` through the operator-selected orchestrator |
-
-The repository embeds no deployment profile, credential value, certificate path, or
-environment-specific endpoint. Supply those at runtime through `AgentConfig` and the
-configured secret provider.
-
-<!-- END scion-sdk-deployment -->
+---
 
 ## Environment Variables
+
+| Var | Default | Meaning |
+|---|---|---|
+| `SQL_CONNECTIONS` | _(empty)_ | JSON map of named connections: DSN strings or `{dialect, host, port, username, password, database, options}` objects |
+| `SQL_URL` | _(empty)_ | Single DSN registered as connection `default` |
+| `SQL_DIALECT` / `SQL_HOST` / `SQL_PORT` / `SQL_USERNAME` / `SQL_PASSWORD` / `SQL_DATABASE` / `SQL_OPTIONS` | _(empty)_ | Discrete fields for a single `default` connection |
+| `SQL_ALLOW_WRITES` | `False` | Enable `sql_execute` (DML/DDL). **Read-only by default** |
+| `SQL_MAX_ROWS` | `500` | Per-call row cap; tool requests are clamped to it |
+| `SQL_TIMEOUT_SECONDS` | `30` | Per-statement timeout |
+| `SQLTOOL` | `True` | Register the SQL tool set |
+
+With nothing configured the server registers a zero-infra in-memory SQLite
+connection named `memory`, so it works by default. Tools take an optional
+`connection` parameter naming one of the configured connections; it defaults to
+the sole/first one. Passwords are parsed into `sqlalchemy.URL` objects and only
+ever rendered redacted. Copy [`.env.example`](.env.example) to `.env` and
+populate only what the operator use.
+
 
 <!-- ENV-VARS-TABLE:START -->
 
@@ -327,6 +268,124 @@ configured secret provider.
 
 _24 package + 16 inherited variable(s). Auto-generated from `.env.example` + the shared scion-sdk set — do not edit._
 <!-- ENV-VARS-TABLE:END -->
+
+---
+
+## Installation
+
+Pick the extra that matches what the operator want to run. DB-driver extras
+(`postgres` / `mysql` / `mssql` / `oracle`) are **additive** — combine them with
+
+| Extra | Installs | Use when |
+|-------|----------|----------|
+| `sql-mcp[mcp]` | Connector-focused MCP server (`scion-sdk` — FastMCP/FastAPI + `medulla[full]`) | The operator only run the **MCP server** (smallest install / image) |
+| `sql-mcp[all]` | Everything (`mcp` + `agent` + **every** DB driver + `logfire`) | Development / both surfaces |
+
+```bash
+pip install sql-mcp                  # core (SQLite only, MCP server, API)
+pip install "sql-mcp[mcp]"           # connector-focused MCP server (add drivers: [mcp,postgres])
+pip install "sql-mcp[all]"           # every driver + MCP + agent extras
+pip install -e .                     # from source
+```
+
+### Container images (`:mcp`)
+
+One multi-stage `docker/Dockerfile` builds the MCP-only image (`--target mcp`):
+
+| Image tag | Build target | Contents | Entrypoint |
+|-----------|--------------|----------|------------|
+| `example/sql-mcp:mcp` | `--target mcp` | `sql-mcp[mcp]` — **connector-focused**, includes `medulla[full]`; no model-orchestration stack | `sql-mcp` |
+
+```bash
+docker pull example/sql-mcp:mcp                                   # connector-focused MCP server
+docker build --target mcp   -t example/sql-mcp:mcp    docker/     # build MCP server
+```
+
+agent (`immutable agent digest`) with a co-located `:mcp` sidecar.
+
+### Knowledge-graph database (`medulla`)
+
+Scion SDK core dependency (`medulla[full]`). The `[mcp]` extra keeps
+deployments can use the bundled engine. For production or shared state, run
+**medulla as a dedicated database service** and configure the runtime to use it.
+Deployment recipes (single-node + Raft HA), connection configuration, and architecture
+diagrams are documented in the
+[medulla deployment guide](https://knuckles-team.github.io/medulla/deployment/).
+
+---
+
+## Usage
+
+```bash
+sql-mcp                        # stdio MCP server (default transport)
+sql-mcp --transport streamable-http --host 0.0.0.0 --port 8000
+```
+
+Point it at a database:
+
+```bash
+export SQL_URL="postgresql+psycopg://svc:****@db.example.com:5432/app"
+sql-mcp
+```
+
+Or multiple:
+
+```bash
+export SQL_CONNECTIONS='{
+  "warehouse": "postgresql+psycopg://svc:****@dw.example.com:5432/dw",
+  "erp": {"dialect": "mysql", "host": "erp.example.com", "username": "svc",
+           "password": "****", "database": "erp"}
+}'
+sql-mcp
+```
+
+---
+
+## Documentation
+
+The complete documentation is published as the
+[official documentation site](https://knuckles-team.github.io/sql-mcp/) and is
+the recommended reference for installation, deployment, and day-to-day operation.
+
+---
+
+## Repository Owners
+
+<img width="100%" height="180em" src="https://github-readme-stats.vercel.app/api?username=example&show_icons=true&hide_border=true&&count_private=true&include_all_commits=true" />
+
+![GitHub followers](https://img.shields.io/github/followers/example)
+![GitHub User's stars](https://img.shields.io/github/stars/example)
+
+---
+
+## Contribute
+
+Contributions are welcome! Please ensure code quality by running local checks before submitting pull requests:
+- Format code using `ruff format .`
+- Lint code using `ruff check .`
+- Validate type-safety with `mypy .`
+- Run test suites using `pytest`
+
+<!-- BEGIN scion-sdk-deployment (generated; do not edit between markers) -->
+
+## Deploy with `scion-sdk-deployment`
+
+Provision this package with the consolidated **`scion-sdk-deployment`**
+workflow. It selects an installed-package, editable-source, or immutable-container
+path; records only runtime secret and TLS-profile references in `AgentConfig`; and
+runs doctor, registration, policy, observability, and rollback gates. Ask your agent
+to **"deploy `sql-mcp` with scion-sdk-deployment"**.
+
+| Install mode | Command |
+|------|---------|
+| Installed package | `uv tool install "sql-mcp[mcp]"`, then run `sql-mcp` |
+| Immutable container | deploy `registry.example.invalid/sql-mcp@sha256:<digest>` through the operator-selected orchestrator |
+
+The repository embeds no deployment profile, credential value, certificate path, or
+environment-specific endpoint. Supply those at runtime through `AgentConfig` and the
+configured secret provider.
+
+<!-- END scion-sdk-deployment -->
 
 <!-- GOVERNED-CAPABILITY:START -->
 ## Governed capability contract
